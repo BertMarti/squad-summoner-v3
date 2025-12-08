@@ -1,11 +1,146 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue';
+import { useGemini } from './composables/useGemini';
+
+// Importar Componentes
+import AppHeader from './components/AppHeader.vue';
+import GameSelector from './components/GameSelector.vue';
+import MissionControls from './components/MissionControls.vue';
+import TerminalOutput from './components/TerminalOutput.vue';
+import ConfigModal from './components/ConfigModal.vue';
+
+// --- ESTADO TEMA ---
+const isDarkMode = ref(true);
+
+onMounted(() => {
+  const saved = localStorage.getItem('theme');
+  isDarkMode.value = saved ? saved === 'dark' : true;
+  applyTheme();
+});
+
+const toggleTheme = () => {
+  isDarkMode.value = !isDarkMode.value;
+  localStorage.setItem('theme', isDarkMode.value ? 'dark' : 'light');
+  applyTheme();
+};
+
+const applyTheme = () => {
+  if (isDarkMode.value) document.body.classList.remove('light-mode');
+  else document.body.classList.add('light-mode');
+};
+
+// --- ESTADO APP ---
+const showConfig = ref(false);
+const terminalText = ref('');
+const isSending = ref(false);
+
+const mission = reactive({
+  game: '',
+  subGame: '',
+  customGameName: '',
+  recruits: '',
+  time: ''
+});
+
+// API Key Logic
+const envApiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+const userApiKey = ref(localStorage.getItem('USER_API_KEY') || '');
+
+const getEffectiveApiKey = () => {
+  if (envApiKey && envApiKey.trim() !== '') return envApiKey;
+  return userApiKey.value;
+};
+
+const { generateText, isGenerating } = useGemini();
+
+// --- ACCIONES ---
+const handleRunDemo = async () => {
+  const apiKey = getEffectiveApiKey();
+  if (!apiKey) {
+    alert("⚠️ FALTA API KEY");
+    showConfig.value = true;
+    return;
+  }
+  
+  try {
+    terminalText.value = "📡 INICIANDO PROTOCOLO DE GENERACIÓN...\n>_";
+    const text = await generateText(apiKey, mission);
+    terminalText.value = text;
+  } catch (e: any) {
+    terminalText.value = `❌ ERROR CRÍTICO:\n${e.message}`;
+  }
+};
+
+const handleSendWhatsapp = async () => {
+  if (!terminalText.value || terminalText.value.includes('ERROR') || isGenerating.value) {
+    await handleRunDemo();
+  }
+  
+  if (!terminalText.value || terminalText.value.includes('ERROR')) return;
+
+  isSending.value = true;
+  try {
+    const res = await fetch('http://localhost:3000/send-mission', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: terminalText.value })
+    });
+    const data = await res.json();
+    if (data.success) alert("✅ TRANSMISIÓN ENVIADA");
+    else throw new Error(data.error);
+  } catch (e: any) {
+    alert(`❌ ERROR DE SERVIDOR: ${e.message}`);
+  } finally {
+    isSending.value = false;
+  }
+};
+
+const updateMissionData = (data: any) => {
+  mission.recruits = data.recruits;
+  mission.time = data.time;
+};
+
+const saveUserConfig = (key: string) => {
+  userApiKey.value = key;
+  showConfig.value = false;
+};
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div class="app-container">
+    <AppHeader 
+      :is-dark="isDarkMode" 
+      @toggleTheme="toggleTheme" 
+      @openConfig="showConfig = true" 
+    />
+
+    <main class="main-grid">
+      <section class="left-col">
+        <GameSelector 
+          v-model="mission.game" 
+          v-model:subGame="mission.subGame" 
+          v-model:customName="mission.customGameName"
+        />
+        <MissionControls 
+          :loading="isGenerating"
+          :sending="isSending"
+          @runDemo="handleRunDemo"
+          @sendWhatsapp="handleSendWhatsapp"
+          @updateData="updateMissionData"
+        />
+      </section>
+
+      <section class="right-col">
+        <TerminalOutput :output="terminalText" />
+      </section>
+    </main>
+
+    <ConfigModal v-if="showConfig" @close="showConfig = false" @save="saveUserConfig" />
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.app-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.main-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; align-items: start; }
+@media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+</style>
