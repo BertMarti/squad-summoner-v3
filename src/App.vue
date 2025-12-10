@@ -3,18 +3,12 @@ import { ref, reactive, onMounted } from 'vue';
 import { useGemini } from './composables/useGemini';
 
 // Importar Componentes
-import AppHeader from './components/AppHeader.vue';
-import GameSelector from './components/GameSelector.vue';
-import MissionControls from './components/MissionControls.vue';
-import TerminalOutput from './components/TerminalOutput.vue';
+import AppHeader from '@/components/panels/AppHeader.vue';
+import GameSelector from '@/components/panels/GameSelector.vue';
+import MissionControls from '@/components/panels/MissionControls.vue';
+import TerminalOutput from '@/components/panels/TerminalOutput.vue';
 import ConfigModal from './components/ConfigModal.vue';
-import MissionLog from './components/MissionLog.vue';
-import IntelTicker from './components/IntelTicker.vue';
-import SquadRoster from './components/SquadRoster.vue';
-import CommPanel from './components/CommPanel.vue';
-import ActionQueue from './components/ActionQueue.vue';
-import ProcessManager from './components/ProcessManager.vue';
-import MiniRadar from './components/MiniRadar.vue';
+import { MissionLog, IntelTicker, SquadRoster, CommPanel, ActionQueue, ProcessManager, MiniRadar } from '@/components/lore'
 
 // --- ESTADO TEMA ---
 const isDarkMode = ref(true);
@@ -61,56 +55,44 @@ const getEffectiveApiKey = () => {
 const { generateText, isGenerating } = useGemini();
 
 // --- LORE / UI STATE ---
+import { useTerminalStore } from '@/stores/terminal'
+import { useProcessQueue } from '@/stores/processQueue'
+import { useMissionStore } from '@/stores/mission'
 import { ref as _ref } from 'vue';
-const logLines = _ref<Array<{ts:string,text:string}>>([
-  { ts: new Date().toLocaleTimeString(), text: 'Sistema iniciado.' }
-]);
+const terminalStore = useTerminalStore();
+const processQueue = useProcessQueue();
+const missionStore = useMissionStore();
 const tickerItems = _ref<string[]>(['ALERTA: PUERTA NORTE COMPROMETIDA','INFO: Módulo TTS activo','LOG: Enlace estable']);
 const squad = _ref([{ name:'Alex', initials:'AX', role:'Infiltrator', status:'ok', statusLabel:'OK' },{ name:'Marta', initials:'MT', role:'Scout', status:'injured', statusLabel:'INJ' }]);
-const processes = _ref<Array<any>>([]);
-const processCounter = _ref(1);
 const procManager = _ref<any>(null);
 
-const addLog = (text: string) => {
-  const ts = new Date().toLocaleTimeString();
-  logLines.value.unshift({ ts, text });
-  if (logLines.value.length > 300) logLines.value.pop();
-};
-
 const enqueueProcess = () => {
-  const id = processCounter.value++;
   const emojis = ['⚙️','🔧','🛰️','📡','💾','🛡️'];
-  const proc = { id, name: `Task-${id}`, emoji: emojis[id % emojis.length], detail: 'Inicio secuencia', status: 'queued' };
-  processes.value.push(proc);
-  // send to process manager which will simulate life-cycle
+  const proc = processQueue.enqueue({ emoji: emojis[Math.floor(Math.random()*emojis.length)] });
+  // forward to process manager to simulate lifecycle
   if (procManager.value && typeof procManager.value.enqueue === 'function') procManager.value.enqueue(proc);
 };
 
 const onProcStarted = (proc: any) => {
-  const p = processes.value.find((x:any)=>x.id===proc.id);
+  const p = processQueue.processes.find((x:any)=>x.id===proc.id);
   if(p) p.status = 'running';
-  addLog(`▶️ Proceso iniciado: ${proc.name}`);
+  terminalStore.addLog(`▶️ Proceso iniciado: ${proc.name}`);
 };
 
 const onProcFinished = (proc: any) => {
-  const p = processes.value.find((x:any)=>x.id===proc.id);
+  const p = processQueue.processes.find((x:any)=>x.id===proc.id);
   if(p) p.status = 'done';
-  addLog(`✅ Proceso finalizado: ${proc.name}`);
+  terminalStore.addLog(`✅ Proceso finalizado: ${proc.name}`);
 };
 
 const onProcCancelled = (proc: any) => {
-  const idx = processes.value.findIndex((x:any)=>x.id===proc.id);
-  if(idx>=0) processes.value.splice(idx,1);
-  addLog(`✖ Proceso cancelado: ${proc.name}`);
+  processQueue.cancel(proc.id);
+  terminalStore.addLog(`✖ Proceso cancelado: ${proc.name}`);
 };
 
 const handleCancelProcess = (id: any) => {
-  const idx = processes.value.findIndex((p:any)=>p.id===id);
-  if(idx>=0){
-    const p = processes.value[idx];
-    processes.value.splice(idx,1);
-    addLog('✖ Cancel: ' + p.name);
-  }
+  processQueue.cancel(id);
+  terminalStore.addLog('✖ Cancel: ' + id);
 };
 
 // --- ACCIONES ---
@@ -124,7 +106,7 @@ const handleRunDemo = async () => {
   
   try {
     terminalText.value = "📡 INICIANDO PROTOCOLO DE GENERACIÓN...\n>_";
-    const text = await generateText(apiKey, mission);
+    const text = await generateText(apiKey, missionStore.mission);
     terminalText.value = text;
   } catch (e: any) {
     terminalText.value = `❌ ERROR CRÍTICO:\n${e.message}`;
@@ -196,14 +178,14 @@ const saveUserConfig = (key: string) => {
     </main>
 
     <div class="bottom-row">
-      <MissionLog :lines="logLines" />
+      <MissionLog />
       <IntelTicker :items="tickerItems" />
       <SquadRoster :members="squad" />
     </div>
 
     <div class="bottom-row-2">
-      <CommPanel :connected="true" @toggle-tts="addLog('🔊 TTS toggled')" @mute-toggle="addLog('🔇 Audio mute toggled')" @refresh-ticker="addLog('🔁 Ticker refreshed')" />
-      <ActionQueue :processes="processes" @enqueue="enqueueProcess" @cancel="handleCancelProcess" />
+      <CommPanel :connected="true" @toggle-tts="terminalStore.addLog('🔊 TTS toggled')" @mute-toggle="terminalStore.addLog('🔇 Audio mute toggled')" @refresh-ticker="terminalStore.addLog('🔁 Ticker refreshed')" />
+      <ActionQueue :processes="processQueue.processes" @enqueue="enqueueProcess" @cancel="handleCancelProcess" />
       <ProcessManager ref="procManager" @started="onProcStarted" @finished="onProcFinished" @cancelled="onProcCancelled" />
       <MiniRadar :targets="[{x:60,y:40},{x:35,y:30},{x:70,y:72}]" />
     </div>

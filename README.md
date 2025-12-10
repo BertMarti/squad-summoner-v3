@@ -27,9 +27,39 @@ Olvídate de los mensajes aburridos. Esta aplicación utiliza la IA de **Google 
 
 ---
 
-## 🛠️ Arquitectura del Proyecto
+## 🛠️ Stack Tecnológico
 
-El sistema se divide en dos módulos tácticos:
+```
+┌─────────────────────────────────────────────────────────┐
+│          SQUAD SUMMONER v3.0 — STACK COMPLETO          │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  🎨 FRONTEND                                            │
+│  ├─ Vue 3 (Composition API + Script Setup)              │
+│  ├─ TypeScript (Type Safety)                            │
+│  ├─ Vite (Build Tool & Dev Server)                      │
+│  ├─ Pinia (State Management)                            │
+│  └─ CSS3 (Flex, Grid, Animations)                       │
+│                                                         │
+│  🤖 IA & PROCESAMIENTO                                  │
+│  ├─ Google Gemini 2.5 Flash (Generación de Texto)       │
+│  └─ Prompts + Role-Playing Tactics                      │
+│                                                         │
+│  🖥️  BACKEND                                             │
+│  ├─ Node.js (Runtime)                                   │
+│  ├─ Express (REST API Server)                           │
+│  ├─ whatsapp-web.js (Bot Integration)                   │
+│  └─ QR Code Terminal (Auth)                             │
+│                                                         │
+│  💾 UTILIDADES                                          │
+│  ├─ Dotenv (Gestión de Secrets)                         │
+│  ├─ CORS (Cross-Origin Requests)                        │
+│  └─ Git (Version Control)                               │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Módulos Tácticos
 
 - **Frontend (Centro de Mando)**: Hecho con **Vue 3 + TypeScript**. Es la interfaz donde seleccionas el juego, los reclutas y la hora.
 - **Backend (Torre de Comunicaciones)**: Servidor **Node.js + Express** usando **whatsapp-web.js**. Gestiona la conexión QR y el envío de mensajes.
