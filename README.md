@@ -32,52 +32,48 @@ Olvídate de los mensajes aburridos. Esta aplicación utiliza la IA de **Google 
 ### Diagrama de Arquitectura
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                  🎖️  SQUAD SUMMONER v3.0 — STACK COMPLETO            │
-├──────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │  🎨 FRONTEND (Centro de Mando)                              │   │
-│  ├─────────────────────────────────────────────────────────────┤   │
-│  │  • Vue 3 ────────────────── Interfaz reactiva              │   │
-│  │  • TypeScript ────────────── Type-safe code                │   │
-│  │  • Vite ──────────────────── Build tool ultrarrápido       │   │
-│  │  • Pinia ─────────────────── State management centralizado  │   │
-│  │  • CSS3 ───────────────────── Flex, Grid, Animations       │   │
-│  │                                                             │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                      │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │  🤖 IA & PROCESAMIENTO                                      │   │
-│  ├─────────────────────────────────────────────────────────────┤   │
-│  │  • Google Gemini 2.5 Flash ─ Generación de texto épico      │   │
-│  │  • Prompt Engineering ────── Tácticas de role-playing       │   │
-│  │  • Token Optimization ─────── Eficiencia en costos de IA    │   │
-│  │                                                             │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                      │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │  🖥️  BACKEND (Torre de Comunicaciones)                       │   │
-│  ├─────────────────────────────────────────────────────────────┤   │
-│  │  • Node.js ──────────────── Runtime JavaScript              │   │
-│  │  • Express ──────────────── REST API & Routing              │   │
-│  │  • whatsapp-web.js ──────── Integración WhatsApp Bot        │   │
-│  │  • QR Code Terminal ──────── Autenticación Dispositivos     │   │
-│  │  • Puppeteer (puppeteer) ──── Browser Automation (interno)  │   │
-│  │                                                             │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                      │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │  💾 INFRAESTRUCTURA & UTILIDADES                            │   │
-│  ├─────────────────────────────────────────────────────────────┤   │
-│  │  • Dotenv ─────────────────── Gestión de secretos (.env)    │   │
-│  │  • CORS ────────────────────── Cross-Origin Requests        │   │
-│  │  • Git ─────────────────────── Version Control              │   │
-│  │  • npm ─────────────────────── Package Management           │   │
-│  │                                                             │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                      │
-└──────────────────────────────────────────────────────────────────────┘
+╔════════════════════════════════════════════════════════════════════════╗
+║                  🎖️  SQUAD SUMMONER v3.0 — STACK COMPLETO             ║
+╠════════════════════════════════════════════════════════════════════════╣
+║                                                                        ║
+║  ╔─────────────────────────────────────────────────────────────────╗  ║
+║  ║  🎨 FRONTEND (Centro de Mando)                                  ║  ║
+║  ╠─────────────────────────────────────────────────────────────────╣  ║
+║  ║  ✓ Vue 3 ················· Interfaz reactiva                    ║  ║
+║  ║  ✓ TypeScript ··········· Type-safe code                       ║  ║
+║  ║  ✓ Vite ················· Build tool ultrarrápido              ║  ║
+║  ║  ✓ Pinia ················ State management centralizado         ║  ║
+║  ║  ✓ CSS3 ················· Flex, Grid, Animations               ║  ║
+║  ╚─────────────────────────────────────────────────────────────────╝  ║
+║                                                                        ║
+║  ╔─────────────────────────────────────────────────────────────────╗  ║
+║  ║  🤖 IA & PROCESAMIENTO                                          ║  ║
+║  ╠─────────────────────────────────────────────────────────────────╣  ║
+║  ║  ✓ Google Gemini 2.5 ··· Generación de texto épico             ║  ║
+║  ║  ✓ Prompt Engineering ·· Tácticas de role-playing              ║  ║
+║  ║  ✓ Token Optimization ·· Eficiencia en costos de IA            ║  ║
+║  ╚─────────────────────────────────────────────────────────────────╝  ║
+║                                                                        ║
+║  ╔─────────────────────────────────────────────────────────────────╗  ║
+║  ║  🖥️  BACKEND (Torre de Comunicaciones)                           ║  ║
+║  ╠─────────────────────────────────────────────────────────────────╣  ║
+║  ║  ✓ Node.js ·············· Runtime JavaScript                    ║  ║
+║  ║  ✓ Express ·············· REST API & Routing                    ║  ║
+║  ║  ✓ whatsapp-web.js ····· Integración WhatsApp Bot             ║  ║
+║  ║  ✓ QR Code Terminal ···· Autenticación Dispositivos            ║  ║
+║  ║  ✓ Puppeteer ··········· Browser Automation                    ║  ║
+║  ╚─────────────────────────────────────────────────────────────────╝  ║
+║                                                                        ║
+║  ╔─────────────────────────────────────────────────────────────────╗  ║
+║  ║  💾 INFRAESTRUCTURA & UTILIDADES                                ║  ║
+║  ╠─────────────────────────────────────────────────────────────────╣  ║
+║  ║  ✓ Dotenv ············· Gestión de secretos (.env)             ║  ║
+║  ║  ✓ CORS ··············· Cross-Origin Requests                  ║  ║
+║  ║  ✓ Git ················ Version Control                         ║  ║
+║  ║  ✓ npm ················ Package Management                      ║  ║
+║  ╚─────────────────────────────────────────────────────────────────╝  ║
+║                                                                        ║
+╚════════════════════════════════════════════════════════════════════════╝
 ```
 
 ### 📊 Tabla Comparativa de Tecnologías
