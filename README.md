@@ -29,40 +29,112 @@ Olvídate de los mensajes aburridos. Esta aplicación utiliza la IA de **Google 
 
 ## 🛠️ Stack Tecnológico
 
+### Diagrama de Arquitectura
+
 ```
-┌─────────────────────────────────────────────────────────┐
-│          SQUAD SUMMONER v3.0 — STACK COMPLETO          │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  🎨 FRONTEND                                            │
-│  ├─ Vue 3 (Composition API + Script Setup)              │
-│  ├─ TypeScript (Type Safety)                            │
-│  ├─ Vite (Build Tool & Dev Server)                      │
-│  ├─ Pinia (State Management)                            │
-│  └─ CSS3 (Flex, Grid, Animations)                       │
-│                                                         │
-│  🤖 IA & PROCESAMIENTO                                  │
-│  ├─ Google Gemini 2.5 Flash (Generación de Texto)       │
-│  └─ Prompts + Role-Playing Tactics                      │
-│                                                         │
-│  🖥️  BACKEND                                             │
-│  ├─ Node.js (Runtime)                                   │
-│  ├─ Express (REST API Server)                           │
-│  ├─ whatsapp-web.js (Bot Integration)                   │
-│  └─ QR Code Terminal (Auth)                             │
-│                                                         │
-│  💾 UTILIDADES                                          │
-│  ├─ Dotenv (Gestión de Secrets)                         │
-│  ├─ CORS (Cross-Origin Requests)                        │
-│  └─ Git (Version Control)                               │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                  🎖️  SQUAD SUMMONER v3.0 — STACK COMPLETO            │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  🎨 FRONTEND (Centro de Mando)                              │   │
+│  ├─────────────────────────────────────────────────────────────┤   │
+│  │  • Vue 3 ────────────────── Interfaz reactiva              │   │
+│  │  • TypeScript ────────────── Type-safe code                │   │
+│  │  • Vite ──────────────────── Build tool ultrarrápido       │   │
+│  │  • Pinia ─────────────────── State management centralizado  │   │
+│  │  • CSS3 ───────────────────── Flex, Grid, Animations       │   │
+│  │                                                             │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  🤖 IA & PROCESAMIENTO                                      │   │
+│  ├─────────────────────────────────────────────────────────────┤   │
+│  │  • Google Gemini 2.5 Flash ─ Generación de texto épico      │   │
+│  │  • Prompt Engineering ────── Tácticas de role-playing       │   │
+│  │  • Token Optimization ─────── Eficiencia en costos de IA    │   │
+│  │                                                             │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  🖥️  BACKEND (Torre de Comunicaciones)                       │   │
+│  ├─────────────────────────────────────────────────────────────┤   │
+│  │  • Node.js ──────────────── Runtime JavaScript              │   │
+│  │  • Express ──────────────── REST API & Routing              │   │
+│  │  • whatsapp-web.js ──────── Integración WhatsApp Bot        │   │
+│  │  • QR Code Terminal ──────── Autenticación Dispositivos     │   │
+│  │  • Puppeteer (puppeteer) ──── Browser Automation (interno)  │   │
+│  │                                                             │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  💾 INFRAESTRUCTURA & UTILIDADES                            │   │
+│  ├─────────────────────────────────────────────────────────────┤   │
+│  │  • Dotenv ─────────────────── Gestión de secretos (.env)    │   │
+│  │  • CORS ────────────────────── Cross-Origin Requests        │   │
+│  │  • Git ─────────────────────── Version Control              │   │
+│  │  • npm ─────────────────────── Package Management           │   │
+│  │                                                             │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### 📊 Tabla Comparativa de Tecnologías
+
+| Categoría | Tecnología | Versión | Propósito |
+|-----------|-----------|---------|----------|
+| **Frontend Framework** | Vue 3 | 3.x | Interfaz reactiva con Composition API |
+| **Lenguaje** | TypeScript | 5.x | Type-safe development |
+| **Build Tool** | Vite | Latest | Hot Module Replacement (HMR) |
+| **State Management** | Pinia | Latest | Stores centralizados (terminal, queue, mission) |
+| **Styling** | CSS3 + SCSS | - | Layouts modernos (Flex, Grid) |
+| **IA & LLM** | Google Gemini | 2.5 Flash | Generación de texto basada en prompts |
+| **Backend** | Node.js | v16+ | Runtime JavaScript |
+| **API Framework** | Express | 4.x | REST API & routing |
+| **WhatsApp Bot** | whatsapp-web.js | Latest | Automatización de mensajes |
+| **Authentication** | QR Code | - | Escaneo de dispositivos |
+| **Secrets Management** | Dotenv | Latest | Variables de entorno seguras |
+| **CORS** | CORS Middleware | Latest | Peticiones cross-origin seguras |
+| **Version Control** | Git | 2.x | Tracking de cambios |
+
+### 🔗 Flujo de Datos
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Usuario selecciona juego + nombres + hora en la UI          │
+└──────────────────────┬───────────────────────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────────────────────┐
+│  Frontend (Vue 3) dispara acción → Pinia Store (terminal)    │
+└──────────────────────────────────┬───────────────────────────┘
+                                   │
+                                   ▼
+┌──────────────────────────────────────────────────────────────┐
+│  Backend (Express) recibe petición + contexto del juego      │
+└──────────────────────────────────┬───────────────────────────┘
+                                   │
+                                   ▼
+┌──────────────────────────────────────────────────────────────┐
+│  Gemini AI genera discurso épico con prompt tactics          │
+└──────────────────────────────────┬───────────────────────────┘
+                                   │
+                                   ▼
+┌──────────────────────────────────────────────────────────────┐
+│  whatsapp-web.js envía mensaje al grupo seleccionado         │
+└──────────────────────────────────┬───────────────────────────┘
+                                   │
+                                   ▼
+┌──────────────────────────────────────────────────────────────┐
+│  Terminal actualiza con logs en tiempo real (MissionLog)     │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ### Módulos Tácticos
 
-- **Frontend (Centro de Mando)**: Hecho con **Vue 3 + TypeScript**. Es la interfaz donde seleccionas el juego, los reclutas y la hora.
-- **Backend (Torre de Comunicaciones)**: Servidor **Node.js + Express** usando **whatsapp-web.js**. Gestiona la conexión QR y el envío de mensajes.
+- **Frontend (Centro de Mando)**: Hecho con **Vue 3 + TypeScript**. Es la interfaz donde seleccionas el juego, los reclutas y la hora. Estado centralizado con **Pinia** stores.
+- **Backend (Torre de Comunicaciones)**: Servidor **Node.js + Express** usando **whatsapp-web.js**. Gestiona la conexión QR, generación de contenido con Gemini y envío de mensajes.
 
 ---
 
