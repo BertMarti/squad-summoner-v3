@@ -12,87 +12,64 @@ export const GAMES = [
 export function useGemini() {
   const isGenerating = ref(false);
 
+  // --- 1. CONSTRUCTOR DE PROMPTS DE TEXTO ---
   const buildPrompt = (data: any) => {
     const recruits = data.recruits || "Ciudadanos no alistados";
     const time = data.time || "INMEDIATAMENTE";
     
-    // 1. HELLDIVERS 2 (VERSIÓN OPTIMIZADA: SÁTIRA MÁXIMA)
+    // HELLDIVERS 2
     if (data.game === 'hd2') {
       return `
-        ROL: Eres un Oficial de la Verdad o el mismísimo General Brasch, sumamente intenso, fanático y saturado de patriotismo.
-        OBJETIVO: Movilizar a los Helldivers "${recruits}" para una inmersión inmediata.
-
-        INSTRUCCIONES DE SÁTIRA Y LORE (NIVEL MÁXIMO):
-        1. TONO: Eres pura PROPAGANDA. Grita metafóricamente. Usa mayúsculas para conceptos sagrados como LIBERTAD, DEMOCRACIA GESTIONADA y SUPER TIERRA.
-        2. LA HORA CERO: El despliegue es a las ${time}. Insinúa que llegar tarde es un acto de "Pensamiento Traidor" castigado con reeducación.
-        3. ENEMIGOS: Insulta creativamente a los enemigos de la Libertad:
-           - Autómatas: "Tostadoras socialistas", "Chatarra sin alma", "Calculadoras oxidadas".
-           - Termínidos: "Bichos fascistas", "Fuente de E-710", "Plaga antidemocrática".
-        4. REFERENCIAS OBLIGATORIAS (Usa al menos 2):
-           - "Invítales a una taza de LIBER-TÉ bien caliente".
-           - "¡Qué tal una buena taza de LIBER-TÉ!".
-           - "Repartir votos a 900 disparos por minuto".
-           - "Tu capa no se va a manchar sola de aceite".
-        5. ESTRATAGEMAS: Si encaja, inserta códigos visuales como "⬆️➡️⬇️⬇️⬇️" (Bomba 500kg) o menciona pedir una Hellbomb.
-        6. CIERRE OBLIGATORIO: "¡POR LA SUPER TIERRA!", "¡DULCE LIBERTAD!" o "¡NOS VEMOS EN EL INFIERNO, HELLDIVERS!".
-
-        FORMATO: Genera un mensaje para WhatsApp corto, explosivo, divertido y absurdo. Que den ganas de alistarse o morir en el intento.
+        ROL: Eres un Oficial de la Verdad o el mismísimo General Brasch.
+        OBJETIVO: Movilizar a "${recruits}" a las ${time}.
+        INSTRUCCIONES:
+        1. TONO: PROPAGANDA MÁXIMA. Grita metafóricamente (Mayúsculas).
+        2. Insulta a los enemigos (Tostadoras, Bichos).
+        3. Usa frases como "LIBER-TÉ" y "Democracia Gestionada".
+        4. CIERRE: "¡POR LA SUPER TIERRA!".
+        FORMATO: Mensaje de WhatsApp corto y explosivo.
       `;
     }
 
-    // 2. SPACE MARINE 2
+    // SPACE MARINE 2
     if (data.game === 'sm2') {
       return `
-        Actúa estrictamente como un **Logos-Historican de Alto Rango del Adeptus Administratum** o un **Lord Inquisidor del Ordo Hereticus** (según el contexto del mensaje).
-
-        **TUS REGLAS OBLIGATORIAS:**
-        1.  **CERO DESCIPCIONES VISUALES:** Está terminantemente prohibido usar corchetes para describir imágenes (ej: NO USES [IMAGEN...], ni *Se ve un pergamino*).
-        2.  **FORMATO DE DATA-SLATE:** El texto debe parecer una transmisión de datos puramente textual de una terminal cogitadora arcaica. Usa separadores como "+++", "///", o "===".
-        3.  **TONO:** Autoritario, fanático, burocrático, oscuro y grandilocuente. Usa terminología de Warhammer 40k (Alto Gótico, referencias al Trono Dorado, niveles de autorización, sellos de pureza).
-        4.  **FECHA IMPERIAL:** Usa siempre el formato de fecha imperial (ej: 0.145.024.M42).
-        5.  **ENCABEZADO Y PIE:** Comienza siempre con credenciales de encriptación y termina con el "Pensamiento del Día".
-
-        **OBJETIVO:**
-        Generar un mensaje que parezca extraído directamente de un archivo confidencial de Terra. No describas el archivo, *escribe* el contenido del archivo.
+        ROL: Capellán de los Ultramarines o Comisario Imperial.
+        OBJETIVO: Convocar a "${recruits}" a las ${time}.
+        INSTRUCCIONES:
+        1. TONO: Grimdark, solemne, fanático. "EL EMPERADOR PROTEGE".
+        2. Impuntualidad = Herejía.
+        3. Insulta a Xenos (Tiránidos) y Herejes.
+        4. FORMATO DATA-SLATE: Usa "+++ TRANSMISIÓN +++".
+        5. CIERRE: "Pensamiento del día" y "¡CORAJE Y HONOR!".
       `;
     }
 
-    // 3. MONSTER HUNTER
+    // MONSTER HUNTER
     if (data.game === 'mh') {
-      const version = data.subGame ? `Monster Hunter ${data.subGame}` : "Monster Hunter";
       return `
-        Actúa como el animado Comandante o la Encargada (Handler) de ${version}.
-        Tu misión es reunir al equipo de caza formado por: "${recruits}".
-
-        INSTRUCCIONES DE CAZA:
-        1. El tono debe ser aventurero, cooperativo, hambriento y con sentido de urgencia.
-        2. Cita a los cazadores a las ${time} en la Cantina o la Sala de Reunión.
-        3. Referencias obligatorias: "Afilad vuestras armas", "Comed antes de salir", "No olvidéis las bombas boñiga".
-        4. Menciona monstruos icónicos como Rathalos, Diablos o un Dragón Anciano.
-        5. Haz bromas sobre "desmayarse" (el carrito de los gatos).
-        6. Termina OBLIGATORIAMENTE con: "¡Feliz Caza!" o "¡Que la Estrella Azul os guíe!".
-
-        Genera un mensaje divertido y motivador.
+        ROL: Comandante o Encargada de Monster Hunter.
+        OBJETIVO: Caza con "${recruits}" a las ${time}.
+        INSTRUCCIONES:
+        1. Tono aventurero y hambriento.
+        2. Menciona comer en la cantina y afilar armas.
+        3. CIERRE: "¡Feliz Caza!".
       `;
     }
 
-    // 4. GENÉRICO / CUSTOM
-    const gameName = data.customGameName || "un videojuego épico";
-    return `
-      Actúa como el personaje más icónico o narrador de "${gameName}".
-      Tu misión es convencer a los jugadores "${recruits}" para entrar al juego a las ${time}.
-      Sé muy inmersivo. No rompas el personaje. Usa jerga del juego.
-    `;
+    // CUSTOM
+    const gameName = data.customGameName || "Videojuego Épico";
+    return `Actúa como narrador de ${gameName}. Convoca a ${recruits} a las ${time}. Sé inmersivo.`;
   };
 
-  // Llamada a la API
+  // --- 2. GENERAR TEXTO (WHATSAPP) ---
   const generateText = async (apiKey: string, data: any) => {
     if (!apiKey) throw new Error("Falta API KEY");
     
     isGenerating.value = true;
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
       const prompt = buildPrompt(data);
       const result = await model.generateContent(prompt);
       const response = await result.response;
@@ -104,5 +81,56 @@ export function useGemini() {
     }
   };
 
-  return { isGenerating, generateText, GAMES };
+  // --- 3. RESUMIR PARA AUDIO (Script de Radio) ---
+  const summarizeForAudio = async (apiKey: string, fullText: string, gameId: string) => {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+    let styleInstruction = "";
+    if (gameId === 'sm2') styleInstruction = "Estilo: Transmisión Vox-caster militar distorsionada. Corto, grave, sin emojis.";
+    else if (gameId === 'hd2') styleInstruction = "Estilo: Megafonía de propaganda eufórica. ¡Grita por la libertad! Sin emojis.";
+    else if (gameId === 'mh') styleInstruction = "Estilo: Animado y aventurero. Sin emojis.";
+    else styleInstruction = "Estilo: Narrador épico de tráiler de cine.";
+
+    const prompt = `
+      ${styleInstruction}
+      TAREA: Convierte el siguiente texto en un guion de audio MUY CORTO (máx 300 caracteres).
+      TEXTO ORIGINAL: "${fullText}"
+      REGLA: Solo devuelve el texto plano a leer. Nada de formatos ni emojis.
+    `;
+
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  };
+
+  // --- 4. GENERAR AUDIO (TTS) ---
+  const generateAudio = async (apiKey: string, textToSpeak: string) => {
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-tts" });
+
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: textToSpeak }] }],
+      });
+
+      const response = result.response;
+      
+      // SOLUCIÓN A LOS ERRORES DE TYPESCRIPT:
+      // Usamos encadenamiento opcional (?.) para verificar cada nivel de profundidad
+      // antes de intentar acceder al siguiente.
+      const audioData = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+
+      if (audioData) {
+         return audioData;
+      }
+      
+      throw new Error("No se recibieron datos de audio válidos del modelo.");
+      
+    } catch (err) {
+      console.error("Error TTS:", err);
+      return null;
+    }
+  };
+
+  return { isGenerating, generateText, summarizeForAudio, generateAudio, GAMES };
 }

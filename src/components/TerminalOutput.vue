@@ -58,7 +58,11 @@ const copyToClipboard = async () => {
   background: var(--terminal-bg); 
   border-radius: 12px; 
   border: 1px solid var(--border-color); 
-  height: 600px; 
+  height: 600px;
+  min-height: 600px;
+  max-height: 600px;
+  flex: 0 0 600px;
+  box-sizing: border-box;
   display: flex; 
   flex-direction: column; 
   overflow: hidden; 
@@ -126,6 +130,7 @@ const copyToClipboard = async () => {
 
 .terminal-body { 
   flex: 1; 
+  min-height: 0; /* permite que el contenido haga scroll y no expanda el panel */
   padding: 30px; 
   overflow-y: auto; 
   overflow-x: hidden;
@@ -149,15 +154,19 @@ const copyToClipboard = async () => {
   color: var(--terminal-text); 
   line-height: 1.6; 
   width: 100%;
+  max-width: 100%;
 }
 
 .text-content {
   margin: 0;
   white-space: pre-wrap;
   word-wrap: break-word;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   font-family: inherit;
   max-width: 100%;
+  word-break: break-word; 
+  display: block;
+  -webkit-font-smoothing: antialiased;
 }
 
 .cursor { animation: blink 1s infinite; font-weight: bold; }
