@@ -28,3 +28,11 @@ Next steps
 5. Add unit tests for stores and services.
 
 If you want, I can continue applying these next steps in small commits.
+
+Update 2026-10-24 (v3.1.0)
+--------------------------
+- `src/components/_archived/` was removed (duplicates that broke `vue-tsc`; still available in git history).
+- Pure logic now lives in `src/lib/` (mission, prompts, demo, whatsapp) with tests in `src/lib/__tests__/`.
+- `src/services/whatsappServer.ts` wraps the server call; `src/config.ts` reads the `VITE_*` variables.
+- Step 2 above is superseded: the `mission` store is the single source of truth for the form.
+- Current technical documentation: `docs/DESARROLLO.md` (Spanish).
