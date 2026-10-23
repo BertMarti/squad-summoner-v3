@@ -3,7 +3,7 @@
 ## ✅ Hecho (24/10/2026, v3.1.0)
 
 - Auditoría npm (web a 0 vulnerabilidades), servidor endurecido (CORS, validación, límites, cabeceras, 127.0.0.1).
-- Bug del formulario vacío corregido; lógica extraída a `src/lib` con 45 pruebas Vitest.
+- Bug del formulario vacío corregido; lógica extraída a `src/lib` con 49 pruebas Vitest.
 - Modo demo, compartir por `wa.me`, estados de carga/error sin `alert()`, modal accesible, móvil y modo claro AA.
 - GitHub Pages con CSP y barrera de claves; CI con gitleaks; Dependabot; licencia MIT; README de usuario y docs.
 

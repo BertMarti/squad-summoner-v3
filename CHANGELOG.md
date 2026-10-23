@@ -34,7 +34,7 @@ Todos los cambios notables del proyecto están documentados en este archivo.
 - Se quita el botón de TTS, que no estaba conectado.
 
 ### 🧪 Calidad
-- Lógica extraída a `src/lib/` y 45 pruebas Vitest (web y servidor).
+- Lógica extraída a `src/lib/` y 49 pruebas Vitest 4 (web y servidor).
 - CI (gitleaks, tipos, pruebas, builds, audit), workflow de Pages y Dependabot semanal.
 
 ### 📝 Documentación

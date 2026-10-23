@@ -10,7 +10,7 @@ Para la explicación de usuario, vuelve al [README](../README.md).
 | Web («Centro de Mando») | Vue 3 (`<script setup lang="ts">`) · TypeScript 5.9 · Vite 7 · Pinia 3 |
 | IA | Google Gemini con `@google/generative-ai` (modelo por defecto `gemini-2.5-flash`) |
 | Servidor («Torre de Comunicaciones», opcional) | Node.js · Express 5 · whatsapp-web.js (Puppeteer) · qrcode-terminal · dotenv · cors |
-| Pruebas | Vitest 5 (entorno `node`) |
+| Pruebas | Vitest 4 (entorno `node`; vitest 5 exige Node ≥ 22.12) |
 | CI/CD | GitHub Actions: `ci.yml` (gitleaks, tipos, pruebas, build, audit) y `pages.yml` (GitHub Pages) |
 
 ## Requisitos
@@ -131,7 +131,8 @@ termine en `@g.us`, o añade temporalmente en `server/index.js`, dentro de `clie
 ### Seguridad del servidor
 
 - Escucha en `127.0.0.1` por defecto (`HOST`).
-- CORS con lista blanca (`ALLOWED_ORIGINS`); además rechaza con 403 peticiones con `Origin` no permitido.
+- CORS con lista blanca (`ALLOWED_ORIGINS`, sin distinguir mayúsculas); además `createOriginGuard` rechaza con 403
+  las peticiones con `Origin` no permitido **antes** del limitador, para que una web ajena no gaste el cupo de envíos.
 - `express.json({ limit: '16kb' })`; el mensaje debe ser texto, se eliminan los caracteres de control (salvo saltos de línea y tabuladores) y debe tener de 1 a 4000 caracteres.
 - Limitador: 10 envíos por minuto e IP (`429` con `Retry-After`).
 - Cabeceras `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, CSP `default-src 'none'`; sin `X-Powered-By`.

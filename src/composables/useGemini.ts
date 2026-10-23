@@ -18,10 +18,13 @@ export const GAMES = [
 /** Traduce los errores típicos de la API de Gemini a mensajes claros. */
 export function friendlyGeminiError(error: unknown): string {
   const msg = error instanceof Error ? error.message : String(error ?? '')
-  if (/API[_ ]?key|API_KEY_INVALID|401|403/i.test(msg)) return 'La API key de Gemini no es válida o no tiene permisos.'
-  if (/429|quota|rate/i.test(msg)) return 'Has superado el límite de uso de Gemini. Espera un poco y vuelve a intentarlo.'
-  if (/Failed to fetch|NetworkError|network/i.test(msg)) return 'No hay conexión con Gemini. Revisa tu conexión a internet.'
-  if (/404|not found|model/i.test(msg)) return `El modelo «${GEMINI_MODEL}» no está disponible para tu clave.`
+  // El SDK formatea así: «Error fetching from <url>:generateContent: [404 Not Found] …». La URL contiene
+  // «generateContent», así que los patrones van anclados al código entre corchetes o a palabras clave exactas.
+  if (/\[40[13] |API_KEY_INVALID|PERMISSION_DENIED/.test(msg)) return 'La API key de Gemini no es válida o no tiene permisos.'
+  if (/\[429 |RESOURCE_EXHAUSTED|\bquota\b|rate limit/i.test(msg)) return 'Has superado el límite de uso de Gemini. Espera un poco y vuelve a intentarlo.'
+  if (/Failed to fetch|NetworkError|Load failed/.test(msg)) return 'No hay conexión con Gemini. Revisa tu conexión a internet.'
+  if (/\[404 |NOT_FOUND/.test(msg)) return `El modelo «${GEMINI_MODEL}» no está disponible para tu clave.`
+  if (/\[503 /.test(msg)) return 'Gemini está saturado ahora mismo. Vuelve a intentarlo en unos minutos.'
   return msg || 'Error al conectar con la IA.'
 }
 

@@ -8,7 +8,7 @@ const input = ref<HTMLInputElement | null>(null);
 
 const close = () => emit('close');
 const save = () => { localStorage.setItem(USER_API_KEY_STORAGE, key.value.trim()); emit('save', key.value.trim()); };
-const clear = () => { key.value = ''; localStorage.removeItem(USER_API_KEY_STORAGE); };
+const clear = () => { key.value = ''; localStorage.removeItem(USER_API_KEY_STORAGE); emit('save', ''); };
 const onKeydown = (event: KeyboardEvent) => { if (event.key === 'Escape') close(); };
 onMounted(async () => { document.addEventListener('keydown', onKeydown); await nextTick(); input.value?.focus(); });
 onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));

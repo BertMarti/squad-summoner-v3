@@ -31,6 +31,45 @@ describe('parseAllowedOrigins', () => {
   })
 })
 
+describe('origen y limitador', () => {
+  const fakeRes = () => {
+    const res = { statusCode: 200, headers: {}, body: null }
+    res.setHeader = (k, v) => { res.headers[k] = v }
+    res.status = (c) => { res.statusCode = c; return res }
+    res.json = (b) => { res.body = b; return res }
+    return res
+  }
+  const req = (origin) => ({ ip: '127.0.0.1', get: (h) => (h.toLowerCase() === 'origin' ? origin : undefined) })
+  // Igual que en server/index.js: guardia de origen ANTES del limitador.
+  const chain = (allowed, limiter) => (r) => {
+    const res = fakeRes()
+    let passed = false
+    sec.createOriginGuard(allowed)(r, res, () => limiter(r, res, () => { passed = true }))
+    return { res, passed }
+  }
+
+  it('isOriginAllowed normaliza mayúsculas y permite peticiones sin Origin', () => {
+    const allowed = sec.parseAllowedOrigins('HTTP://LocalHost:5173/')
+    expect(allowed).toEqual(['http://localhost:5173'])
+    expect(sec.isOriginAllowed('http://LOCALHOST:5173', allowed)).toBe(true)
+    expect(sec.isOriginAllowed(undefined, allowed)).toBe(true)
+    expect(sec.isOriginAllowed('https://malvada.example', allowed)).toBe(false)
+  })
+
+  it('una web ajena recibe 403 y no gasta el cupo del origen legítimo', () => {
+    const allowed = ['http://localhost:5173']
+    const send = chain(allowed, sec.createRateLimiter({ windowMs: 60_000, max: 10, now: () => 0 }))
+    for (let i = 0; i < 12; i++) {
+      const { res, passed } = send(req('https://malvada.example'))
+      expect(res.statusCode).toBe(403)
+      expect(passed).toBe(false)
+    }
+    const { res, passed } = send(req('http://localhost:5173'))
+    expect(res.statusCode).toBe(200)
+    expect(passed).toBe(true)
+  })
+})
+
 describe('isValidGroupId', () => {
   it('acepta IDs de grupo y rechaza el resto', () => {
     expect(sec.isValidGroupId('123456789-123456@g.us')).toBe(true)

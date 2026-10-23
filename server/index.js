@@ -7,6 +7,8 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const {
   parseAllowedOrigins,
+  isOriginAllowed,
+  createOriginGuard,
   isValidGroupId,
   validateMissionBody,
   securityHeaders,
@@ -32,7 +34,7 @@ app.use(
   cors({
     origin(origin, cb) {
       // Sin cabecera Origin (curl, misma máquina) se permite; el resto, solo la lista blanca.
-      if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      if (isOriginAllowed(origin, ALLOWED_ORIGINS)) return cb(null, true);
       return cb(null, false);
     },
     methods: ['GET', 'POST'],
@@ -75,13 +77,9 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true, whatsapp: whatsappReady ? 'ready' : 'starting' });
 });
 
-app.post('/send-mission', createRateLimiter({ windowMs: 60_000, max: 10 }), async (req, res) => {
-  // CORS solo impide leer la respuesta; este control impide que otra web dispare el envío.
-  const origin = req.get('origin');
-  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
-    return res.status(403).json({ error: 'Origen no permitido.' });
-  }
-
+// CORS solo impide leer la respuesta: createOriginGuard impide que otra web dispare el envío
+// y va antes del limitador para que sus intentos no consuman el cupo del origen legítimo.
+app.post('/send-mission', createOriginGuard(ALLOWED_ORIGINS), createRateLimiter({ windowMs: 60_000, max: 10 }), async (req, res) => {
   const result = validateMissionBody(req.body);
   if (!result.ok) return res.status(400).json({ error: result.error });
 

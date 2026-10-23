@@ -6,7 +6,7 @@
 
 - Versión **3.1.0**. Web Vue 3 + Vite 7 + Pinia, servidor opcional Express 5 + whatsapp-web.js.
 - Publicación en GitHub Pages con Actions desde `master` (`https://bertmarti.github.io/squad-summoner-v3/`).
-- 45 pruebas Vitest 5 (lógica pura, servicio del servidor, stores, errores de Gemini y seguridad del servidor).
+- 49 pruebas Vitest 4 (lógica pura, servicio del servidor, stores, errores de Gemini y seguridad del servidor).
 - CI: gitleaks, tipos, pruebas, builds, `npm audit`. Dependabot semanal.
 
 ## Decisiones (y por qué)
@@ -25,6 +25,12 @@
 - Se quitó el botón de TTS de la cabecera: no estaba conectado a nada.
 
 ## Trampas conocidas
+
+- La Raspberry Pi de Alberto tiene **Node 20 y npm 9**: por eso `vitest@^4` (el 5 exige Node ≥ 22.12) y `npm-run-all2@^7`
+  (el 8 pide npm ≥ 10). El npm 9 de Debian falla con `Cannot read properties of null (reading 'edgesOut')` al *añadir*
+  vitest 4; se resolvió generando el lockfile con `npx npm@10 install`. `npm ci` con npm 9 funciona bien.
+- Los errores del SDK de Gemini incluyen la URL (`…:generateContent: [404 Not Found] …`): los patrones de
+  `friendlyGeminiError` van anclados a `[NNN ` para no confundir «generateContent» con «rate».
 
 - **Bug corregido**: `App.vue` enlazaba el formulario a un `reactive` local, pero generaba con `missionStore.mission`,
   que nunca se rellenaba → la IA recibía siempre datos vacíos. Ahora el store es la única fuente de verdad.

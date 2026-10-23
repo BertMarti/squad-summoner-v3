@@ -13,8 +13,27 @@ function parseAllowedOrigins(value) {
   if (typeof value !== 'string' || value.trim() === '') return DEFAULT_ORIGINS.slice();
   return value
     .split(',')
-    .map((o) => o.trim().replace(/\/+$/, ''))
+    .map((o) => o.trim().replace(/\/+$/, '').toLowerCase())
     .filter((o) => /^https?:\/\/[^\s/]+$/i.test(o));
+}
+
+/** `true` si el origen (cabecera Origin) está en la lista; sin Origin (curl, misma máquina) se permite. */
+function isOriginAllowed(origin, allowed) {
+  if (!origin) return true;
+  return allowed.includes(String(origin).toLowerCase());
+}
+
+/**
+ * Rechaza con 403 las peticiones de orígenes no permitidos. Va ANTES del limitador para que una web
+ * ajena no pueda gastar el cupo de envíos y bloquear al origen legítimo.
+ */
+function createOriginGuard(allowed) {
+  return function originGuard(req, res, next) {
+    if (!isOriginAllowed(req.get ? req.get('origin') : req.headers && req.headers.origin, allowed)) {
+      return res.status(403).json({ error: 'Origen no permitido.' });
+    }
+    return next();
+  };
 }
 
 /** Formato de ID de grupo de WhatsApp: «123456789-123456@g.us» o «120363…@g.us». */
@@ -82,6 +101,8 @@ module.exports = {
   MAX_MESSAGE_LENGTH,
   DEFAULT_ORIGINS,
   parseAllowedOrigins,
+  isOriginAllowed,
+  createOriginGuard,
   isValidGroupId,
   validateMissionBody,
   securityHeaders,
