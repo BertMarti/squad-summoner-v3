@@ -1,21 +1,24 @@
 {
-  "name": "server",
-  "version": "1.0.0",
-  "description": "",
+  "name": "squad-summoner-server",
+  "version": "1.1.0",
+  "description": "Torre de comunicaciones de Squad Summoner: envía las transmisiones a un grupo de WhatsApp",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "BertMarti",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "qrcode-terminal": "^0.12.0",
     "whatsapp-web.js": "^1.34.2"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
   }
 }
