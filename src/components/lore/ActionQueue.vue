@@ -1,6 +1,6 @@
 <template>
   <section class="queue">
-    <div class="header">ACTION QUEUE</div>
+    <div class="header">COLA DE ACCIONES</div>
     <ul>
       <li v-for="(p, i) in processes" :key="p.id" :class="p.status">
         <div class="left">
@@ -11,19 +11,21 @@
           </div>
         </div>
         <div class="right">
-          <button class="small" @click="$emit('cancel', p.id)">✖</button>
+          <button type="button" class="small" aria-label="Cancelar proceso" @click="$emit('cancel', p.id)">✖</button>
         </div>
       </li>
     </ul>
     <div class="controls">
-      <button class="btn" @click="$emit('enqueue')">+ Enqueue Process</button>
+      <button type="button" class="btn" @click="$emit('enqueue')">+ Añadir proceso</button>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ processes?: Array<any> }>();
-const processes = props.processes ?? [];
+import { computed } from 'vue';
+import type { ProcessItem } from '@/types';
+const props = defineProps<{ processes?: ProcessItem[] }>();
+const processes = computed(() => props.processes ?? []);
 </script>
 
 <style scoped>

@@ -1,5 +1,5 @@
 <template>
-  <div class="radar">
+  <div class="radar" aria-hidden="true">
     <svg viewBox="0 0 100 100">
       <circle cx="50" cy="50" r="45" class="ring" />
       <circle cx="50" cy="50" r="30" class="ring dim" />
@@ -12,8 +12,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 const props = defineProps<{ targets?: Array<{x:number,y:number}> }>();
-const targets = props.targets ?? [ {x:60,y:40},{x:35,y:30},{x:70,y:72} ];
+const targets = computed(() => props.targets ?? [ {x:60,y:40},{x:35,y:30},{x:70,y:72} ]);
 </script>
 
 <style scoped>

@@ -27,7 +27,7 @@ export async function sendToServer(message: string, { timeoutMs = 15_000, fetchI
 
   let data: { success?: boolean; error?: string } = {}
   try {
-    data = await res.json()
+    data = (await res.json()) as typeof data
   } catch {
     /* respuesta sin JSON */
   }

@@ -1,5 +1,5 @@
 import type { Mission } from '@/types'
-import { normalizeMission, type GameId } from './mission'
+import { isGameId, normalizeMission, type GameId } from './mission'
 
 /** Cabecera que marca SIEMPRE los textos de ejemplo (no generados por IA). */
 export const DEMO_BANNER = '🧪 [MODO DEMO · texto de ejemplo, no generado por IA]'
@@ -31,7 +31,7 @@ export const DEMO_TEMPLATES: Record<GameId, Template[]> = {
  */
 export function generateDemoMessage(raw: Partial<Mission>, pick: (n: number) => number = n => Math.floor(Math.random() * n)): string {
   const m = normalizeMission(raw)
-  const game: GameId = m.game || 'custom'
+  const game: GameId = isGameId(m.game) ? m.game : 'custom'
   const templates = DEMO_TEMPLATES[game]
   const index = Math.min(Math.max(pick(templates.length), 0), templates.length - 1)
   const recruits = m.recruits || 'escuadrón'

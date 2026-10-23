@@ -1,6 +1,6 @@
 <template>
   <section class="log-panel">
-    <div class="header"><strong>MISSION LOG</strong></div>
+    <div class="header"><strong>REGISTRO DE MISIÓN</strong></div>
     <div class="log-body">
         <div v-for="(line, i) in terminalStore.logLines" :key="i" class="log-line">
           <span class="ts">{{ line.ts }}</span>
@@ -11,7 +11,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useTerminalStore } from '@/stores/terminal'
 const terminalStore = useTerminalStore()
 // using terminal store for logLines

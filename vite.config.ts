@@ -25,7 +25,7 @@ function contentSecurityPolicy(connectSrc: string[]): Plugin {
     name: 'squad-summoner-csp',
     apply: 'build',
     transformIndexHtml: () => [
-      { tag: 'meta', attrs: { 'http-equiv': 'Content-Security-Policy', content: policy }, injectTo: 'head-prepend' },
+      { tag: 'meta', attrs: { 'http-equiv': 'Content-Security-Policy', content: policy }, injectTo: 'head' },
     ],
   }
 }

@@ -1,17 +1,9 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue';
+import { useMissionStore } from '@/stores/mission';
 
-defineProps(['loading', 'sending']);
-const emit = defineEmits(['runDemo', 'sendWhatsapp', 'updateData']);
-
-const form = reactive({ recruits: '', time: '' });
-
-const formatTime = () => {
-  if (form.time && !form.time.includes(':')) form.time += ':00';
-  emit('updateData', form);
-};
-
-watch(form, () => emit('updateData', form));
+const props = defineProps<{ loading: boolean; sending: boolean; hasApiKey: boolean }>();
+const emit = defineEmits<{ generate: []; runDemo: [] }>();
+const missionStore = useMissionStore();
 </script>
 
 <template>
@@ -22,28 +14,29 @@ watch(form, () => emit('updateData', form));
     </div>
     <div class="input-row">
       <div class="input-group">
-        <label>RECLUTAS</label>
-        <input class="tech-input" v-model="form.recruits" placeholder="Ej: Alex, Juan..." />
+         <label for="recruits">RECLUTAS</label>
+         <input id="recruits" class="tech-input" v-model="missionStore.mission.recruits" maxlength="120" placeholder="Ej: Alex, Juan..." />
       </div>
       <div class="input-group time-group">
-        <label>HORA (24H)</label>
-        <input class="tech-input" type="time" v-model="form.time" @blur="formatTime" />
+         <label for="mission-time">HORA (24H)</label>
+         <input id="mission-time" class="tech-input" type="time" v-model="missionStore.mission.time" />
       </div>
     </div>
   </div>
 
-  <button class="btn-main" @click="$emit('sendWhatsapp')" :disabled="sending || loading">
-    {{ sending ? 'ENVIANDO...' : '📢 GENERAR TRANSMISIÓN' }}
-  </button>
-  <button class="btn-demo" @click="$emit('runDemo')" :disabled="loading">
-    {{ loading ? '...' : '🧪 SOLO DEMO' }}
+   <p class="api-status">{{ props.hasApiKey ? 'Usando IA (Gemini)' : 'Sin clave: modo demo' }}</p>
+   <button type="button" class="btn-main" @click="emit('generate')" :disabled="props.sending || props.loading">
+     📢 GENERAR TRANSMISIÓN
+   </button>
+   <button type="button" class="btn-demo" @click="emit('runDemo')" :disabled="props.loading">
+     {{ props.loading ? 'GENERANDO...' : '🧪 MODO DEMO' }}
   </button>
 </template>
 
 <style scoped>
 .panel-section { background: var(--bg-panel); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px; }
 .section-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-.step-number { background: var(--text-accent); color: #000; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+.step-number { background: var(--btn-primary-bg); color: #05080c; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
 .section-header h3 { margin: 0; font-size: 1rem; color: var(--text-primary); }
 
 .input-row { display: flex; gap: 15px; }
@@ -60,4 +53,6 @@ button { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weig
 .btn-demo { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); }
 .btn-demo:hover:not(:disabled) { border-color: var(--text-primary); color: var(--text-primary); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
+.api-status { color: var(--text-secondary); font-size: .8rem; margin: 0 0 10px; }
+@media (max-width: 480px) { .input-row { flex-direction: column; } .time-group { flex-basis: auto; } }
 </style>
