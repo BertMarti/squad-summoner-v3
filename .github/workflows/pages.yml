@@ -1,0 +1,53 @@
+name: Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build de la versión web (demo sin servidor)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build con base /squad-summoner-v3/ y sin claves
+        run: npm run build:pages
+        env:
+          VITE_GOOGLE_API_KEY: ""
+      - name: Comprobar que no se publica ninguna clave
+        run: |
+          if grep -rEo 'AIza[0-9A-Za-z_-]{35}' dist; then echo "Clave de Google en dist/"; exit 1; fi
+      - name: Página 404 y .nojekyll
+        run: cp dist/index.html dist/404.html && touch dist/.nojekyll
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    name: Publicar en GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v5

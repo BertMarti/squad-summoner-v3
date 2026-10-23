@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gitleaks:
+    name: Secretos (gitleaks)
+    runs-on: ubuntu-latest
+    env:
+      GITLEAKS_VERSION: "8.30.1"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Instalar gitleaks (binario oficial con suma de comprobación)
+        run: |
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          curl -fsSLO "$base/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -fsSLO "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          grep "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" "gitleaks_${GITLEAKS_VERSION}_checksums.txt" | sha256sum -c -
+          tar -xzf "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" gitleaks
+      - name: Historial completo y árbol de trabajo
+        run: |
+          ./gitleaks git . --redact --no-banner -v
+          ./gitleaks dir . --redact --no-banner -v
+
+  web:
+    name: Tipos, pruebas y build web
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Tipos (vue-tsc)
+        run: npm run type-check
+      - name: Pruebas (vitest)
+        run: npm test
+      - name: Build local
+        run: npm run build-only
+      - name: Build como en Pages (sin claves)
+        run: npm run build:pages
+      - name: La web publicada no contiene claves de Google
+        run: |
+          if grep -rEo 'AIza[0-9A-Za-z_-]{35}' dist; then echo "Clave de Google en dist/"; exit 1; fi
+      - name: Auditoría de dependencias de la web
+        run: npm audit --audit-level=high
+
+  servidor:
+    name: Servidor de WhatsApp
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - name: Instalar sin descargar Chromium
+        run: npm ci --ignore-scripts
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+      - name: Sintaxis
+        run: node --check index.js && node --check lib/security.js
+      # Quedan vulnerabilidades altas transitivas de puppeteer (vía whatsapp-web.js) sin arreglo
+      # compatible; se vigila al menos que no aparezca ninguna crítica.
+      - name: Auditoría (falla solo con críticas)
+        run: npm audit --audit-level=critical
