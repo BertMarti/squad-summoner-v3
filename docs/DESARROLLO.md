@@ -132,7 +132,7 @@ termine en `@g.us`, o añade temporalmente en `server/index.js`, dentro de `clie
 
 - Escucha en `127.0.0.1` por defecto (`HOST`).
 - CORS con lista blanca (`ALLOWED_ORIGINS`); además rechaza con 403 peticiones con `Origin` no permitido.
-- `express.json({ limit: '16kb' })`; el mensaje debe ser texto, sin caracteres de control y de 1 a 4000 caracteres.
+- `express.json({ limit: '16kb' })`; el mensaje debe ser texto, se eliminan los caracteres de control (salvo saltos de línea y tabuladores) y debe tener de 1 a 4000 caracteres.
 - Limitador: 10 envíos por minuto e IP (`429` con `Retry-After`).
 - Cabeceras `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, CSP `default-src 'none'`; sin `X-Powered-By`.
 - Errores genéricos al cliente (sin trazas). `GET /health` devuelve el estado de WhatsApp.

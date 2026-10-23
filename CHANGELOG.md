@@ -10,7 +10,7 @@ Todos los cambios notables del proyecto están documentados en este archivo.
 - `npm audit fix`: la web pasa de 12 vulnerabilidades (1 crítica, 9 altas) a 0; en el servidor se corrigen express/qs/ws/
   path-to-regexp/proxy-addr/tar-fs (quedan 11 altas transitivas de puppeteer vía whatsapp-web.js, ver MEMORY.md).
 - Servidor: CORS con lista blanca (`ALLOWED_ORIGINS`), escucha en `127.0.0.1`, validación del mensaje (texto, sin
-  caracteres de control, máx. 4000), límite de 16 kB, 10 envíos/minuto, cabeceras de seguridad, errores sin trazas,
+  caracteres de control salvo saltos de línea, máx. 4000), límite de 16 kB, 10 envíos/minuto, cabeceras de seguridad, errores sin trazas,
   validación de `WHATSAPP_GROUP_ID` y `GET /health`.
 - CSP en el HTML compilado; el build de Pages falla si hay `VITE_GOOGLE_API_KEY`; `.gitignore` cubre `.env.*` y la sesión
   de WhatsApp; `.env.example` documentado; `SECURITY.md`.

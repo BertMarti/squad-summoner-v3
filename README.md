@@ -51,8 +51,8 @@ cantina. Luego la copias o la mandas por WhatsApp con un toque.
 3. **02 · Parámetros**: escribe los nombres de los reclutas (por ejemplo «Alex, Marta y Juan») y la hora.
 4. Pulsa **📢 GENERAR TRANSMISIÓN** y mira cómo aparece la orden en el terminal.
 5. Envíala:
-   - **📋 Copiar** para pegarla donde quieras, o
-   - **🟢 Compartir en WhatsApp**, que abre WhatsApp con el texto listo: solo eliges el grupo y envías.
+   - **📋 COPIAR** para pegarla donde quieras, o
+   - **🟢 COMPARTIR EN WHATSAPP**, que abre WhatsApp con el texto listo: solo eliges el grupo y envías.
 
 ¿Quieres otra versión? Vuelve a pulsar el botón: cada transmisión es distinta.
 
