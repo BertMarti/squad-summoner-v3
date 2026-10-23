@@ -66,7 +66,9 @@ client.on('disconnected', (reason) => {
   console.warn('⚠️ WhatsApp desconectado:', reason);
 });
 
-client.initialize();
+client.initialize().catch((err) => {
+  console.error('❌ No se pudo iniciar WhatsApp (¿Chromium disponible?):', err && err.message ? err.message : err);
+});
 
 // --- Rutas ---
 app.get('/health', (_req, res) => {
@@ -74,6 +76,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.post('/send-mission', createRateLimiter({ windowMs: 60_000, max: 10 }), async (req, res) => {
+  // CORS solo impide leer la respuesta; este control impide que otra web dispare el envío.
   const origin = req.get('origin');
   if (origin && !ALLOWED_ORIGINS.includes(origin)) {
     return res.status(403).json({ error: 'Origen no permitido.' });
@@ -97,6 +100,7 @@ app.post('/send-mission', createRateLimiter({ windowMs: 60_000, max: 10 }), asyn
 // JSON mal formado u otros errores: respuesta genérica sin trazas.
 // eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
+  console.error('Petición rechazada:', err && err.message ? err.message : err);
   const status = err && err.status && err.status < 500 ? err.status : 500;
   res.status(status).json({ error: status === 413 ? 'Mensaje demasiado grande.' : 'Petición no válida.' });
 });

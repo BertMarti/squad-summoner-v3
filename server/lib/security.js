@@ -62,6 +62,10 @@ function createRateLimiter({ windowMs = 60_000, max = 10, now = Date.now } = {})
   return function rateLimit(req, res, next) {
     const key = req.ip || 'local';
     const t = now();
+    // Purga IPs sin actividad reciente para que el mapa no crezca sin límite.
+    if (hits.size > 1000) {
+      for (const [k, list] of hits) if (!list.some((ts) => t - ts < windowMs)) hits.delete(k);
+    }
     const recent = (hits.get(key) || []).filter((ts) => t - ts < windowMs);
     if (recent.length >= max) {
       hits.set(key, recent);

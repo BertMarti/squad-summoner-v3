@@ -10,7 +10,7 @@ Para la explicación de usuario, vuelve al [README](../README.md).
 | Web («Centro de Mando») | Vue 3 (`<script setup lang="ts">`) · TypeScript 5.9 · Vite 7 · Pinia 3 |
 | IA | Google Gemini con `@google/generative-ai` (modelo por defecto `gemini-2.5-flash`) |
 | Servidor («Torre de Comunicaciones», opcional) | Node.js · Express 5 · whatsapp-web.js (Puppeteer) · qrcode-terminal · dotenv · cors |
-| Pruebas | Vitest 3 (entorno `node`) |
+| Pruebas | Vitest 5 (entorno `node`) |
 | CI/CD | GitHub Actions: `ci.yml` (gitleaks, tipos, pruebas, build, audit) y `pages.yml` (GitHub Pages) |
 
 ## Requisitos

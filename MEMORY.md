@@ -6,7 +6,7 @@
 
 - Versión **3.1.0**. Web Vue 3 + Vite 7 + Pinia, servidor opcional Express 5 + whatsapp-web.js.
 - Publicación en GitHub Pages con Actions desde `master` (`https://bertmarti.github.io/squad-summoner-v3/`).
-- 45 pruebas Vitest (lógica pura, servicio del servidor, stores, errores de Gemini y seguridad del servidor).
+- 45 pruebas Vitest 5 (lógica pura, servicio del servidor, stores, errores de Gemini y seguridad del servidor).
 - CI: gitleaks, tipos, pruebas, builds, `npm audit`. Dependabot semanal.
 
 ## Decisiones (y por qué)

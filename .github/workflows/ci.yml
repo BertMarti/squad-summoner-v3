@@ -79,7 +79,7 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: "true"
       - name: Sintaxis
-        run: node --check index.js && node --check lib/security.js
+        run: find . -name '*.js' -not -path './node_modules/*' -not -path './test/*' -print0 | xargs -0 -n1 node --check
       # Quedan vulnerabilidades altas transitivas de puppeteer (vía whatsapp-web.js) sin arreglo
       # compatible; se vigila al menos que no aparezca ninguna crítica.
       - name: Auditoría (falla solo con críticas)
