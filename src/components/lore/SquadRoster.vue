@@ -1,6 +1,6 @@
 <template>
   <section class="roster">
-    <div class="header">SQUAD ROSTER</div>
+    <div class="header">ESCUDRÓN</div>
     <ul>
       <li v-for="(m, i) in members" :key="i">
         <div class="left">
@@ -17,11 +17,13 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ members?: Array<any> }>();
-const members = props.members ?? [
+import { computed } from 'vue';
+interface Member { name: string; initials: string; role: string; status: string; statusLabel: string }
+const props = defineProps<{ members?: Member[] }>();
+const members = computed(() => props.members ?? [
   { name:'Alex', initials:'AX', role:'Infiltrator', status:'ok', statusLabel:'OK' },
   { name:'Marta', initials:'MT', role:'Scout', status:'injured', statusLabel:'INJ' }
-];
+]);
 </script>
 
 <style scoped>

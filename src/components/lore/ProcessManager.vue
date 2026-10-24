@@ -1,6 +1,6 @@
 <template>
   <section class="proc">
-    <div class="header">PROCESS MANAGER</div>
+    <div class="header">GESTOR DE PROCESOS</div>
     <div class="body">
       <div v-for="p in local" :key="p.id" class="proc-item">
         <div class="left">
@@ -11,7 +11,7 @@
           </div>
         </div>
         <div class="right">
-          <button class="small" @click="cancel(p.id)">✖</button>
+          <button type="button" class="small" aria-label="Cancelar proceso" @click="cancel(p.id)">✖</button>
         </div>
       </div>
     </div>
@@ -20,14 +20,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-const props = defineProps<{ initial?: Array<any> }>();
-const emit = defineEmits(['started','finished','cancelled']);
+import type { ProcessItem } from '@/types';
+const props = defineProps<{ initial?: ProcessItem[] }>();
+const emit = defineEmits<{ started: [process: ProcessItem]; finished: [process: ProcessItem]; cancelled: [process: ProcessItem] }>();
 const local = ref(props.initial ?? []);
 
-const cancel = (id:any) => {
+const cancel = (id: number | string) => {
   const idx = local.value.findIndex(x=>x.id===id);
-  if(idx>=0){
-    const p = local.value[idx];
+  const p = local.value[idx];
+  if(p){
     p.status = 'cancelled';
     emit('cancelled', p);
     local.value.splice(idx,1);
@@ -35,14 +36,13 @@ const cancel = (id:any) => {
 }
 
 // expose a simple API to enqueue externally
-const enqueue = (proc:any) => {
+const enqueue = (proc: ProcessItem) => {
   local.value.push(proc);
   emit('started', proc);
   // simulate runtime
   setTimeout(()=>{
-    const idx = local.value.findIndex(x=>x.id===proc.id);
-    if(idx>=0){
-      const p = local.value[idx];
+    const p = local.value.find(x=>x.id===proc.id);
+    if(p){
       emit('finished', p);
       p.status = 'done';
       setTimeout(()=>{ const i = local.value.findIndex(x=>x.id===proc.id); if(i>=0) local.value.splice(i,1); }, 900);

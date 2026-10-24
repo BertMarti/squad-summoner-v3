@@ -7,9 +7,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 const props = defineProps<{ items?: string[], speed?: number }>();
-const items = props.items ?? ['ALERTA: PUERTA NORTE COMPROMETIDA','INFO: Módulo TTS activo'];
-const speed = props.speed ?? 18;
+const items = computed(() => props.items ?? ['ALERTA: PUERTA NORTE COMPROMETIDA','INFO: Enlace estable']);
+const speed = computed(() => props.speed ?? 18);
 </script>
 
 <style scoped>

@@ -1,242 +1,135 @@
-# squad-summoner-v3
+<div align="center">
 
-[![Vite](https://img.shields.io/badge/Vite-frontend-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
-[![Vue 3](https://img.shields.io/badge/Vue-3-42b883?logo=vue.js&logoColor=white)](https://vuejs.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-backend-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-server-000000?logo=express&logoColor=white)](https://expressjs.com/)
-[![WhatsApp Bot](https://img.shields.io/badge/whatsapp--web.js-bot-25D366?logo=whatsapp&logoColor=white)](https://github.com/pedroslopez/whatsapp-web.js)
-[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-IA-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+<img src="docs/img/banner.svg" alt="Squad Summoner v3 — Protocolo de Invocación Táctica" width="100%">
 
-Protocolo de Invocación Táctica v3.0 — *"No mandes un simple '¿jugamos?'. Manda una orden de movilización orbital."*
+[![Probar online](https://img.shields.io/badge/▶_probar_online-GitHub_Pages-ffbd00?style=for-the-badge&labelColor=05080c)](https://bertmarti.github.io/squad-summoner-v3/)
+[![CI](https://github.com/BertMarti/squad-summoner-v3/actions/workflows/ci.yml/badge.svg)](https://github.com/BertMarti/squad-summoner-v3/actions/workflows/ci.yml)
+[![Licencia MIT](https://img.shields.io/badge/licencia-MIT-4db8ff?labelColor=0d121d)](LICENSE)
+[![Gemini](https://img.shields.io/badge/IA-Google_Gemini-4db8ff?labelColor=0d121d&logo=google&logoColor=white)](https://aistudio.google.com/apikey)
 
-## 📖 ¿Qué es Squad Summoner?
+*«No mandes un simple "¿jugamos?". Manda una orden de movilización orbital.»*
 
-**Squad Summoner** es una herramienta diseñada para gamers que necesitan **convencer a su escuadrón para jugar**.  
-Olvídate de los mensajes aburridos. Esta aplicación utiliza la IA de **Google Gemini** para generar *discursos épicos*, *propaganda militar* o *misiones de caza inmersivas* y enviarlas automáticamente a tu grupo de WhatsApp.
+### [▶ Abrir Squad Summoner](https://bertmarti.github.io/squad-summoner-v3/)
 
-## 🚀 Características Principales
-
-- 🎭 **Motor de Rol con IA**: Genera mensajes únicos basados en el lore de tus juegos favoritos:
-  - **Helldivers 2**: Propaganda satírica por la Democracia Gestionada.
-  - **Space Marine 2**: Decretos góticos del Administratum (Warhammer 40k).
-  - **Monster Hunter**: Llamadas a la caza desde la Cantina.
-  - **Modo Libre**: Tú eliges el juego, la IA pone el rol.
-- 📲 **Integración WhatsApp Real**: Backend dedicado que se conecta a tu cuenta y envía el mensaje al grupo elegido.
-- 💻 **Terminal Táctica**: Interfaz visual reactiva con temas Claro/Oscuro y estética Cyberpunk/Militar.
-- 🔒 **Gestión de API Key**: Usa tu propia Key de Gemini (guardada localmente) o configúrala en el entorno.
+</div>
 
 ---
 
-## 🛠️ Stack Tecnológico
+## 🎖️ ¿Qué es?
 
-### Diagrama de Arquitectura
+**Squad Summoner** es una pequeña web para gamers con un único objetivo: **conseguir que tu grupo se conecte a jugar**.
 
-```
-╔════════════════════════════════════════════════════════════════════════╗
-║                  🎖️  SQUAD SUMMONER v3.0 — STACK COMPLETO             ║
-╠════════════════════════════════════════════════════════════════════════╣
-║                                                                        ║
-║  ╔─────────────────────────────────────────────────────────────────╗  ║
-║  ║  🎨 FRONTEND (Centro de Mando)                                  ║  ║
-║  ╠─────────────────────────────────────────────────────────────────╣  ║
-║  ║  ✓ Vue 3 ················· Interfaz reactiva                    ║  ║
-║  ║  ✓ TypeScript ··········· Type-safe code                       ║  ║
-║  ║  ✓ Vite ················· Build tool ultrarrápido              ║  ║
-║  ║  ✓ Pinia ················ State management centralizado         ║  ║
-║  ║  ✓ CSS3 ················· Flex, Grid, Animations               ║  ║
-║  ╚─────────────────────────────────────────────────────────────────╝  ║
-║                                                                        ║
-║  ╔─────────────────────────────────────────────────────────────────╗  ║
-║  ║  🤖 IA & PROCESAMIENTO                                          ║  ║
-║  ╠─────────────────────────────────────────────────────────────────╣  ║
-║  ║  ✓ Google Gemini 2.5 ··· Generación de texto épico             ║  ║
-║  ║  ✓ Prompt Engineering ·· Tácticas de role-playing              ║  ║
-║  ║  ✓ Token Optimization ·· Eficiencia en costos de IA            ║  ║
-║  ╚─────────────────────────────────────────────────────────────────╝  ║
-║                                                                        ║
-║  ╔─────────────────────────────────────────────────────────────────╗  ║
-║  ║  🖥️  BACKEND (Torre de Comunicaciones)                           ║  ║
-║  ╠─────────────────────────────────────────────────────────────────╣  ║
-║  ║  ✓ Node.js ·············· Runtime JavaScript                    ║  ║
-║  ║  ✓ Express ·············· REST API & Routing                    ║  ║
-║  ║  ✓ whatsapp-web.js ····· Integración WhatsApp Bot             ║  ║
-║  ║  ✓ QR Code Terminal ···· Autenticación Dispositivos            ║  ║
-║  ║  ✓ Puppeteer ··········· Browser Automation                    ║  ║
-║  ╚─────────────────────────────────────────────────────────────────╝  ║
-║                                                                        ║
-║  ╔─────────────────────────────────────────────────────────────────╗  ║
-║  ║  💾 INFRAESTRUCTURA & UTILIDADES                                ║  ║
-║  ╠─────────────────────────────────────────────────────────────────╣  ║
-║  ║  ✓ Dotenv ············· Gestión de secretos (.env)             ║  ║
-║  ║  ✓ CORS ··············· Cross-Origin Requests                  ║  ║
-║  ║  ✓ Git ················ Version Control                         ║  ║
-║  ║  ✓ npm ················ Package Management                      ║  ║
-║  ╚─────────────────────────────────────────────────────────────────╝  ║
-║                                                                        ║
-╚════════════════════════════════════════════════════════════════════════╝
-```
+Eliges el juego, escribes quién tiene que venir y a qué hora, y la IA de **Google Gemini** redacta una convocatoria
+épica metida de lleno en el papel: propaganda de la Super Tierra, decretos del Administratum o un aviso de caza desde la
+cantina. Luego la copias o la mandas por WhatsApp con un toque.
 
-### 📊 Tabla Comparativa de Tecnologías
+## 🎯 ¿Para qué sirve?
 
-| Categoría | Tecnología | Versión | Propósito |
-|-----------|-----------|---------|----------|
-| **Frontend Framework** | Vue 3 | 3.x | Interfaz reactiva con Composition API |
-| **Lenguaje** | TypeScript | 5.x | Type-safe development |
-| **Build Tool** | Vite | Latest | Hot Module Replacement (HMR) |
-| **State Management** | Pinia | Latest | Stores centralizados (terminal, queue, mission) |
-| **Styling** | CSS3 + SCSS | - | Layouts modernos (Flex, Grid) |
-| **IA & LLM** | Google Gemini | 2.5 Flash | Generación de texto basada en prompts |
-| **Backend** | Node.js | v16+ | Runtime JavaScript |
-| **API Framework** | Express | 4.x | REST API & routing |
-| **WhatsApp Bot** | whatsapp-web.js | Latest | Automatización de mensajes |
-| **Authentication** | QR Code | - | Escaneo de dispositivos |
-| **Secrets Management** | Dotenv | Latest | Variables de entorno seguras |
-| **CORS** | CORS Middleware | Latest | Peticiones cross-origin seguras |
-| **Version Control** | Git | 2.x | Tracking de cambios |
+- Para dejar de escribir «¿jugamos esta noche?» y que nadie conteste.
+- Para que el grupo se ría (y se sienta un poco culpable si llega tarde).
+- Para tener un mensaje distinto cada vez, con el tono de cada juego:
 
-### 🔗 Flujo de Datos
+| Juego | Tono de la transmisión |
+|---|---|
+| 🏴 **Helldivers 2** | Propaganda máxima por la Democracia Gestionada. ¡LIBER-TÉ! |
+| ⚔️ **Space Marine 2** | Decretos góticos del Imperio: la impuntualidad es herejía. |
+| 🐾 **Monster Hunter** (World, Rise o Wilds) | La Encargada te espera en la cantina con las armas afiladas. |
+| 🖊️ **Personalizado** | Escribes el nombre de tu juego y la IA se mete en su papel. |
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│  Usuario selecciona juego + nombres + hora en la UI          │
-└──────────────────────┬───────────────────────────────────────┘
-                       │
-                       ▼
-┌──────────────────────────────────────────────────────────────┐
-│  Frontend (Vue 3) dispara acción → Pinia Store (terminal)    │
-└──────────────────────────────────┬───────────────────────────┘
-                                   │
-                                   ▼
-┌──────────────────────────────────────────────────────────────┐
-│  Backend (Express) recibe petición + contexto del juego      │
-└──────────────────────────────────┬───────────────────────────┘
-                                   │
-                                   ▼
-┌──────────────────────────────────────────────────────────────┐
-│  Gemini AI genera discurso épico con prompt tactics          │
-└──────────────────────────────────┬───────────────────────────┘
-                                   │
-                                   ▼
-┌──────────────────────────────────────────────────────────────┐
-│  whatsapp-web.js envía mensaje al grupo seleccionado         │
-└──────────────────────────────────┬───────────────────────────┘
-                                   │
-                                   ▼
-┌──────────────────────────────────────────────────────────────┐
-│  Terminal actualiza con logs en tiempo real (MissionLog)     │
-└──────────────────────────────────────────────────────────────┘
-```
+## 📸 Así se ve
 
-### Módulos Tácticos
+<p align="center">
+  <img src="docs/img/captura-escritorio.png" alt="Squad Summoner en el ordenador: selector de juegos, reclutas, hora y una transmisión de Space Marine 2 en el terminal" width="72%">
+  &nbsp;
+  <img src="docs/img/captura-movil.png" alt="Squad Summoner en el móvil: la transmisión generada con los botones Copiar y Compartir en WhatsApp" width="22%">
+</p>
 
-- **Frontend (Centro de Mando)**: Hecho con **Vue 3 + TypeScript**. Es la interfaz donde seleccionas el juego, los reclutas y la hora. Estado centralizado con **Pinia** stores.
-- **Backend (Torre de Comunicaciones)**: Servidor **Node.js + Express** usando **whatsapp-web.js**. Gestiona la conexión QR, generación de contenido con Gemini y envío de mensajes.
+## 🕹️ Cómo se usa, paso a paso
 
----
+1. **Abre la web**: <https://bertmarti.github.io/squad-summoner-v3/> (funciona en el ordenador y en el móvil).
+2. **01 · Selecciona el teatro**: toca la tarjeta de tu juego.
+3. **02 · Parámetros**: escribe los nombres de los reclutas (por ejemplo «Alex, Marta y Juan») y la hora.
+4. Pulsa **📢 GENERAR TRANSMISIÓN** y mira cómo aparece la orden en el terminal.
+5. Envíala:
+   - **📋 COPIAR** para pegarla donde quieras, o
+   - **🟢 COMPARTIR EN WHATSAPP**, que abre WhatsApp con el texto listo: solo eliges el grupo y envías.
 
-## ⚡ Guía de Despliegue Rápido
+¿Quieres otra versión? Vuelve a pulsar el botón: cada transmisión es distinta.
 
-### 1. Prerrequisitos
+## 🔑 Modo demo y tu API key
 
-- Node.js (v16 o superior).
-- Una API Key de **Google Gemini** (Google AI Studio).
-- Una cuenta de WhatsApp activa en tu móvil.
+- **Sin configurar nada** la web funciona en **modo demo**: usa textos de ejemplo escritos a mano, siempre marcados con
+  `🧪 [MODO DEMO · texto de ejemplo, no generado por IA]`. También puedes forzarlo con el botón **🧪 MODO DEMO**.
+- **Para que escriba la IA** necesitas una clave de Gemini (gratis):
+  1. Entra en [Google AI Studio](https://aistudio.google.com/apikey) con tu cuenta de Google y crea una *API key*.
+  2. En Squad Summoner pulsa **⚙️ CONFIGURAR API**, pégala y pulsa **GUARDAR**.
+- Tu clave **solo se guarda en tu navegador** y solo se envía a Google. La web publicada no lleva ninguna clave dentro.
+  Si quieres quitarla, abre la misma ventana y pulsa **BORRAR CLAVE**.
 
-### 2. Instalación y Configuración
+## 📲 Envío automático a tu grupo (opcional)
 
-Clona el repositorio y prepara los suministros:
+La web pública comparte por WhatsApp, pero eres tú quien pulsa «enviar». Si quieres que el mensaje llegue **solo** a un
+grupo concreto, Squad Summoner incluye una pequeña «torre de comunicaciones» que se ejecuta **en tu ordenador**:
+la arrancas, escaneas un código QR con WhatsApp (como en WhatsApp Web) y aparece el botón **📲 ENVIAR AL GRUPO**.
 
-```sh
-git clone https://github.com/tu-usuario/squad-summoner.git
-cd squad-summoner
-```
+Necesita algo de instalación; los pasos están en la [guía de desarrollo](docs/DESARROLLO.md#servidor-de-whatsapp).
 
-### A. Configurar el Frontend (Vue)
+## ❓ Preguntas frecuentes
 
-```sh
-npm install
-touch .env
-```
+<details>
+<summary><b>¿Es gratis?</b></summary>
 
-Edita el archivo `.env` en la raíz y añade tu Key de Google (opcional, también se puede poner desde la UI):
+Sí. La web es gratuita y de código abierto, y Google ofrece claves de Gemini con un uso gratuito más que suficiente para
+convocar a tu escuadrón. En modo demo no necesitas ni eso.
+</details>
 
-```env
-VITE_GOOGLE_API_KEY=tu_api_key_aqui
-```
+<details>
+<summary><b>¿Mi API key está segura?</b></summary>
 
-### B. Configurar el Backend (Servidor WhatsApp)
+Se guarda solo en el almacenamiento local de tu navegador y viaja únicamente a los servidores de Google para generar el
+texto. Nadie más la ve. Aun así, no la uses en ordenadores compartidos y bórrala con **BORRAR CLAVE** si hace falta.
+</details>
 
-El backend suele vivir en una carpeta separada (ej. `server`) o en la raíz si es monorepo. Asumiendo que `index.js` es tu servidor:
+<details>
+<summary><b>¿Por qué mi mensaje pone «MODO DEMO»?</b></summary>
 
-```sh
-npm install express whatsapp-web.js qrcode-terminal cors dotenv
-```
+Porque no hay ninguna clave configurada (o pulsaste el botón de demo). Configura tu API key para que el texto lo escriba
+la IA y sea distinto cada vez.
+</details>
 
-Añade el ID de tu grupo de WhatsApp al `.env` (el backend puede leer el mismo `.env` o uno propio):
+<details>
+<summary><b>¿Puede WhatsApp bloquear mi cuenta?</b></summary>
 
-```env
-WHATSAPP_GROUP_ID=123456789-group@g.us
-PORT=3000
-```
+Compartir con el botón 🟢 es como enviar un mensaje normal. El envío automático usa una librería **no oficial** que
+controla WhatsApp Web: úsala con moderación, en tus propios grupos y sin hacer spam.
+</details>
 
-> 💡 Para saber el ID del grupo, el servidor hará log de los chats al iniciar.
+<details>
+<summary><b>¿Funciona en el móvil?</b></summary>
 
----
+Sí. La web se adapta a pantallas pequeñas y el botón de compartir abre directamente la app de WhatsApp.
+</details>
 
-## 🎮 Manual de Operaciones
+<details>
+<summary><b>Mi juego no está en la lista, ¿qué hago?</b></summary>
 
-### 1. Iniciar la Torre de Comunicaciones (Backend)
+Elige **Personalizado** y escribe su nombre: la IA hará de narrador de ese juego.
+</details>
 
-```sh
-node index.js
-```
+<details>
+<summary><b>¿Hay modo claro?</b></summary>
 
-- La primera vez, verás un **Código QR** en la terminal.  
-- Escanéalo con tu WhatsApp (Dispositivos vinculados).  
-- Una vez veas `✅ Cliente WhatsApp LISTO`, el sistema está en línea.
+Sí, con el botón ☀️ de arriba a la derecha. La web recuerda tu elección.
+</details>
 
-### 2. Lanzar el Centro de Mando (Frontend)
+## 🛡️ Aviso legal
 
-```sh
-npm run dev
-```
-
-- Abre el navegador en la URL que te indique (ej. `http://localhost:5173`).
-
-### 3. Ejecutar Misión
-
-1. Selecciona el **Teatro de Operaciones** (Juego).  
-2. Introduce los **Nombres de los Reclutas** y la **Hora de Inserción**.  
-3. Pulsa **"📢 GENERAR TRANSMISIÓN"**.  
-4. Observa cómo la IA redacta la orden en la terminal.  
-5. El mensaje se enviará automáticamente a tu grupo de WhatsApp.
-
----
-
-## 📂 Estructura de Archivos
-
-```txt
-/
-├── src/
-│   ├── components/
-│   │   ├── GameSelector.vue   # Selección visual de juegos
-│   │   ├── TerminalOutput.vue # Pantalla de texto retro
-│   │   └── ...
-│   ├── composables/
-│   │   └── useGemini.ts       # Lógica de IA y Prompts
-│   └── App.vue                # Núcleo de la aplicación
-├── index.js                   # Servidor Express & Bot WhatsApp
-├── .env                       # Secretos (No subir a GitHub)
-└── package.json
-```
-
----
-
-## 🛡️ Aviso Legal
-
-Este proyecto utiliza librerías de terceros para la automatización de WhatsApp. Úsalo con responsabilidad y evita el spam.  
+Este proyecto usa librerías de terceros para la automatización de WhatsApp. Úsalo con responsabilidad y evita el spam.
 El Administratum no se hace responsable de bloqueos por parte de Meta.
 
-**SQUAD SUMMONER** no está afiliado con Arrowhead Game Studios, Capcom o Games Workshop.
+**SQUAD SUMMONER** no está afiliado con Arrowhead Game Studios, Capcom ni Games Workshop. Los nombres de los juegos
+pertenecen a sus dueños; las ilustraciones de la web son propias.
 
 ---
+
+<sub>¿Quieres instalarla o colaborar? Mira la [guía de desarrollo](docs/DESARROLLO.md). · Licencia [MIT](LICENSE) © BertMarti</sub>

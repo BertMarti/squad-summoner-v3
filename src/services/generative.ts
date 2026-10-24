@@ -1,4 +1,4 @@
-import { Mission } from '@/types'
+import type { Mission } from '@/types'
 import { useGemini } from '@/composables/useGemini'
 
 export async function generateText(apiKey: string, mission: Mission) {

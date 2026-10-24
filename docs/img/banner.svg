@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300" role="img" aria-labelledby="t d">
+  <title id="t">Squad Summoner v3</title>
+  <desc id="d">Banner de Squad Summoner: Protocolo de Invocación Táctica v3, con estética de terminal militar en negro, amarillo y cian.</desc>
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#1f2a3d" stroke-width="1" opacity=".55"/>
+    </pattern>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#05080c" stop-opacity="0"/>
+      <stop offset=".55" stop-color="#05080c" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#05080c" stop-opacity=".95"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".14" cy=".5" r=".35">
+      <stop offset="0" stop-color="#ffbd00" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#ffbd00" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="300" rx="18" fill="#05080c"/>
+  <rect width="1200" height="300" rx="18" fill="url(#grid)"/>
+  <rect width="1200" height="300" rx="18" fill="url(#glow)"/>
+  <rect width="1200" height="300" rx="18" fill="url(#fade)"/>
+  <!-- marco HUD -->
+  <g fill="none" stroke="#ffbd00" stroke-width="3" stroke-linecap="square">
+    <path d="M24 64V24h40M1136 24h40v40M1176 236v40h-40M64 276H24v-40"/>
+  </g>
+  <!-- icono de terminal -->
+  <g transform="translate(92 82)">
+    <rect width="136" height="136" rx="22" fill="#0d121d" stroke="#ffbd00" stroke-width="3"/>
+    <path d="M30 44l32 24-32 24" fill="none" stroke="#ffbd00" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M74 96h34" stroke="#ffbd00" stroke-width="11" stroke-linecap="round"/>
+  </g>
+  <!-- radar -->
+  <g transform="translate(1058 150) scale(.85)" fill="none" stroke="#4db8ff" opacity=".55">
+    <circle r="88" stroke-width="2"/>
+    <circle r="58" stroke-width="1.5" opacity=".7"/>
+    <circle r="28" stroke-width="1.5" opacity=".7"/>
+    <path d="M-88 0h176M0-88v176" stroke-width="1" opacity=".5"/>
+    <path d="M0 0L62-62" stroke-width="3" stroke="#ffbd00"/>
+    <circle cx="34" cy="-40" r="5" fill="#ffbd00" stroke="none"/>
+    <circle cx="-44" cy="22" r="4" fill="#4db8ff" stroke="none"/>
+    <circle cx="20" cy="52" r="4" fill="#4db8ff" stroke="none"/>
+  </g>
+  <!-- textos -->
+  <text x="268" y="148" font-family="'Chakra Petch','Segoe UI',Arial,sans-serif" font-size="62" font-weight="700" letter-spacing="3" fill="#ffffff">SQUAD <tspan fill="#ffbd00">SUMMONER</tspan></text>
+  <text x="272" y="192" font-family="'Courier New',monospace" font-size="22" font-weight="700" letter-spacing="5" fill="#4db8ff">PROTOCOLO DE INVOCACIÓN TÁCTICA · v3</text>
+  <text x="272" y="232" font-family="'Courier New',monospace" font-size="18" fill="#8a94a6">&gt;_ convoca a tu escuadrón con IA · comparte por WhatsApp</text>
+  <rect x="272" y="246" width="12" height="4" fill="#ffbd00"/>
+</svg>

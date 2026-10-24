@@ -40,3 +40,10 @@ node_modules
 .DS_Store
 dist
 server/node_modules
+# Secretos y sesiones (nunca a git)
+.env.*
+!.env.example
+server/.wwebjs_auth/
+server/.wwebjs_cache/
+.wwebjs_auth/
+.wwebjs_cache/

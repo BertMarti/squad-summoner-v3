@@ -1,26 +1,29 @@
 <template>
   <section class="comm-panel">
     <div class="row">
-      <button class="btn" @click="$emit('toggle-tts')">🔊 Toggle TTS</button>
-      <button class="btn" @click="$emit('mute-toggle')">🔇 Mute</button>
-      <button class="btn" @click="$emit('refresh-ticker')">🔁 Refresh Ticker</button>
+      <button type="button" class="btn" aria-label="Alternar sonido" @click="$emit('toggle-tts')">🔊 Sonido</button>
+      <button type="button" class="btn" aria-label="Silenciar" @click="$emit('mute-toggle')">🔇 Silenciar</button>
+      <button type="button" class="btn" @click="$emit('refresh-ticker')">🔁 Actualizar avisos</button>
     </div>
     <div class="row small">
-      <span class="status">Status: <strong>{{ connected ? 'ONLINE' : 'OFFLINE' }}</strong></span>
-      <span class="lat">Latency: {{ latency }}ms</span>
+       <span class="status">Estado: <strong>{{ connected ? 'EN LÍNEA' : 'SIN CONEXIÓN' }}</strong></span>
+       <span class="lat">Latencia: {{ latency }} ms</span>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 const props = defineProps<{ connected?: boolean }>();
-const connected = props.connected ?? true;
+defineEmits<{ 'toggle-tts': []; 'mute-toggle': []; 'refresh-ticker': [] }>();
+const connected = computed(() => props.connected ?? true);
 const latency = ref(42);
+let timer: number | undefined;
 onMounted(() => {
-  // small simulation
-  setInterval(() => latency.value = 20 + Math.floor(Math.random() * 120), 2000);
+  // Simulación decorativa de latencia
+  timer = window.setInterval(() => (latency.value = 20 + Math.floor(Math.random() * 120)), 2000);
 });
+onUnmounted(() => window.clearInterval(timer));
 </script>
 
 <style scoped>

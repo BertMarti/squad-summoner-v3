@@ -4,6 +4,45 @@ Todos los cambios notables del proyecto están documentados en este archivo.
 
 ---
 
+## [3.1.0] — 2026-10-24 (Seguridad, demo web y accesibilidad)
+
+### 🔒 Seguridad
+- `npm audit fix`: la web pasa de 12 vulnerabilidades (1 crítica, 9 altas) a 0; en el servidor se corrigen express/qs/ws/
+  path-to-regexp/proxy-addr/tar-fs (quedan 11 altas transitivas de puppeteer vía whatsapp-web.js, ver MEMORY.md).
+- Servidor: CORS con lista blanca (`ALLOWED_ORIGINS`), escucha en `127.0.0.1`, validación del mensaje (texto, sin
+  caracteres de control salvo saltos de línea, máx. 4000), límite de 16 kB, 10 envíos/minuto, cabeceras de seguridad, errores sin trazas,
+  validación de `WHATSAPP_GROUP_ID` y `GET /health`.
+- CSP en el HTML compilado; el build de Pages falla si hay `VITE_GOOGLE_API_KEY`; `.gitignore` cubre `.env.*` y la sesión
+  de WhatsApp; `.env.example` documentado; `SECURITY.md`.
+
+### 🐛 Correcciones
+- La IA recibía siempre la misión vacía (el formulario escribía en un estado local y se generaba desde el store).
+- `npm run build` fallaba en `vue-tsc` por `src/components/_archived` (eliminado) y un import de tipo.
+- Paneles decorativos con props no reactivas y un `setInterval` sin limpiar.
+
+### ✨ Novedades
+- **Modo demo** sin clave ni red, con textos de ejemplo marcados `🧪 [MODO DEMO …]`.
+- **Compartir en WhatsApp** con `wa.me` (sin servidor). «Enviar al grupo» solo en local.
+- Modelo de Gemini configurable (`VITE_GEMINI_MODEL`, por defecto `gemini-2.5-flash`) y errores de la IA en español.
+- Versión web publicada en GitHub Pages: <https://bertmarti.github.io/squad-summoner-v3/>.
+
+### ♿ Interfaz
+- Sin `alert()`: regiones de estado accesibles y estados vacío/cargando/error en el terminal.
+- Modal de API key accesible (diálogo, Escape, foco, «Borrar clave», enlace a AI Studio).
+- Tarjetas de juego como botones con `aria-pressed` e ilustraciones SVG propias (adiós a las imágenes de Steam enlazadas).
+- Foco visible, `prefers-reduced-motion`, contraste AA en modo claro, diseño sin desbordes a 390 px, textos en español.
+- Se quita el botón de TTS, que no estaba conectado.
+
+### 🧪 Calidad
+- Lógica extraída a `src/lib/` y 49 pruebas Vitest 4 (web y servidor).
+- CI (gitleaks, tipos, pruebas, builds, audit), workflow de Pages y Dependabot semanal.
+
+### 📝 Documentación
+- README para usuarios con banner propio y capturas; lo técnico en `docs/DESARROLLO.md`.
+- `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`, `PLAN.md`, subagentes y skills en `.claude/`. Licencia MIT.
+
+---
+
 ## [3.0.0] — 2025-12-10 (Refactor & Restructure)
 
 ### 🔥 **Cambios Mayores**
