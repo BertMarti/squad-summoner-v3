@@ -10,16 +10,22 @@ export type ApiKeySource = 'env' | 'recordada' | 'sesion' | 'ninguna'
  * API key de Gemini del usuario.
  * - Por defecto vive SOLO en memoria (se olvida al cerrar o recargar la pestaña).
  * - Solo se guarda en localStorage (con prefijo) si la persona marca «Recordar en este navegador».
- * - La clave antigua sin prefijo (v3.1.0) se carga en memoria una vez y se borra del almacenamiento compartido.
+ * - La clave antigua sin prefijo (v3.1.0) se respeta como «recordada»: se mueve a la clave con prefijo
+ *   y se borra la antigua; la interfaz avisa una vez del riesgo y de cómo dejar de recordarla.
  */
 export const useApiKeyStore = defineStore('apiKey', () => {
-  const remembered = readStored(STORAGE_KEYS.apiKey)?.trim() || ''
+  let remembered = readStored(STORAGE_KEYS.apiKey)?.trim() || ''
   const legacy = takeLegacyApiKey()
+  /** `true` si se ha migrado la clave antigua: la interfaz avisa una vez del riesgo de recordarla. */
+  let migrated = false
+  if (legacy && !remembered && writeStored(STORAGE_KEYS.apiKey, legacy)) {
+    remembered = legacy
+    migrated = true
+  }
 
   const userKey = ref(remembered || legacy)
   const remember = ref(Boolean(remembered))
-  /** `true` si se ha recuperado la clave antigua: la interfaz avisa de que ya no se guarda sola. */
-  const migratedLegacy = ref(Boolean(legacy) && !remembered)
+  const migratedLegacy = ref(migrated)
 
   const effectiveKey = computed(() => ENV_API_KEY || userKey.value)
   const hasKey = computed(() => Boolean(effectiveKey.value))

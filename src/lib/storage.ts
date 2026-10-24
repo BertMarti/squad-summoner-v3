@@ -57,8 +57,8 @@ export function removeStored(name: StorageName): void {
 }
 
 /**
- * Migra la clave de la v3.1.0 (guardada sin prefijo y sin preguntar): la devuelve para usarla
- * en memoria durante esta visita y la BORRA del almacenamiento compartido.
+ * Lee y BORRA la clave de la v3.1.0 (guardada sin prefijo). Quien la tenía guardada había elegido
+ * guardarla, así que el store la vuelve a guardar con prefijo como «recordada» (y avisa del riesgo).
  */
 export function takeLegacyApiKey(): string {
   try {
