@@ -15,7 +15,9 @@
     "type-check": "vue-tsc --build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "server": "npm --prefix server start"
+    "server": "npm --prefix server start",
+    "setup": "node scripts/setup.mjs",
+    "server:grupos": "npm --prefix server run grupos"
   },
   "dependencies": {
     "@fontsource/chakra-petch": "^5.3.0",
