@@ -1,4 +1,4 @@
-import { GoogleGenAI, type Fetch } from '@google/genai'
+import type { Fetch, GoogleGenAI } from '@google/genai'
 import { friendlyGeminiError } from './geminiErrors'
 
 /**
@@ -18,7 +18,9 @@ export interface GeminiOptions {
   timeoutMs?: number
 }
 
-function createClient(apiKey: string, options: GeminiOptions): GoogleGenAI {
+/** El SDK (~400 kB) se carga solo al usar la IA: la primera visita y el modo demo no lo descargan. */
+async function createClient(apiKey: string, options: GeminiOptions): Promise<GoogleGenAI> {
+  const { GoogleGenAI } = await import('@google/genai')
   return new GoogleGenAI({
     apiKey,
     httpOptions: { timeout: options.timeoutMs ?? GEMINI_TIMEOUT_MS, ...(options.fetch ? { fetch: options.fetch } : {}) },
@@ -31,7 +33,7 @@ export async function generateWithGemini(apiKey: string, prompt: string, options
   if (!key) throw new Error('Falta la API key de Gemini. Pulsa «⚙️ CONFIGURAR API» o usa el modo demo.')
   let text: string | undefined
   try {
-    const response = await createClient(key, options).models.generateContent({ model: options.model, contents: prompt })
+    const response = await (await createClient(key, options)).models.generateContent({ model: options.model, contents: prompt })
     text = response.text
   } catch (error: unknown) {
     throw new Error(friendlyGeminiError(error, options.model))
@@ -51,7 +53,7 @@ export async function validateApiKey(apiKey: string, options: GeminiOptions): Pr
   const key = apiKey.trim()
   if (!key) return { ok: false, message: 'Pega tu clave de Gemini.' }
   try {
-    await createClient(key, options).models.get({ model: options.model })
+    await (await createClient(key, options)).models.get({ model: options.model })
     return { ok: true }
   } catch (error: unknown) {
     return { ok: false, message: friendlyGeminiError(error, options.model) }

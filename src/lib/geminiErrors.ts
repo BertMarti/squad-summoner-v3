@@ -84,7 +84,7 @@ export function classifyGeminiError(error: unknown): GeminiErrorInfo {
 export function geminiErrorMessage(info: GeminiErrorInfo, model: string): string {
   switch (info.kind) {
     case 'clave':
-      return 'La API key de Gemini no es válida o no tiene permisos. Ábrela con «⚙️ CONFIGURAR API», cópiala otra vez desde Google AI Studio y pulsa «PROBAR CLAVE».'
+      return 'La API key de Gemini no es válida o no tiene permisos. Cópiala otra vez desde Google AI Studio, pégala en «⚙️ CONFIGURAR API» y compruébala con «PROBAR CLAVE».'
     case 'limite':
       return 'Has superado el límite de uso gratuito de Gemini. Espera un minuto y vuelve a intentarlo (o usa el modo demo mientras tanto).'
     case 'conexion':
