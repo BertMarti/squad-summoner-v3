@@ -56,23 +56,43 @@ cantina. Luego la copias o la mandas por WhatsApp con un toque.
 
 ¿Quieres otra versión? Vuelve a pulsar el botón: cada transmisión es distinta.
 
+La primera vez verás una guía de bienvenida con tres pasos. Puedes volver a abrirla cuando quieras con **❓ AYUDA** en la
+cabecera. En cada sección encontrarás también un botón **?** con ayuda contextual.
+
 ## 🔑 Modo demo y tu API key
 
 - **Sin configurar nada** la web funciona en **modo demo**: usa textos de ejemplo escritos a mano, siempre marcados con
   `🧪 [MODO DEMO · texto de ejemplo, no generado por IA]`. También puedes forzarlo con el botón **🧪 MODO DEMO**.
 - **Para que escriba la IA** necesitas una clave de Gemini (gratis):
   1. Entra en [Google AI Studio](https://aistudio.google.com/apikey) con tu cuenta de Google y crea una *API key*.
-  2. En Squad Summoner pulsa **⚙️ CONFIGURAR API**, pégala y pulsa **GUARDAR**.
-- Tu clave **solo se guarda en tu navegador** y solo se envía a Google. La web publicada no lleva ninguna clave dentro.
-  Si quieres quitarla, abre la misma ventana y pulsa **BORRAR CLAVE**.
+  2. En Squad Summoner pulsa **⚙️ CONFIGURAR API**, pégala y pulsa **PROBAR CLAVE**.
+  3. Si la comprobación es correcta, pulsa **GUARDAR**. La casilla **Recordar en este navegador** está desmarcada por
+     defecto.
+- Sin marcar esa casilla, la clave vive solo en memoria y se olvida al cerrar o recargar la web. Si decides marcarla, lee
+  el aviso: todas las webs de `bertmarti.github.io` comparten el almacenamiento del navegador. Puedes revocar la clave en
+  [Google AI Studio](https://aistudio.google.com/apikey) y borrarla desde **⚙️ CONFIGURAR API** → **BORRAR CLAVE**.
+- La clave se envía directamente a Google; la web publicada no lleva ninguna clave dentro.
 
 ## 📲 Envío automático a tu grupo (opcional)
 
 La web pública comparte por WhatsApp, pero eres tú quien pulsa «enviar». Si quieres que el mensaje llegue **solo** a un
-grupo concreto, Squad Summoner incluye una pequeña «torre de comunicaciones» que se ejecuta **en tu ordenador**:
-la arrancas, escaneas un código QR con WhatsApp (como en WhatsApp Web) y aparece el botón **📲 ENVIAR AL GRUPO**.
+grupo concreto, puedes ejecutar la torre de comunicaciones en tu ordenador:
 
-Necesita algo de instalación; los pasos están en la [guía de desarrollo](docs/DESARROLLO.md#servidor-de-whatsapp).
+1. Instala [Node.js](https://nodejs.org/) (versión LTS) y descarga el proyecto: en GitHub, botón verde **Code → Download ZIP**
+   (y descomprímelo), o `git clone https://github.com/BertMarti/squad-summoner-v3.git`.
+2. Abre una terminal en la carpeta del proyecto y ejecuta `npm run setup`. Responde **s** a «¿Quieres configurar el envío
+   automático…?»: el asistente comprueba lo que falta, instala lo necesario y prepara la configuración.
+3. Ejecuta `npm run server:grupos`. Escanea el QR y elige el grupo; el ID se guardará automáticamente.
+4. Para escanearlo: WhatsApp → Ajustes → Dispositivos vinculados → Vincular un dispositivo.
+5. Arranca la torre con `npm run server` y déjala abierta. En **otra** terminal ejecuta `npm run dev` y abre
+   <http://localhost:5173>: junto a cada transmisión aparecerá **📲 ENVIAR AL GRUPO**.
+
+La sesión queda en tu ordenador. El botón **🟢 COMPARTIR EN WHATSAPP** sigue funcionando sin instalar el servidor.
+
+## 🧭 Lo que tienes que hacer tú
+
+- Consigue tu clave gratuita en [Google AI Studio](https://aistudio.google.com/apikey) si quieres usar la IA; si no, usa el modo demo.
+- Si instalas el servidor en una Raspberry Pi, instala antes Chromium con `sudo apt install chromium`.
 
 ## ❓ Preguntas frecuentes
 
@@ -86,8 +106,9 @@ convocar a tu escuadrón. En modo demo no necesitas ni eso.
 <details>
 <summary><b>¿Mi API key está segura?</b></summary>
 
-Se guarda solo en el almacenamiento local de tu navegador y viaja únicamente a los servidores de Google para generar el
-texto. Nadie más la ve. Aun así, no la uses en ordenadores compartidos y bórrala con **BORRAR CLAVE** si hace falta.
+Por defecto vive solo en memoria y se olvida al cerrar o recargar. Si marcas **Recordar en este navegador**, se guarda en el
+almacenamiento local: todas las webs de `bertmarti.github.io` comparten ese origen. Solo se envía a Google para generar el
+texto. No la guardes en ordenadores compartidos, puedes revocarla en AI Studio y borrarla con **BORRAR CLAVE**.
 </details>
 
 <details>
