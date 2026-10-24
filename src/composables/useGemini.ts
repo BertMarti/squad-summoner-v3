@@ -1,8 +1,8 @@
 import { ref } from 'vue'
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { Mission } from '@/types'
 import { GEMINI_MODEL } from '@/config'
-import { buildAudioPrompt, buildPrompt } from '@/lib/prompts'
+import { buildPrompt } from '@/lib/prompts'
+import { generateWithGemini, validateApiKey } from '@/lib/gemini'
 
 // Las imágenes se sirven desde la propia app (public/games) para no depender de CDNs externos.
 const asset = (file: string) => `${import.meta.env.BASE_URL}games/${file}`
@@ -15,65 +15,21 @@ export const GAMES = [
   { id: 'custom', title: 'Personalizado', icon: '🖊️', img: asset('custom.svg') },
 ] as const
 
-/** Traduce los errores típicos de la API de Gemini a mensajes claros. */
-export function friendlyGeminiError(error: unknown): string {
-  const msg = error instanceof Error ? error.message : String(error ?? '')
-  // El SDK formatea así: «Error fetching from <url>:generateContent: [404 Not Found] …». La URL contiene
-  // «generateContent», así que los patrones van anclados al código entre corchetes o a palabras clave exactas.
-  if (/\[40[13] |API_KEY_INVALID|PERMISSION_DENIED/.test(msg)) return 'La API key de Gemini no es válida o no tiene permisos.'
-  if (/\[429 |RESOURCE_EXHAUSTED|\bquota\b|rate limit/i.test(msg)) return 'Has superado el límite de uso de Gemini. Espera un poco y vuelve a intentarlo.'
-  if (/Failed to fetch|NetworkError|Load failed/.test(msg)) return 'No hay conexión con Gemini. Revisa tu conexión a internet.'
-  if (/\[404 |NOT_FOUND/.test(msg)) return `El modelo «${GEMINI_MODEL}» no está disponible para tu clave.`
-  if (/\[503 /.test(msg)) return 'Gemini está saturado ahora mismo. Vuelve a intentarlo en unos minutos.'
-  return msg || 'Error al conectar con la IA.'
-}
-
 export function useGemini() {
   const isGenerating = ref(false)
 
-  // --- GENERAR TEXTO (WHATSAPP) ---
+  /** Genera la transmisión de WhatsApp. Lanza `Error` con un mensaje en español. */
   const generateText = async (apiKey: string, data: Partial<Mission>) => {
-    if (!apiKey) throw new Error('Falta la API key de Gemini.')
-
     isGenerating.value = true
     try {
-      const genAI = new GoogleGenerativeAI(apiKey)
-      const model = genAI.getGenerativeModel({ model: GEMINI_MODEL })
-      const result = await model.generateContent(buildPrompt(data))
-      const text = result.response.text().trim()
-      if (!text) throw new Error('La IA ha devuelto una respuesta vacía.')
-      return text
-    } catch (error: unknown) {
-      throw new Error(friendlyGeminiError(error))
+      return await generateWithGemini(apiKey, buildPrompt(data), { model: GEMINI_MODEL })
     } finally {
       isGenerating.value = false
     }
   }
 
-  // --- RESUMIR PARA AUDIO (Script de Radio) ---
-  const summarizeForAudio = async (apiKey: string, fullText: string, gameId: string) => {
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: GEMINI_MODEL })
-    const result = await model.generateContent(buildAudioPrompt(fullText, gameId))
-    return result.response.text()
-  }
+  /** Comprueba la clave contra Google (sin gastar cuota de generación). */
+  const checkApiKey = (apiKey: string) => validateApiKey(apiKey, { model: GEMINI_MODEL })
 
-  // --- GENERAR AUDIO (TTS) ---
-  const generateAudio = async (apiKey: string, textToSpeak: string) => {
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey)
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-tts' })
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: textToSpeak }] }],
-      })
-      const audioData = result.response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data
-      if (audioData) return audioData
-      throw new Error('No se recibieron datos de audio válidos del modelo.')
-    } catch (err) {
-      console.error('Error TTS:', err)
-      return null
-    }
-  }
-
-  return { isGenerating, generateText, summarizeForAudio, generateAudio, GAMES }
+  return { isGenerating, generateText, checkApiKey, GAMES }
 }
