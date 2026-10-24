@@ -80,8 +80,8 @@ describe('npmCommand (npm run setup en cualquier sistema)', () => {
       .toEqual({ cmd: 'C:\\node\\node.exe', prefix: ['C:\\node\\node_modules\\npm\\bin\\npm-cli.js'], shell: false })
   })
   it('sin npm_execpath: npm, con shell solo en Windows (npm.cmd sin shell da EINVAL)', () => {
-    expect(npmCommand({ npmExecPath: undefined, platform: 'win32' })).toEqual({ cmd: 'npm', prefix: [], shell: true })
-    expect(npmCommand({ npmExecPath: undefined, platform: 'linux' })).toEqual({ cmd: 'npm', prefix: [], shell: false })
+    expect(npmCommand({ npmExecPath: '', platform: 'win32' })).toEqual({ cmd: 'npm', prefix: [], shell: true })
+    expect(npmCommand({ npmExecPath: '', platform: 'linux' })).toEqual({ cmd: 'npm', prefix: [], shell: false })
   })
   it('ignora npm_execpath de otros gestores (yarn/pnpm)', () => {
     expect(npmCommand({ npmExecPath: '/usr/lib/node_modules/pnpm/bin/pnpm.cjs', platform: 'linux' }).cmd).toBe('npm')
