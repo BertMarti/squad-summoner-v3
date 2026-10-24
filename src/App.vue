@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useGemini } from './composables/useGemini';
 import { useMissionStore } from '@/stores/mission';
 import { useTerminalStore } from '@/stores/terminal';
 import { useProcessQueue } from '@/stores/processQueue';
-import { ENV_API_KEY, IS_STATIC_DEMO, USER_API_KEY_STORAGE } from '@/config';
+import { IS_STATIC_DEMO } from '@/config';
+import { readStored, writeStored, STORAGE_KEYS } from '@/lib/storage';
+import { useApiKeyStore } from '@/stores/apiKey';
 import { generateDemoMessage } from '@/lib/demo';
 import { isSendableMessage } from '@/lib/whatsapp';
 import { sendToServer } from '@/services/whatsappServer';
@@ -16,20 +18,22 @@ import GameSelector from '@/components/panels/GameSelector.vue';
 import MissionControls from '@/components/panels/MissionControls.vue';
 import TerminalOutput from '@/components/panels/TerminalOutput.vue';
 import ConfigModal from './components/ConfigModal.vue';
+import WelcomeGuide from './components/WelcomeGuide.vue';
 import { MissionLog, IntelTicker, SquadRoster, CommPanel, ActionQueue, ProcessManager, MiniRadar } from '@/components/lore'
 
 // --- ESTADO TEMA ---
 const isDarkMode = ref(true);
 
 onMounted(() => {
-  const saved = localStorage.getItem('theme');
+  const saved = readStored(STORAGE_KEYS.theme);
   isDarkMode.value = saved ? saved === 'dark' : true;
   applyTheme();
+  legacyNotice.value = apiKeyStore.migratedLegacy;
 });
 
 const toggleTheme = () => {
   isDarkMode.value = !isDarkMode.value;
-  localStorage.setItem('theme', isDarkMode.value ? 'dark' : 'light');
+  writeStored(STORAGE_KEYS.theme, isDarkMode.value ? 'dark' : 'light');
   applyTheme();
 };
 
@@ -46,13 +50,12 @@ const terminalError = ref('');
 const statusMessage = ref('');
 const statusError = ref('');
 const gameError = ref('');
-const userApiKey = ref(localStorage.getItem(USER_API_KEY_STORAGE) || '');
 const headerRef = ref<InstanceType<typeof AppHeader> | null>(null);
-
-const getEffectiveApiKey = () => {
-  if (ENV_API_KEY) return ENV_API_KEY;
-  return userApiKey.value;
-};
+const outputRef = ref<InstanceType<typeof TerminalOutput> | null>(null);
+const helpOpen = ref(false);
+const welcomeVisible = ref(readStored(STORAGE_KEYS.welcomeSeen) !== '1');
+const legacyNotice = ref(false);
+const apiKeyStore = useApiKeyStore();
 
 const { generateText, isGenerating } = useGemini();
 
@@ -102,7 +105,7 @@ const handleRun = async () => {
     terminalStore.addLog('⚠️ Generación bloqueada: falta elegir juego');
     return;
   }
-  const apiKey = getEffectiveApiKey();
+  const apiKey = apiKeyStore.effectiveKey;
   terminalError.value = '';
   terminalText.value = '';
   terminalStore.addLog(apiKey ? '📡 Generación solicitada a Gemini' : '🧪 Generación de ejemplo sin API key');
@@ -146,10 +149,21 @@ const handleSendWhatsapp = async () => {
   }
 };
 
-const saveUserConfig = (key: string) => {
-  userApiKey.value = key;
+const saveUserConfig = () => {
   showConfig.value = false;
-  statusMessage.value = key ? 'API key guardada en este navegador.' : 'API key borrada.';
+  statusMessage.value = apiKeyStore.hasKey
+    ? (apiKeyStore.source === 'recordada' ? 'Clave recordada en este navegador.' : 'Clave lista para esta visita.')
+    : 'Clave borrada.';
+  headerRef.value?.focusConfig();
+};
+
+const runGuideDemo = async () => {
+  if (!missionStore.mission.game) missionStore.update({ game: 'hd2' });
+  if (!missionStore.mission.recruits) missionStore.update({ recruits: 'Alex, Marta y Juan' });
+  if (!missionStore.mission.time) missionStore.update({ time: '21:30' });
+  handleRunDemo();
+  await nextTick();
+  outputRef.value?.focus();
 };
 
 const closeConfig = () => {
@@ -163,9 +177,14 @@ const closeConfig = () => {
     <div v-if="IS_STATIC_DEMO" class="demo-banner" role="note">Versión web de demostración: aquí puedes generar con tu propia API key de Gemini o en modo demo y compartir por WhatsApp. El envío automático al grupo necesita el servidor local (<a href="https://github.com/BertMarti/squad-summoner-v3#readme" target="_blank" rel="noopener noreferrer">ver cómo</a>).</div>
     <AppHeader ref="headerRef"
       :is-dark="isDarkMode" 
+      :help-open="helpOpen"
       @toggleTheme="toggleTheme" 
       @openConfig="showConfig = true" 
+      @toggleHelp="helpOpen = !helpOpen"
     />
+
+    <div v-if="legacyNotice" class="status-region" role="status">Tu clave de Gemini sigue recordada en este navegador. Ojo: otras webs de bertmarti.github.io comparten este almacenamiento. Si prefieres no guardarla, abre ⚙️ CONFIGURAR API y desmarca «Recordar en este navegador».</div>
+    <WelcomeGuide v-if="welcomeVisible || helpOpen" @demo="runGuideDemo" @config="showConfig = true" @close="welcomeVisible = false; helpOpen = false" />
 
     <main class="main-grid">
       <section class="left-col">
@@ -173,14 +192,16 @@ const closeConfig = () => {
         <MissionControls 
           :loading="isGenerating"
           :sending="isSending"
-          :has-api-key="Boolean(getEffectiveApiKey())"
+          :has-api-key="apiKeyStore.hasKey"
+          :key-source="apiKeyStore.source"
           @generate="handleRun"
           @run-demo="handleRunDemo"
+          @open-config="showConfig = true"
         />
       </section>
 
       <section class="right-col">
-        <TerminalOutput :output="terminalText" :loading="isGenerating" :error="terminalError" :sending="isSending" :static-demo="IS_STATIC_DEMO" @send="handleSendWhatsapp" />
+       <TerminalOutput ref="outputRef" :output="terminalText" :loading="isGenerating" :error="terminalError" :sending="isSending" :static-demo="IS_STATIC_DEMO" @send="handleSendWhatsapp" />
       </section>
     </main>
     <div class="status-region" role="status" aria-live="polite">

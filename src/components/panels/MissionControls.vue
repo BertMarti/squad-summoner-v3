@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { useMissionStore } from '@/stores/mission';
+import HelpTip from '@/components/HelpTip.vue';
+import type { ApiKeySource } from '@/stores/apiKey';
+import { GEMINI_MODEL } from '@/config';
 
-const props = defineProps<{ loading: boolean; sending: boolean; hasApiKey: boolean }>();
-const emit = defineEmits<{ generate: []; runDemo: [] }>();
+const props = defineProps<{ loading: boolean; sending: boolean; hasApiKey: boolean; keySource: ApiKeySource }>();
+const emit = defineEmits<{ generate: []; runDemo: []; openConfig: [] }>();
 const missionStore = useMissionStore();
 </script>
 
@@ -10,7 +13,7 @@ const missionStore = useMissionStore();
   <div class="panel-section">
     <div class="section-header">
       <span class="step-number">02</span>
-      <h3>PARÁMETROS</h3>
+      <h3>PARÁMETROS <HelpTip topic="Parámetros" text="Escribe los nombres separados por comas y la hora de la partida. Si los dejas vacíos, la transmisión convocará a todo el escuadrón." /></h3>
     </div>
     <div class="input-row">
       <div class="input-group">
@@ -24,7 +27,8 @@ const missionStore = useMissionStore();
     </div>
   </div>
 
-   <p class="api-status">{{ props.hasApiKey ? 'Usando IA (Gemini)' : 'Sin clave: modo demo' }}</p>
+   <p class="api-status" v-if="props.hasApiKey">🔑 IA activada · modelo {{ GEMINI_MODEL }}<span v-if="props.keySource === 'env'"> · clave del .env</span><span v-else-if="props.keySource === 'recordada'"> · clave recordada</span><span v-else> · clave solo para esta visita</span></p>
+   <p class="api-status" v-else>Sin clave: se usará el modo demo. <button type="button" class="config-link" @click="emit('openConfig')">Configurar clave gratis</button></p>
    <button type="button" class="btn-main" @click="emit('generate')" :disabled="props.sending || props.loading">
      📢 GENERAR TRANSMISIÓN
    </button>
@@ -54,5 +58,6 @@ button { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weig
 .btn-demo:hover:not(:disabled) { border-color: var(--text-primary); color: var(--text-primary); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 .api-status { color: var(--text-secondary); font-size: .8rem; margin: 0 0 10px; }
+.config-link { min-height: 0; padding: 0; border: 0; background: transparent; color: var(--text-accent); text-decoration: underline; cursor: pointer; }
 @media (max-width: 480px) { .input-row { flex-direction: column; } .time-group { flex-basis: auto; } }
 </style>

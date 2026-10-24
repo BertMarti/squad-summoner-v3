@@ -58,6 +58,7 @@ button, a, input, select { min-height: 44px; }
 /* --- Estilos Base --- */
 body {
     margin: 0;
+    overflow-x: hidden;
     background-color: var(--bg-app);
     color: var(--text-primary);
     font-family: var(--font-stack);
