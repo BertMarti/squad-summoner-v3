@@ -27,7 +27,7 @@ function findProblems({
     problems.push(`Necesitas Node.js 20.19 o superior (tienes ${nodeVersion}). Instálalo desde https://nodejs.org o con nvm.`);
   }
   if (!exists(path.join(SERVER_DIR, 'node_modules', 'whatsapp-web.js'))) {
-    problems.push('Faltan las dependencias del servidor. Ejecuta: npm run setup (o: cd server && npm ci).');
+    problems.push('Faltan las dependencias del servidor. Ejecuta: npm run setup y responde «s» al envío automático a WhatsApp (o: cd server && npm ci).');
   }
   if (needsSystemChromium({ platform, arch }) && !findChromium({ env, platform, exists })) {
     problems.push('En este equipo (Linux ARM, p. ej. Raspberry Pi) hace falta el Chromium del sistema: sudo apt install chromium (y vuelve a ejecutar npm run setup).');
