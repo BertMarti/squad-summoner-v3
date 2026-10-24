@@ -1,5 +1,5 @@
 /* src/assets/main.css */
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&display=swap');
+/* Fuente Chakra Petch alojada en la propia web (@fontsource, importada en main.ts): sin peticiones a Google Fonts. */
 
 :root {
     /* --- TEMA OSCURO (Por defecto, basado en tu referencia) --- */
