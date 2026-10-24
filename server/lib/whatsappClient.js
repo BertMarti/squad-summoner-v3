@@ -1,6 +1,6 @@
 'use strict';
 const path = require('node:path');
-const { findChromium } = require('./chromium');
+const { findChromium, needsSystemChromium } = require('./chromium');
 
 /** Texto que explica cómo escanear el QR (lo muestran el servidor y `npm run server:grupos`). */
 const QR_HELP = [
@@ -10,11 +10,20 @@ const QR_HELP = [
   '   (es privada: no la compartas ni la subas a git).',
 ].join('\n');
 
-/** Cliente de WhatsApp con la sesión en server/.wwebjs_auth y el Chromium del sistema si lo hay. */
+/**
+ * Navegador a usar: el del sistema solo si lo pide CHROMIUM_PATH o si Puppeteer no trae uno para esta plataforma
+ * (Linux ARM). En x64 y macOS se mantiene el Chrome de Puppeteer, como antes.
+ */
+function chooseExecutablePath({ env = process.env, platform = process.platform, arch = process.arch, exists } = {}) {
+  if (!(env.CHROMIUM_PATH || '').trim() && !needsSystemChromium({ platform, arch })) return undefined;
+  return findChromium({ env, platform, ...(exists ? { exists } : {}) }) || undefined;
+}
+
+/** Cliente de WhatsApp con la sesión en server/.wwebjs_auth. */
 function createWhatsappClient() {
   // Se requiere aquí para que preflight pueda avisar antes si faltan las dependencias.
   const { Client, LocalAuth } = require('whatsapp-web.js');
-  const executablePath = findChromium() || undefined;
+  const executablePath = chooseExecutablePath();
   return new Client({
     authStrategy: new LocalAuth({ dataPath: path.join(__dirname, '..', '.wwebjs_auth') }),
     // --no-sandbox es necesario en algunos Linux/Docker; quítalo si tu sistema lo permite.
@@ -22,4 +31,4 @@ function createWhatsappClient() {
   });
 }
 
-module.exports = { createWhatsappClient, QR_HELP };
+module.exports = { createWhatsappClient, chooseExecutablePath, QR_HELP };

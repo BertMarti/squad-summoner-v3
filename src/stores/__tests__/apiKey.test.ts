@@ -60,27 +60,28 @@ describe('useApiKeyStore', () => {
     expect(store.remember).toBe(true)
   })
 
-  it('migra la clave antigua sin prefijo respetando la elección de recordarla', () => {
+  it('la clave antigua sin prefijo pasa a memoria, se borra y NO se vuelve a guardar', () => {
     storage.setItem(LEGACY_API_KEY, KEY)
-    const store = useApiKeyStore()
-    expect(store.effectiveKey).toBe(KEY)
-    expect(store.source).toBe('recordada')
-    expect(store.migratedLegacy).toBe(true)
-    expect(storage.getItem(LEGACY_API_KEY)).toBeNull()
-    expect(storage.getItem(`${STORAGE_PREFIX}gemini-api-key`)).toBe(KEY)
-    expect(storage.length).toBe(1)
-    // En la siguiente carga ya no es una migración.
-    setActivePinia(createPinia())
-    expect(useApiKeyStore().migratedLegacy).toBe(false)
-  })
-
-  it('si no se puede escribir, la clave antigua se usa solo en memoria', () => {
-    storage.setItem(LEGACY_API_KEY, KEY)
-    vi.spyOn(storage, 'setItem').mockImplementation(() => { throw new Error('lleno') })
     const store = useApiKeyStore()
     expect(store.effectiveKey).toBe(KEY)
     expect(store.source).toBe('sesion')
+    expect(store.remember).toBe(false)
+    expect(store.migratedLegacy).toBe(true)
     expect(storage.getItem(LEGACY_API_KEY)).toBeNull()
+    expect(storage.length).toBe(0)
+    // Al recargar ya no queda nada: ni clave ni aviso.
+    setActivePinia(createPinia())
+    const again = useApiKeyStore()
+    expect(again.hasKey).toBe(false)
+    expect(again.migratedLegacy).toBe(false)
+  })
+
+  it('tras la migración, marcar «Recordar» la guarda con prefijo y quita el aviso', () => {
+    storage.setItem(LEGACY_API_KEY, KEY)
+    const store = useApiKeyStore()
+    store.setKey(store.userKey, true)
+    expect(storage.getItem(`${STORAGE_PREFIX}gemini-api-key`)).toBe(KEY)
+    expect(store.migratedLegacy).toBe(false)
   })
 
   it('funciona aunque el almacenamiento esté bloqueado', () => {

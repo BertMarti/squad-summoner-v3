@@ -72,3 +72,34 @@ describe('grupos: nombres de WhatsApp seguros para la terminal', () => {
     expect(safeName('')).toBe('(sin nombre)')
   })
 })
+
+describe('npmCommand (npm run setup en cualquier sistema)', () => {
+  const { npmCommand } = require('../lib/npmCommand.js')
+  it('con npm_execpath lanza node + npm-cli.js sin shell (también en Windows)', () => {
+    expect(npmCommand({ execPath: 'C:\\node\\node.exe', npmExecPath: 'C:\\node\\node_modules\\npm\\bin\\npm-cli.js', platform: 'win32' }))
+      .toEqual({ cmd: 'C:\\node\\node.exe', prefix: ['C:\\node\\node_modules\\npm\\bin\\npm-cli.js'], shell: false })
+  })
+  it('sin npm_execpath: npm, con shell solo en Windows (npm.cmd sin shell da EINVAL)', () => {
+    expect(npmCommand({ npmExecPath: undefined, platform: 'win32' })).toEqual({ cmd: 'npm', prefix: [], shell: true })
+    expect(npmCommand({ npmExecPath: undefined, platform: 'linux' })).toEqual({ cmd: 'npm', prefix: [], shell: false })
+  })
+  it('ignora npm_execpath de otros gestores (yarn/pnpm)', () => {
+    expect(npmCommand({ npmExecPath: '/usr/lib/node_modules/pnpm/bin/pnpm.cjs', platform: 'linux' }).cmd).toBe('npm')
+  })
+})
+
+describe('chooseExecutablePath (navegador del servidor)', () => {
+  // whatsappClient.js solo requiere whatsapp-web.js dentro de createWhatsappClient, así que se puede probar sin dependencias.
+  const { chooseExecutablePath } = require('../lib/whatsappClient.js')
+  const all = () => true
+  it('x64 y macOS sin CHROMIUM_PATH: Chrome de Puppeteer (como antes)', () => {
+    expect(chooseExecutablePath({ env: {}, platform: 'linux', arch: 'x64', exists: all })).toBeUndefined()
+    expect(chooseExecutablePath({ env: {}, platform: 'darwin', arch: 'arm64', exists: all })).toBeUndefined()
+  })
+  it('Linux ARM: el del sistema', () => {
+    expect(chooseExecutablePath({ env: {}, platform: 'linux', arch: 'arm64', exists: (p) => p === '/usr/bin/chromium' })).toBe('/usr/bin/chromium')
+  })
+  it('CHROMIUM_PATH definido: se respeta en cualquier plataforma', () => {
+    expect(chooseExecutablePath({ env: { CHROMIUM_PATH: '/opt/chrome' }, platform: 'linux', arch: 'x64', exists: (p) => p === '/opt/chrome' })).toBe('/opt/chrome')
+  })
+})

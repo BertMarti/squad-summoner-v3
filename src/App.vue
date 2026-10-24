@@ -183,7 +183,7 @@ const closeConfig = () => {
       @toggleHelp="helpOpen = !helpOpen"
     />
 
-    <div v-if="legacyNotice" class="status-region" role="status">Tu clave de Gemini sigue recordada en este navegador. Ojo: otras webs de bertmarti.github.io comparten este almacenamiento. Si prefieres no guardarla, abre ⚙️ CONFIGURAR API y desmarca «Recordar en este navegador».</div>
+    <div v-if="legacyNotice" class="status-region" role="status">Tu clave se ha dejado de guardar en este navegador por seguridad (otras webs de bertmarti.github.io comparten el almacenamiento): la usaremos solo durante esta visita. Si quieres guardarla, abre ⚙️ CONFIGURAR API y marca «Recordar en este navegador».</div>
     <WelcomeGuide v-if="welcomeVisible || helpOpen" @demo="runGuideDemo" @config="showConfig = true" @close="welcomeVisible = false; helpOpen = false" />
 
     <main class="main-grid">

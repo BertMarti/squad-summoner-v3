@@ -161,7 +161,7 @@ comando guardará `WHATSAPP_GROUP_ID` en `.env`. Los nombres se sanean antes de 
   accede a `localStorage`, siempre con el prefijo `squad-summoner-v3:` y únicamente tras marcar «Recordar en este
   navegador».
 - Todas las webs de `bertmarti.github.io` comparten origen y, por tanto, almacenamiento. La antigua `USER_API_KEY` se
-  migra una vez como clave recordada y la interfaz avisa del riesgo.
+  usa solo en memoria durante esa visita, se borra y no se vuelve a guardar; un aviso único invita a marcar «Recordar».
 - `@google/genai` envía la clave en `x-goog-api-key`; las peticiones tienen un máximo de 45 segundos. «PROBAR CLAVE» usa
   `GET models/<modelo>` y no genera contenido ni gasta cuota.
 - La CSP compilada usa `style-src 'self'` y `font-src 'self'`, sin `unsafe-inline`; Chakra Petch se sirve desde

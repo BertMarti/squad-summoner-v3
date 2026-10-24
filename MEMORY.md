@@ -15,8 +15,11 @@
   origen y, por tanto, `localStorage`; un XSS en cualquiera podría leerla. Solo se guarda con la casilla «Recordar en este
   navegador» (desmarcada, con aviso del riesgo y de que se puede revocar en AI Studio). Todo acceso a almacenamiento pasa por
   `src/lib/storage.ts` con prefijo `squad-summoner-v3:`.
-- **Migración de la clave antigua** (`USER_API_KEY`, sin prefijo, v3.1.0): quien la tenía guardada la eligió guardar, así
-  que se mueve a la clave con prefijo como «recordada», se borra la antigua y se avisa una vez.
+- **Migración de la clave antigua** (`USER_API_KEY`, sin prefijo, v3.1.0; decisión de la revisión de Fable): se usa solo
+  en memoria durante esa visita, se BORRA del almacenamiento y NO se vuelve a guardar; un aviso único invita a marcar
+  «Recordar» si se quiere guardar (con el aviso del riesgo).
+- **Chromium del sistema** solo si `CHROMIUM_PATH` está definido o en Linux ARM; en x64/macOS se usa el Chrome de
+  Puppeteer como antes. `npm run setup` lanza npm con `node $npm_execpath` (en Windows `npm.cmd` sin shell da EINVAL).
 - **`@google/genai`** sustituye a `@google/generative-ai` (obsoleto). Se importa de forma diferida (`import()` en
   `src/lib/gemini.ts`): la primera visita y el modo demo no descargan los ~400 kB del SDK.
 - **«PROBAR CLAVE» con `GET models/<modelo>`**: valida clave y modelo sin gastar cuota de generación.

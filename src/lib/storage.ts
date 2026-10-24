@@ -57,8 +57,8 @@ export function removeStored(name: StorageName): void {
 }
 
 /**
- * Lee y BORRA la clave de la v3.1.0 (guardada sin prefijo). Quien la tenía guardada había elegido
- * guardarla, así que el store la vuelve a guardar con prefijo como «recordada» (y avisa del riesgo).
+ * Lee y BORRA la clave de la v3.1.0 (guardada sin prefijo). El store la usa solo en memoria durante esta
+ * visita: no se vuelve a guardar salvo que la persona marque «Recordar en este navegador».
  */
 export function takeLegacyApiKey(): string {
   try {

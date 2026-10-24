@@ -17,7 +17,6 @@ const require = createRequire(import.meta.url)
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const SERVER = join(ROOT, 'server')
 const ENV_PATH = join(ROOT, '.env')
-const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
 const args = new Set(process.argv.slice(2))
 const HELP = `
@@ -57,9 +56,23 @@ async function askText(question) {
   return (await rl.question(`${question} `)).trim()
 }
 
-function run(cmd, cmdArgs, { cwd = ROOT, env = {} } = {}) {
-  console.log(`\n$ ${cmd} ${cmdArgs.join(' ')}${cwd === ROOT ? '' : `   (en ${cwd.replace(ROOT, '.')})`}`)
-  const result = spawnSync(cmd, cmdArgs, { cwd, stdio: 'inherit', env: { ...process.env, ...env } })
+const { npmCommand } = require(join(SERVER, 'lib', 'npmCommand.js'))
+const NPM = npmCommand()
+
+/** Ejecuta npm con argumentos constantes (nunca texto del usuario). */
+function runNpm(npmArgs, { cwd = ROOT, env = {}, capture = false } = {}) {
+  return spawnSync(NPM.cmd, [...NPM.prefix, ...npmArgs], {
+    cwd,
+    shell: NPM.shell,
+    env: { ...process.env, ...env },
+    ...(capture ? { encoding: 'utf8' } : { stdio: 'inherit' }),
+  })
+}
+
+function run(cmdArgs, { cwd = ROOT, env = {} } = {}) {
+  const cmd = 'npm'
+  console.log(`\n$ npm ${cmdArgs.join(' ')}${cwd === ROOT ? '' : `   (en ${cwd.replace(ROOT, '.')})`}`)
+  const result = runNpm(cmdArgs, { cwd, env })
   if (result.error) {
     console.error(`❌ No se pudo ejecutar ${cmd}: ${result.error.message}`)
     return false
@@ -88,7 +101,7 @@ if (major < 20 || (major === 20 && minor < 19) || (major === 22 && minor < 12) |
   console.error('   Instálalo desde https://nodejs.org (versión LTS) o con nvm: nvm install --lts')
   finish(1)
 }
-const npmCheck = spawnSync(NPM, ['--version'], { encoding: 'utf8' })
+const npmCheck = runNpm(['--version'], { capture: true })
 if (npmCheck.status !== 0) {
   console.error('❌ No encuentro npm. Viene con Node.js: reinstala Node desde https://nodejs.org')
   finish(1)
@@ -100,7 +113,7 @@ step('2/4 · Web')
 if (existsSync(join(ROOT, 'node_modules', 'vite'))) {
   console.log('✅ Dependencias de la web ya instaladas.')
 } else if (await ask('Faltan las dependencias de la web. ¿Las instalo ahora con npm ci?', true)) {
-  if (!run(NPM, ['ci', '--no-audit', '--no-fund'])) finish(1)
+  if (!run(['ci', '--no-audit', '--no-fund'])) finish(1)
 } else {
   console.log('ℹ️ Cuando quieras: npm ci')
 }
@@ -151,11 +164,11 @@ if (existsSync(join(SERVER, 'node_modules', 'whatsapp-web.js'))) {
   console.log('✅ Dependencias del servidor ya instaladas.')
 } else if (chromium) {
   console.log(`✅ Usaré el navegador del sistema: ${chromium}`)
-  if (!run(NPM, ['ci', '--no-audit', '--no-fund'], { cwd: SERVER, env: { PUPPETEER_SKIP_DOWNLOAD: 'true' } })) finish(1)
+  if (!run(['ci', '--no-audit', '--no-fund'], { cwd: SERVER, env: { PUPPETEER_SKIP_DOWNLOAD: 'true' } })) finish(1)
 } else {
   console.log('ℹ️ No hay Chrome/Chromium en el sistema: Puppeteer descargará el suyo (unos 170 MB).')
   if (!(await ask('¿Continúo?', true))) finish(0)
-  if (!run(NPM, ['ci', '--no-audit', '--no-fund'], { cwd: SERVER })) finish(1)
+  if (!run(['ci', '--no-audit', '--no-fund'], { cwd: SERVER })) finish(1)
 }
 if (chromium) setEnv('CHROMIUM_PATH', chromium)
 

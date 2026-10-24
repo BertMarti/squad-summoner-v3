@@ -27,7 +27,8 @@ Todos los cambios notables del proyecto están documentados en este archivo.
 ### 🔒 Seguridad
 - La API key ya no se guarda por defecto: vive en memoria. Solo se recuerda con la casilla «Recordar en este navegador»,
   que avisa de que todas las webs de `bertmarti.github.io` comparten almacenamiento y de que la clave se puede revocar.
-  Claves de almacenamiento con prefijo `squad-summoner-v3:`; la antigua `USER_API_KEY` se migra como «recordada».
+  Claves de almacenamiento con prefijo `squad-summoner-v3:`; la antigua `USER_API_KEY` se borra del
+  almacenamiento y se usa solo en memoria esa visita (aviso único para marcar «Recordar» si se quiere).
 - CSP sin `'unsafe-inline'` en `style-src` y con `font-src 'self'`; sin estilos en línea en las plantillas.
 - Servidor: `overrides` de `basic-ftp` 6.2.3 y `zod` 4.6.7 (11 → 5 vulnerabilidades altas transitivas de Puppeteer);
   los nombres de grupos de WhatsApp se sanean antes de imprimirlos (secuencias ANSI).
