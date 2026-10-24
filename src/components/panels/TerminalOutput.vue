@@ -3,11 +3,14 @@ import { computed, ref } from 'vue';
 import { buildWhatsappShareUrl } from '@/lib/whatsapp';
 import { DEMO_BANNER } from '@/lib/demo';
 import { useTerminalStore } from '@/stores/terminal';
+import HelpTip from '@/components/HelpTip.vue';
 
 const props = defineProps<{ output: string; loading: boolean; error: string; sending: boolean; staticDemo: boolean }>();
 const emit = defineEmits<{ send: [] }>();
 const copied = ref(false);
 const terminalStore = useTerminalStore();
+const terminalBody = ref<HTMLElement | null>(null);
+defineExpose({ focus: () => terminalBody.value?.focus() });
 const isDemo = computed(() => props.output.startsWith(DEMO_BANNER));
 const shareUrl = computed(() => buildWhatsappShareUrl(props.output));
 
@@ -25,7 +28,7 @@ const copyToClipboard = async () => {
 <template>
   <section class="terminal-panel">
     <div class="terminal-header">
-      <div class="header-left"><span class="status-dot"></span> ENLACE ACTIVO</div>
+       <div class="header-left"><span class="status-dot"></span> ENLACE ACTIVO <HelpTip topic="Acciones de transmisión" text="📋 Copiar lo deja en el portapapeles. 🟢 Compartir abre WhatsApp con el texto: tú eliges el grupo. 📲 Enviar al grupo solo aparece si tienes el servidor local (opcional)." /></div>
       <div class="header-right">
         <span v-if="!output" class="connection-text">CONEXIÓN SEGURA // GEMINI</span>
         <button v-if="output" type="button" class="btn-copy" :class="{ copied }" @click="copyToClipboard">{{ copied ? '✅ COPIADO' : '📋 COPIAR' }}</button>
@@ -33,10 +36,10 @@ const copyToClipboard = async () => {
         <button v-if="output && !staticDemo" type="button" class="btn-copy" :disabled="sending" @click="emit('send')">{{ sending ? 'ENVIANDO...' : '📲 ENVIAR AL GRUPO' }}</button>
       </div>
     </div>
-    <div class="terminal-body" aria-live="polite" :aria-busy="loading">
+    <div ref="terminalBody" class="terminal-body" tabindex="-1" aria-live="polite" :aria-busy="loading">
       <div v-if="loading" class="placeholder loading"><span class="shield">📡</span><p>GENERANDO TRANSMISIÓN…</p></div>
       <div v-else-if="error" class="error-output" role="alert">❌ {{ error }}</div>
-      <div v-else-if="!output" class="placeholder"><span class="shield">🛡️</span><p>1. ELIGE UN JUEGO<br>2. CONFIGURA LA MISIÓN<br>3. GENERA LA TRANSMISIÓN</p></div>
+       <div v-else-if="!output" class="placeholder"><span class="shield">🛡️</span><p>1. ELIGE UN JUEGO<br>2. CONFIGURA LA MISIÓN<br>3. GENERA LA TRANSMISIÓN<br><br>¿Sin clave? Pulsa 🧪 MODO DEMO.</p></div>
       <div v-else class="output-content">
         <strong v-if="isDemo" class="demo-label">MODO DEMO</strong>
         <pre class="text-content">{{ output }}</pre><span class="cursor">_</span>

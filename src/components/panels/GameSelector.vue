@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useGemini } from '@/composables/useGemini';
 import { useMissionStore } from '@/stores/mission';
+import HelpTip from '@/components/HelpTip.vue';
 
 const { GAMES } = useGemini();
 const missionStore = useMissionStore();
@@ -13,7 +14,7 @@ const select = (id: string) => missionStore.update({ game: id, ...(id !== 'mh' ?
   <div class="panel-section">
     <div class="section-header">
       <span class="step-number">01</span>
-      <h3>SELECCIONAR TEATRO</h3>
+        <h3>SELECCIONAR TEATRO <HelpTip topic="Seleccionar teatro" text="Elige el juego al que vais a jugar. ¿No está el tuyo? Usa Personalizado y escribe su nombre." /></h3>
     </div>
     
     <div class="games-grid" role="group" aria-label="Seleccionar juego">
@@ -24,7 +25,7 @@ const select = (id: string) => missionStore.update({ game: id, ...(id !== 'mh' ?
         :aria-pressed="missionStore.mission.game === g.id"
         @click="select(g.id)"
       >
-        <div class="card-bg" :style="{ backgroundImage: `url(${g.img})` }"></div>
+        <img class="card-bg" :src="g.img" alt="" />
         <div class="card-overlay"></div>
         <div class="game-info">
             <h4>{{ g.title }}</h4>
@@ -57,7 +58,7 @@ const select = (id: string) => missionStore.update({ game: id, ...(id !== 'mh' ?
 
 .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; }
 .game-card { height: 100px; border-radius: 8px; cursor: pointer; position: relative; overflow: hidden; border: 2px solid var(--border-color); transition: all 0.2s; background: #000; padding: 0; text-align: left; }
-.card-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0.6; transition: 0.3s; }
+.card-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; transition: 0.3s; }
 .card-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); }
 .game-info { position: absolute; bottom: 8px; left: 8px; right: 8px; display: flex; justify-content: space-between; align-items: center; z-index: 2; }
 .game-info h4 { margin: 0; color: #fff; font-size: 0.8rem; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }

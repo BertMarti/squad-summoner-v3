@@ -1,10 +1,18 @@
 'use strict';
 const path = require('node:path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true }); // Lee el .env de la raíz
+try {
+  require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true });
+} catch {
+  /* sin dependencias instaladas: preflight lo explica justo abajo */
+} // Lee el .env de la raíz (si faltan las dependencias, preflight lo explica)
+// Antes de cargar nada pesado: si falta algo (dependencias, Chromium, .env, ID del grupo) explica cómo arreglarlo.
+const { preflight } = require('./lib/preflight');
+if (!preflight({ needGroupId: true, needEnvFile: !process.env.WHATSAPP_GROUP_ID })) process.exit(1);
+
 const express = require('express');
 const cors = require('cors');
-const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
+const { createWhatsappClient, QR_HELP } = require('./lib/whatsappClient');
 const {
   parseAllowedOrigins,
   isOriginAllowed,
@@ -23,7 +31,7 @@ const GROUP_ID = (process.env.WHATSAPP_GROUP_ID || '').trim();
 const ALLOWED_ORIGINS = parseAllowedOrigins(process.env.ALLOWED_ORIGINS);
 
 if (!isValidGroupId(GROUP_ID)) {
-  console.error('❌ ERROR: WHATSAPP_GROUP_ID no está definido o no tiene formato «…@g.us» (revisa el .env).');
+  console.error('❌ WHATSAPP_GROUP_ID no tiene formato «…@g.us». Ejecuta: npm run server:grupos para elegir tu grupo.');
   process.exit(1);
 }
 
@@ -45,22 +53,18 @@ app.use(
 app.use(express.json({ limit: '16kb' }));
 
 // --- Cliente de WhatsApp ---
-const client = new Client({
-  authStrategy: new LocalAuth({ dataPath: path.join(__dirname, '.wwebjs_auth') }),
-  // --no-sandbox es necesario en algunos Linux/Docker; quítalo si tu sistema lo permite.
-  puppeteer: { headless: true, args: ['--no-sandbox'] },
-});
+const client = createWhatsappClient();
 
 let whatsappReady = false;
 
 client.on('qr', (qr) => {
   qrcode.generate(qr, { small: true });
-  console.log('📲 ESCANEA EL QR PARA VINCULAR WHATSAPP');
+  console.log(QR_HELP);
 });
 
 client.on('ready', () => {
   whatsappReady = true;
-  console.log('✅ Cliente WhatsApp LISTO y conectado.');
+  console.log('✅ WhatsApp listo. Abre la web con «npm run dev» (http://localhost:5173) y usa 📲 ENVIAR AL GRUPO.');
 });
 
 client.on('disconnected', (reason) => {
@@ -69,7 +73,8 @@ client.on('disconnected', (reason) => {
 });
 
 client.initialize().catch((err) => {
-  console.error('❌ No se pudo iniciar WhatsApp (¿Chromium disponible?):', err && err.message ? err.message : err);
+  console.error('❌ No se pudo iniciar WhatsApp:', err && err.message ? err.message : err);
+  console.error('   Comprueba que Chromium está instalado (en Raspberry Pi: sudo apt install chromium) y vuelve a ejecutar npm run setup.');
 });
 
 // --- Rutas ---
@@ -103,6 +108,12 @@ app.use((err, _req, res, _next) => {
   res.status(status).json({ error: status === 413 ? 'Mensaje demasiado grande.' : 'Petición no válida.' });
 });
 
-app.listen(PORT, HOST, () => {
+const server = app.listen(PORT, HOST, () => {
   console.log(`🚀 Servidor backend en http://${HOST}:${PORT} (orígenes permitidos: ${ALLOWED_ORIGINS.join(', ')})`);
+});
+
+server.on('error', (err) => {
+  if (err && err.code === 'EADDRINUSE') console.error(`❌ El puerto ${PORT} ya está en uso. Cierra el otro programa o cambia PORT en .env.`);
+  else console.error('❌ No se pudo abrir el servidor:', err && err.message ? err.message : err);
+  process.exit(1);
 });

@@ -4,7 +4,8 @@
   "description": "Torre de comunicaciones de Squad Summoner: envía las transmisiones a un grupo de WhatsApp",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "grupos": "node grupos.js"
   },
   "keywords": [],
   "author": "BertMarti",
@@ -20,5 +21,9 @@
   "private": true,
   "engines": {
     "node": ">=20"
+  },
+  "overrides": {
+    "basic-ftp": "^6.2.3",
+    "zod": "^4.6.6"
   }
 }

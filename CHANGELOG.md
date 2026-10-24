@@ -4,6 +4,40 @@ Todos los cambios notables del proyecto están documentados en este archivo.
 
 ---
 
+## [3.2.0] — 2026-10-24 (Fase 2: fácil de usar, nueva IA y origen compartido)
+
+### ✨ Añadido
+- Primera visita guiada: qué es, tres pasos, «🧪 Probar ahora (sin clave)» con un ejemplo de un clic y «🔑 Usar la IA
+  gratis»; botón «❓ AYUDA» para volver a verla y ayuda «?» en cada sección.
+- Ventana de la clave con pasos para conseguirla gratis en Google AI Studio, mostrar/ocultar, aviso de formato y
+  «PROBAR CLAVE» (consulta el modelo a Google sin gastar cuota).
+- `npm run setup`: asistente que comprueba Node/npm, instala, crea `.env` (permisos 600) y prepara el servidor opcional
+  (Chromium del sistema en Raspberry Pi, ID del grupo, explicación del QR).
+- `npm run server:grupos`: escanea el QR, lista tus grupos con su ID y guarda el elegido en `.env`.
+- Comprobaciones previas del servidor con mensajes en español (Node, dependencias, Chromium, `.env`, ID del grupo,
+  puerto ocupado). Variable `CHROMIUM_PATH`.
+
+### 🔄 Cambiado
+- IA: `@google/generative-ai` (obsoleto) → `@google/genai`; tiempo máximo de 45 s; errores clasificados por el estado y
+  el JSON de Google con mensajes que dicen qué hacer. El SDK se descarga solo al usar la IA (primera carga 513 → 110 kB).
+- Fuente Chakra Petch servida desde la propia web (`@fontsource`), sin Google Fonts.
+- Dependencias menores al día (plugin-vue, vue-tsc, devtools…); servidor con cors 2.8.6, dotenv 18 y express 5.3.
+- CI de la web en Node 20 y 22; Dependabot agrupa menores/parches e ignora los majors incompatibles con Node 20.
+
+### 🔒 Seguridad
+- La API key ya no se guarda por defecto: vive en memoria. Solo se recuerda con la casilla «Recordar en este navegador»,
+  que avisa de que todas las webs de `bertmarti.github.io` comparten almacenamiento y de que la clave se puede revocar.
+  Claves de almacenamiento con prefijo `squad-summoner-v3:`; la antigua `USER_API_KEY` se borra del
+  almacenamiento y se usa solo en memoria esa visita (aviso único para marcar «Recordar» si se quiere).
+- CSP sin `'unsafe-inline'` en `style-src` y con `font-src 'self'`; sin estilos en línea en las plantillas.
+- Servidor: `overrides` de `basic-ftp` 6.2.3 y `zod` 4.6.7 (11 → 5 vulnerabilidades altas transitivas de Puppeteer);
+  los nombres de grupos de WhatsApp se sanean antes de imprimirlos (secuencias ANSI).
+
+### 🗑️ Eliminado
+- `vue-router` (sin uso), código de TTS sin interfaz, `services/generative.ts` y `stores/ui.ts` (sin uso).
+
+---
+
 ## [3.1.0] — 2026-10-24 (Seguridad, demo web y accesibilidad)
 
 ### 🔒 Seguridad

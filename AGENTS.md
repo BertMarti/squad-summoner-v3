@@ -13,9 +13,9 @@ opcional (`server/`, Express + whatsapp-web.js), enviarlas automáticamente a un
 
 - `src/App.vue` — flujo principal (generar, demo, compartir, enviar, estados).
 - `src/components/panels/` — paneles funcionales; `src/components/lore/` — paneles decorativos; `ConfigModal.vue`.
-- `src/lib/` — **lógica pura con pruebas** (`mission`, `prompts`, `demo`, `whatsapp`).
-- `src/services/whatsappServer.ts` — llamada al servidor. `src/composables/useGemini.ts` — Gemini y lista `GAMES`.
-- `src/stores/` — Pinia (`mission` es la única fuente de verdad del formulario).
+- `src/lib/` — **lógica pura con pruebas** (`mission`, `prompts`, `demo`, `whatsapp`, `gemini`, `geminiErrors`, `storage`).
+- `src/services/whatsappServer.ts` — llamada al servidor. `src/composables/useGemini.ts` — lista `GAMES` y generación.
+- `src/stores/` — Pinia (`mission` es la única fuente de verdad del formulario; `apiKey` gestiona la clave).
 - `src/config.ts` — variables `VITE_*`. `public/games/*.svg` — ilustraciones propias.
 - `server/index.js` + `server/lib/security.js` — servidor de WhatsApp. Pruebas en `server/test/`.
 - `docs/DESARROLLO.md` — documentación técnica completa. `README.md` — solo para usuarios (nada técnico).
@@ -31,6 +31,8 @@ npm run type-check         # vue-tsc --build
 npm run build              # tipos + build
 npm run build:pages        # build de GitHub Pages (base /squad-summoner-v3/)
 npm run server             # servidor de WhatsApp (pide QR; no lo arranques sin permiso)
+npm run setup              # asistente de instalación y creación segura de .env
+npm run server:grupos      # QR, lista de grupos y elección del grupo destino
 ```
 
 Despliegue: automático con `.github/workflows/pages.yml` al hacer push a `master`.
@@ -44,6 +46,8 @@ Despliegue: automático con `.github/workflows/pages.yml` al hacer push a `maste
   variables CSS de `src/assets/main.css` (hay modo claro con `.light-mode`).
 - Accesibilidad: botones reales (`<button type="button">`), `<label for>`, `aria-*`, foco visible, estados de carga/error
   en regiones `role="status"`/`role="alert"`. **Prohibido `alert()`, `v-html` e `innerHTML`.**
+- CSP: no uses `style="..."` en plantillas; `style-src` no permite `unsafe-inline`.
+- No uses `localStorage` fuera de `src/lib/storage.ts`; todas sus claves llevan el prefijo `squad-summoner-v3:`.
 - El texto del modo demo siempre empieza por `DEMO_BANNER` (`src/lib/demo.ts`).
 - Commits pequeños en español.
 
@@ -51,6 +55,7 @@ Despliegue: automático con `.github/workflows/pages.yml` al hacer push a `maste
 
 - **Nunca** subas claves: ni en git ni en variables `VITE_*` de un build publicado (todo `VITE_*` acaba en el bundle).
   `build:pages` falla si existe `VITE_GOOGLE_API_KEY`.
+- La API key vive en memoria por defecto. Solo se persiste si la persona marca «Recordar en este navegador».
 - No subas `.env` ni `server/.wwebjs_auth/` (sesión de WhatsApp). Están en `.gitignore`.
 - Usa datos de ejemplo: IPs tipo `192.168.1.50`, IDs de grupo tipo `123456789-123456@g.us`, nombres ficticios.
 - El servidor escucha en `127.0.0.1` con CORS de lista blanca; no lo abras a `0.0.0.0` ni quites la validación.

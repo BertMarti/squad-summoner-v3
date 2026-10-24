@@ -17,6 +17,3 @@ export const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-fla
 
 /** Clave incrustada en la compilación (solo para uso local; vacía en Pages). */
 export const ENV_API_KEY = IS_STATIC_DEMO ? '' : (import.meta.env.VITE_GOOGLE_API_KEY || '').trim()
-
-/** Clave de localStorage donde se guarda la API key que pega el usuario. */
-export const USER_API_KEY_STORAGE = 'USER_API_KEY'

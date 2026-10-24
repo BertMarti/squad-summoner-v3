@@ -13,8 +13,10 @@ function contentSecurityPolicy(connectSrc: string[]): Plugin {
   const policy = [
     "default-src 'self'",
     "script-src 'self'",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
+    // Sin 'unsafe-inline': todas las webs de bertmarti.github.io comparten origen. Los estilos dinámicos de Vue
+    // (:style) usan CSSOM, que la CSP permite; los atributos style="" escritos en las plantillas no.
+    "style-src 'self'",
+    "font-src 'self'",
     "img-src 'self' data:",
     `connect-src 'self' https://generativelanguage.googleapis.com ${connectSrc.join(' ')}`.trim(),
     "object-src 'none'",
