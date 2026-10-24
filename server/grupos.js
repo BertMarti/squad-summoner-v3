@@ -38,6 +38,13 @@ async function main() {
     qrcode.generate(qr, { small: true });
     console.log(QR_HELP);
   });
+  // Ctrl+C: cerrar Chromium y salir sin dejar procesos colgados.
+  for (const signal of ['SIGINT', 'SIGTERM']) {
+    process.once(signal, () => {
+      console.log('\nCancelado.');
+      client.destroy().catch(() => {}).finally(() => process.exit(130));
+    });
+  }
   let timer;
   const ready = new Promise((resolve, reject) => {
     client.once('ready', resolve);
