@@ -1,12 +1,23 @@
 import type { Mission } from '@/types'
+import { DEFAULT_TONE, isToneId } from './tones'
 
 /** Longitud máxima de cada campo que escribe el usuario. */
 export const MAX_FIELD_LENGTH = 120
 /** Longitud máxima del mensaje que se envía o comparte (igual que en el servidor). */
 export const MAX_MESSAGE_LENGTH = 4000
 
-export const GAME_IDS = ['sm2', 'hd2', 'mh', 'custom'] as const
+export const GAME_IDS = ['sm2', 'hd2', 'mh', 'drg', 'd2', 'custom'] as const
 export type GameId = (typeof GAME_IDS)[number]
+
+/** Nombre visible de cada juego (tarjetas, modo demo con tono, historial). */
+export const GAME_TITLES: Record<GameId, string> = {
+  sm2: 'Space Marine 2',
+  hd2: 'Helldivers 2',
+  mh: 'Monster Hunter',
+  drg: 'Deep Rock Galactic',
+  d2: 'Destiny 2',
+  custom: 'Personalizado',
+}
 
 export function isGameId(value: unknown): value is GameId {
   return typeof value === 'string' && (GAME_IDS as readonly string[]).includes(value)
@@ -43,5 +54,7 @@ export function normalizeMission(data: Partial<Mission> | null | undefined): Mis
     customGameName: cleanField(data?.customGameName, 60),
     recruits: cleanField(data?.recruits),
     time: cleanTime(data?.time),
+    tone: isToneId(data?.tone) ? data.tone : DEFAULT_TONE,
+    poll: data?.poll === true,
   }
 }

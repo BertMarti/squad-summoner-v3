@@ -14,6 +14,8 @@ export const STORAGE_KEYS = {
   theme: 'tema',
   apiKey: 'gemini-api-key',
   welcomeSeen: 'bienvenida-vista',
+  /** Historial de transmisiones: SOLO si la persona marca «Recordar historial». */
+  history: 'historial',
 } as const
 
 export type StorageName = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]

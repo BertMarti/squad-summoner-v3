@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import type { Mission } from '@/types'
 import { GEMINI_MODEL } from '@/config'
+import { GAME_TITLES } from '@/lib/mission'
 import { buildPrompt } from '@/lib/prompts'
 import { generateWithGemini, validateApiKey } from '@/lib/gemini'
 
@@ -9,10 +10,12 @@ const asset = (file: string) => `${import.meta.env.BASE_URL}games/${file}`
 
 // Lista de juegos centralizada
 export const GAMES = [
-  { id: 'sm2', title: 'Space Marine 2', icon: '⚔️', img: asset('sm2.svg') },
-  { id: 'hd2', title: 'Helldivers 2', icon: '🏴', img: asset('hd2.svg') },
-  { id: 'mh', title: 'Monster Hunter', icon: '🐾', img: asset('mh.svg') },
-  { id: 'custom', title: 'Personalizado', icon: '🖊️', img: asset('custom.svg') },
+  { id: 'sm2', title: GAME_TITLES.sm2, icon: '⚔️', img: asset('sm2.svg') },
+  { id: 'hd2', title: GAME_TITLES.hd2, icon: '🏴', img: asset('hd2.svg') },
+  { id: 'mh', title: GAME_TITLES.mh, icon: '🐾', img: asset('mh.svg') },
+  { id: 'drg', title: GAME_TITLES.drg, icon: '⛏️', img: asset('drg.svg') },
+  { id: 'd2', title: GAME_TITLES.d2, icon: '🌌', img: asset('d2.svg') },
+  { id: 'custom', title: GAME_TITLES.custom, icon: '🖊️', img: asset('custom.svg') },
 ] as const
 
 export function useGemini() {
