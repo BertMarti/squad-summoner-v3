@@ -150,7 +150,9 @@ if (!wantsServer) {
 const { findChromium, needsSystemChromium } = require(join(SERVER, 'lib', 'chromium.js'))
 const { isValidGroupId } = require(join(SERVER, 'lib', 'security.js'))
 const envValues = parseEnv(readFileSync(ENV_PATH, 'utf8'))
-const chromium = findChromium({ env: { CHROMIUM_PATH: envValues.get('CHROMIUM_PATH') || process.env.CHROMIUM_PATH || '' } })
+const chromium = findChromium({
+  env: { CHROMIUM_PATH: envValues.get('CHROMIUM_PATH') || process.env.CHROMIUM_PATH || '' },
+})
 
 if (needsSystemChromium() && !chromium) {
   console.log('\n⚠️ Este equipo es Linux ARM (por ejemplo una Raspberry Pi) y Puppeteer no trae navegador para él.')

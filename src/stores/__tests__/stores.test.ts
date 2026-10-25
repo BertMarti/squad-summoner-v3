@@ -59,7 +59,7 @@ describe('stores', () => {
       const p1 = store.enqueue()
       const p2 = store.enqueue()
       store.cancel(p1.id)
-      expect(store.processes.find(x => x.id === p1.id)).toBeUndefined()
+      expect(store.processes.find((x) => x.id === p1.id)).toBeUndefined()
       expect(store.processes.length).toBe(1)
       expect(store.processes[0]?.id).toBe(p2.id)
     })

@@ -1,195 +1,237 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
-import { useGemini } from './composables/useGemini';
-import { useMissionStore } from '@/stores/mission';
-import { useTerminalStore } from '@/stores/terminal';
-import { useProcessQueue } from '@/stores/processQueue';
-import { IS_STATIC_DEMO } from '@/config';
-import { readStored, writeStored, STORAGE_KEYS } from '@/lib/storage';
-import { useApiKeyStore } from '@/stores/apiKey';
-import { generateDemoMessage } from '@/lib/demo';
-import { isSendableMessage } from '@/lib/whatsapp';
-import { sendToServer } from '@/services/whatsappServer';
-import type { ProcessItem } from '@/types';
+import { ref, onMounted, nextTick } from 'vue'
+import { useGemini } from './composables/useGemini'
+import { useMissionStore } from '@/stores/mission'
+import { useTerminalStore } from '@/stores/terminal'
+import { useProcessQueue } from '@/stores/processQueue'
+import { IS_STATIC_DEMO } from '@/config'
+import { readStored, writeStored, STORAGE_KEYS } from '@/lib/storage'
+import { useApiKeyStore } from '@/stores/apiKey'
+import { generateDemoMessage } from '@/lib/demo'
+import { isSendableMessage } from '@/lib/whatsapp'
+import { sendToServer } from '@/services/whatsappServer'
+import type { ProcessItem } from '@/types'
 
 // Importar Componentes
-import AppHeader from '@/components/panels/AppHeader.vue';
-import GameSelector from '@/components/panels/GameSelector.vue';
-import MissionControls from '@/components/panels/MissionControls.vue';
-import TerminalOutput from '@/components/panels/TerminalOutput.vue';
-import ConfigModal from './components/ConfigModal.vue';
-import WelcomeGuide from './components/WelcomeGuide.vue';
-import { MissionLog, IntelTicker, SquadRoster, CommPanel, ActionQueue, ProcessManager, MiniRadar } from '@/components/lore'
+import AppHeader from '@/components/panels/AppHeader.vue'
+import GameSelector from '@/components/panels/GameSelector.vue'
+import MissionControls from '@/components/panels/MissionControls.vue'
+import TerminalOutput from '@/components/panels/TerminalOutput.vue'
+import ConfigModal from './components/ConfigModal.vue'
+import WelcomeGuide from './components/WelcomeGuide.vue'
+import {
+  MissionLog,
+  IntelTicker,
+  SquadRoster,
+  CommPanel,
+  ActionQueue,
+  ProcessManager,
+  MiniRadar,
+} from '@/components/lore'
 
 // --- ESTADO TEMA ---
-const isDarkMode = ref(true);
+const isDarkMode = ref(true)
 
 onMounted(() => {
-  const saved = readStored(STORAGE_KEYS.theme);
-  isDarkMode.value = saved ? saved === 'dark' : true;
-  applyTheme();
-  legacyNotice.value = apiKeyStore.migratedLegacy;
-});
+  const saved = readStored(STORAGE_KEYS.theme)
+  isDarkMode.value = saved ? saved === 'dark' : true
+  applyTheme()
+  legacyNotice.value = apiKeyStore.migratedLegacy
+})
 
 const toggleTheme = () => {
-  isDarkMode.value = !isDarkMode.value;
-  writeStored(STORAGE_KEYS.theme, isDarkMode.value ? 'dark' : 'light');
-  applyTheme();
-};
+  isDarkMode.value = !isDarkMode.value
+  writeStored(STORAGE_KEYS.theme, isDarkMode.value ? 'dark' : 'light')
+  applyTheme()
+}
 
 const applyTheme = () => {
-  if (isDarkMode.value) document.body.classList.remove('light-mode');
-  else document.body.classList.add('light-mode');
-};
+  if (isDarkMode.value) document.body.classList.remove('light-mode')
+  else document.body.classList.add('light-mode')
+}
 
 // --- ESTADO APP ---
-const showConfig = ref(false);
-const terminalText = ref('');
-const isSending = ref(false);
-const terminalError = ref('');
-const statusMessage = ref('');
-const statusError = ref('');
-const gameError = ref('');
-const headerRef = ref<InstanceType<typeof AppHeader> | null>(null);
-const outputRef = ref<InstanceType<typeof TerminalOutput> | null>(null);
-const helpOpen = ref(false);
-const welcomeVisible = ref(readStored(STORAGE_KEYS.welcomeSeen) !== '1');
-const legacyNotice = ref(false);
-const apiKeyStore = useApiKeyStore();
+const showConfig = ref(false)
+const terminalText = ref('')
+const isSending = ref(false)
+const terminalError = ref('')
+const statusMessage = ref('')
+const statusError = ref('')
+const gameError = ref('')
+const headerRef = ref<InstanceType<typeof AppHeader> | null>(null)
+const outputRef = ref<InstanceType<typeof TerminalOutput> | null>(null)
+const helpOpen = ref(false)
+const welcomeVisible = ref(readStored(STORAGE_KEYS.welcomeSeen) !== '1')
+const legacyNotice = ref(false)
+const apiKeyStore = useApiKeyStore()
 
-const { generateText, isGenerating } = useGemini();
+const { generateText, isGenerating } = useGemini()
 
-const terminalStore = useTerminalStore();
-const processQueue = useProcessQueue();
-const missionStore = useMissionStore();
-const tickerItems = ref<string[]>(['ALERTA: PUERTA NORTE COMPROMETIDA', 'INFO: Enlace estable']);
-const squad = ref([{ name: 'Alex', initials: 'AX', role: 'Infiltrador', status: 'ok', statusLabel: 'OK' }, { name: 'Marta', initials: 'MT', role: 'Exploradora', status: 'injured', statusLabel: 'INJ' }]);
-const procManager = ref<{ enqueue: (proc: ProcessItem) => void } | null>(null);
+const terminalStore = useTerminalStore()
+const processQueue = useProcessQueue()
+const missionStore = useMissionStore()
+const tickerItems = ref<string[]>(['ALERTA: PUERTA NORTE COMPROMETIDA', 'INFO: Enlace estable'])
+const squad = ref([
+  { name: 'Alex', initials: 'AX', role: 'Infiltrador', status: 'ok', statusLabel: 'OK' },
+  { name: 'Marta', initials: 'MT', role: 'Exploradora', status: 'injured', statusLabel: 'INJ' },
+])
+const procManager = ref<{ enqueue: (proc: ProcessItem) => void } | null>(null)
 
 const enqueueProcess = () => {
-  const emojis = ['⚙️','🔧','🛰️','📡','💾','🛡️'];
-  const proc = processQueue.enqueue({ emoji: emojis[Math.floor(Math.random()*emojis.length)] });
+  const emojis = ['⚙️', '🔧', '🛰️', '📡', '💾', '🛡️']
+  const proc = processQueue.enqueue({ emoji: emojis[Math.floor(Math.random() * emojis.length)] })
   // forward to process manager to simulate lifecycle
-  if (procManager.value && typeof procManager.value.enqueue === 'function') procManager.value.enqueue(proc);
-};
+  if (procManager.value && typeof procManager.value.enqueue === 'function') procManager.value.enqueue(proc)
+}
 
 const onProcStarted = (proc: ProcessItem) => {
-  const p = processQueue.processes.find(x => x.id === proc.id);
-  if(p) p.status = 'running';
-  terminalStore.addLog(`▶️ Proceso iniciado: ${proc.name}`);
-};
+  const p = processQueue.processes.find((x) => x.id === proc.id)
+  if (p) p.status = 'running'
+  terminalStore.addLog(`▶️ Proceso iniciado: ${proc.name}`)
+}
 
 const onProcFinished = (proc: ProcessItem) => {
-  const p = processQueue.processes.find(x => x.id === proc.id);
-  if(p) p.status = 'done';
-  terminalStore.addLog(`✅ Proceso finalizado: ${proc.name}`);
-};
+  const p = processQueue.processes.find((x) => x.id === proc.id)
+  if (p) p.status = 'done'
+  terminalStore.addLog(`✅ Proceso finalizado: ${proc.name}`)
+}
 
 const onProcCancelled = (proc: ProcessItem) => {
-  processQueue.cancel(proc.id);
-  terminalStore.addLog(`✖ Proceso cancelado: ${proc.name}`);
-};
+  processQueue.cancel(proc.id)
+  terminalStore.addLog(`✖ Proceso cancelado: ${proc.name}`)
+}
 
 const handleCancelProcess = (id: number | string) => {
-  processQueue.cancel(id);
-  terminalStore.addLog(`✖ Cancelado: ${id}`);
-};
+  processQueue.cancel(id)
+  terminalStore.addLog(`✖ Cancelado: ${id}`)
+}
 
 // --- ACCIONES ---
-const resetStatus = () => { statusMessage.value = ''; statusError.value = ''; gameError.value = ''; };
+const resetStatus = () => {
+  statusMessage.value = ''
+  statusError.value = ''
+  gameError.value = ''
+}
 
 const handleRun = async () => {
-  resetStatus();
+  resetStatus()
   if (!missionStore.mission.game) {
-    gameError.value = 'Elige un juego antes de generar la transmisión.';
-    terminalStore.addLog('⚠️ Generación bloqueada: falta elegir juego');
-    return;
+    gameError.value = 'Elige un juego antes de generar la transmisión.'
+    terminalStore.addLog('⚠️ Generación bloqueada: falta elegir juego')
+    return
   }
-  const apiKey = apiKeyStore.effectiveKey;
-  terminalError.value = '';
-  terminalText.value = '';
-  terminalStore.addLog(apiKey ? '📡 Generación solicitada a Gemini' : '🧪 Generación de ejemplo sin API key');
+  const apiKey = apiKeyStore.effectiveKey
+  terminalError.value = ''
+  terminalText.value = ''
+  terminalStore.addLog(apiKey ? '📡 Generación solicitada a Gemini' : '🧪 Generación de ejemplo sin API key')
   try {
-    const text = apiKey ? await generateText(apiKey, missionStore.mission) : generateDemoMessage(missionStore.mission);
-    terminalText.value = text;
-    statusMessage.value = apiKey ? 'Transmisión generada con Gemini.' : 'Sin API key: texto de ejemplo. Configura tu clave para usar la IA';
+    const text = apiKey ? await generateText(apiKey, missionStore.mission) : generateDemoMessage(missionStore.mission)
+    terminalText.value = text
+    statusMessage.value = apiKey
+      ? 'Transmisión generada con Gemini.'
+      : 'Sin API key: texto de ejemplo. Configura tu clave para usar la IA'
   } catch (error: unknown) {
-    terminalError.value = error instanceof Error ? error.message : 'No se ha podido generar la transmisión.';
-    terminalStore.addLog(`❌ ${terminalError.value}`);
+    terminalError.value = error instanceof Error ? error.message : 'No se ha podido generar la transmisión.'
+    terminalStore.addLog(`❌ ${terminalError.value}`)
   }
-};
+}
 
 const handleRunDemo = () => {
-  resetStatus();
+  resetStatus()
   if (!missionStore.mission.game) {
-    gameError.value = 'Elige un juego antes de generar la transmisión.';
-    terminalStore.addLog('⚠️ Demo bloqueada: falta elegir juego');
-    return;
+    gameError.value = 'Elige un juego antes de generar la transmisión.'
+    terminalStore.addLog('⚠️ Demo bloqueada: falta elegir juego')
+    return
   }
-  terminalError.value = '';
-  terminalText.value = generateDemoMessage(missionStore.mission);
-  statusMessage.value = 'Modo demo: transmisión generada sin conexión.';
-  terminalStore.addLog('🧪 Transmisión generada en modo demo');
-};
+  terminalError.value = ''
+  terminalText.value = generateDemoMessage(missionStore.mission)
+  statusMessage.value = 'Modo demo: transmisión generada sin conexión.'
+  terminalStore.addLog('🧪 Transmisión generada en modo demo')
+}
 
 const handleSendWhatsapp = async () => {
-  if (!isSendableMessage(terminalText.value) || isGenerating.value || IS_STATIC_DEMO) return;
-  isSending.value = true;
-  resetStatus();
-  terminalStore.addLog('📲 Enviando transmisión al grupo');
+  if (!isSendableMessage(terminalText.value) || isGenerating.value || IS_STATIC_DEMO) return
+  isSending.value = true
+  resetStatus()
+  terminalStore.addLog('📲 Enviando transmisión al grupo')
   try {
-    await sendToServer(terminalText.value);
-    statusMessage.value = 'Transmisión enviada al grupo.';
-    terminalStore.addLog('✅ Transmisión enviada al grupo');
+    await sendToServer(terminalText.value)
+    statusMessage.value = 'Transmisión enviada al grupo.'
+    terminalStore.addLog('✅ Transmisión enviada al grupo')
   } catch (error: unknown) {
-    statusError.value = error instanceof Error ? error.message : 'No se ha podido enviar la transmisión.';
-    terminalStore.addLog(`❌ ${statusError.value}`);
+    statusError.value = error instanceof Error ? error.message : 'No se ha podido enviar la transmisión.'
+    terminalStore.addLog(`❌ ${statusError.value}`)
   } finally {
-    isSending.value = false;
+    isSending.value = false
   }
-};
+}
 
 const saveUserConfig = () => {
-  showConfig.value = false;
+  showConfig.value = false
   statusMessage.value = apiKeyStore.hasKey
-    ? (apiKeyStore.source === 'recordada' ? 'Clave recordada en este navegador.' : 'Clave lista para esta visita.')
-    : 'Clave borrada.';
-  headerRef.value?.focusConfig();
-};
+    ? apiKeyStore.source === 'recordada'
+      ? 'Clave recordada en este navegador.'
+      : 'Clave lista para esta visita.'
+    : 'Clave borrada.'
+  headerRef.value?.focusConfig()
+}
 
 const runGuideDemo = async () => {
-  if (!missionStore.mission.game) missionStore.update({ game: 'hd2' });
-  if (!missionStore.mission.recruits) missionStore.update({ recruits: 'Alex, Marta y Juan' });
-  if (!missionStore.mission.time) missionStore.update({ time: '21:30' });
-  handleRunDemo();
-  await nextTick();
-  outputRef.value?.focus();
-};
+  if (!missionStore.mission.game) missionStore.update({ game: 'hd2' })
+  if (!missionStore.mission.recruits) missionStore.update({ recruits: 'Alex, Marta y Juan' })
+  if (!missionStore.mission.time) missionStore.update({ time: '21:30' })
+  handleRunDemo()
+  await nextTick()
+  outputRef.value?.focus()
+}
+
+const closeGuide = () => {
+  welcomeVisible.value = false
+  helpOpen.value = false
+}
 
 const closeConfig = () => {
-  showConfig.value = false;
-  headerRef.value?.focusConfig();
-};
+  showConfig.value = false
+  headerRef.value?.focusConfig()
+}
 </script>
 
 <template>
   <div class="app-container">
-    <div v-if="IS_STATIC_DEMO" class="demo-banner" role="note">Versión web de demostración: aquí puedes generar con tu propia API key de Gemini o en modo demo y compartir por WhatsApp. El envío automático al grupo necesita el servidor local (<a href="https://github.com/BertMarti/squad-summoner-v3#readme" target="_blank" rel="noopener noreferrer">ver cómo</a>).</div>
-    <AppHeader ref="headerRef"
-      :is-dark="isDarkMode" 
+    <div v-if="IS_STATIC_DEMO" class="demo-banner" role="note">
+      Versión web de demostración: aquí puedes generar con tu propia API key de Gemini o en modo demo y compartir por
+      WhatsApp. El envío automático al grupo necesita el servidor local (<a
+        href="https://github.com/BertMarti/squad-summoner-v3#readme"
+        target="_blank"
+        rel="noopener noreferrer"
+        >ver cómo</a
+      >).
+    </div>
+    <AppHeader
+      ref="headerRef"
+      :is-dark="isDarkMode"
       :help-open="helpOpen"
-      @toggleTheme="toggleTheme" 
-      @openConfig="showConfig = true" 
+      @toggleTheme="toggleTheme"
+      @openConfig="showConfig = true"
       @toggleHelp="helpOpen = !helpOpen"
     />
 
-    <div v-if="legacyNotice" class="status-region" role="status">Tu clave se ha dejado de guardar en este navegador por seguridad (otras webs de bertmarti.github.io comparten el almacenamiento): la usaremos solo durante esta visita. Si quieres guardarla, abre ⚙️ CONFIGURAR API y marca «Recordar en este navegador».</div>
-    <WelcomeGuide v-if="welcomeVisible || helpOpen" @demo="runGuideDemo" @config="showConfig = true" @close="welcomeVisible = false; helpOpen = false" />
+    <div v-if="legacyNotice" class="status-region" role="status">
+      Tu clave se ha dejado de guardar en este navegador por seguridad (otras webs de bertmarti.github.io comparten el
+      almacenamiento): la usaremos solo durante esta visita. Si quieres guardarla, abre ⚙️ CONFIGURAR API y marca
+      «Recordar en este navegador».
+    </div>
+    <WelcomeGuide
+      v-if="welcomeVisible || helpOpen"
+      @demo="runGuideDemo"
+      @config="showConfig = true"
+      @close="closeGuide"
+    />
 
     <main class="main-grid">
       <section class="left-col">
         <GameSelector :error="gameError" />
-        <MissionControls 
+        <MissionControls
           :loading="isGenerating"
           :sending="isSending"
           :has-api-key="apiKeyStore.hasKey"
@@ -201,7 +243,15 @@ const closeConfig = () => {
       </section>
 
       <section class="right-col">
-       <TerminalOutput ref="outputRef" :output="terminalText" :loading="isGenerating" :error="terminalError" :sending="isSending" :static-demo="IS_STATIC_DEMO" @send="handleSendWhatsapp" />
+        <TerminalOutput
+          ref="outputRef"
+          :output="terminalText"
+          :loading="isGenerating"
+          :error="terminalError"
+          :sending="isSending"
+          :static-demo="IS_STATIC_DEMO"
+          @send="handleSendWhatsapp"
+        />
       </section>
     </main>
     <div class="status-region" role="status" aria-live="polite">
@@ -218,10 +268,26 @@ const closeConfig = () => {
     </div>
 
     <div class="bottom-row-2">
-      <CommPanel :connected="true" @toggle-tts="terminalStore.addLog('🔊 Voz táctica: no disponible todavía')" @mute-toggle="terminalStore.addLog('🔇 Audio silenciado')" @refresh-ticker="terminalStore.addLog('🔁 Teletipo actualizado')" />
+      <CommPanel
+        :connected="true"
+        @toggle-tts="terminalStore.addLog('🔊 Voz táctica: no disponible todavía')"
+        @mute-toggle="terminalStore.addLog('🔇 Audio silenciado')"
+        @refresh-ticker="terminalStore.addLog('🔁 Teletipo actualizado')"
+      />
       <ActionQueue :processes="processQueue.processes" @enqueue="enqueueProcess" @cancel="handleCancelProcess" />
-      <ProcessManager ref="procManager" @started="onProcStarted" @finished="onProcFinished" @cancelled="onProcCancelled" />
-      <MiniRadar :targets="[{x:60,y:40},{x:35,y:30},{x:70,y:72}]" />
+      <ProcessManager
+        ref="procManager"
+        @started="onProcStarted"
+        @finished="onProcFinished"
+        @cancelled="onProcCancelled"
+      />
+      <MiniRadar
+        :targets="[
+          { x: 60, y: 40 },
+          { x: 35, y: 30 },
+          { x: 70, y: 72 },
+        ]"
+      />
     </div>
 
     <ConfigModal v-if="showConfig" @close="closeConfig" @save="saveUserConfig" />
@@ -229,19 +295,75 @@ const closeConfig = () => {
 </template>
 
 <style scoped>
-.app-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-.demo-banner a { color: var(--terminal-text); }
-.demo-banner { margin-bottom: 16px; padding: 10px 14px; border: 1px solid var(--border-color); color: var(--text-secondary); font-size: .85rem; }
-.status-message, .status-error { margin: 12px 0 0; padding: 10px 14px; border-left: 3px solid var(--border-accent); background: var(--bg-panel); }
-.status-error { color: var(--text-danger); border-color: var(--border-danger); }
-.main-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; align-items: start; }
-@media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.demo-banner a {
+  color: var(--terminal-text);
+}
+.demo-banner {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+.status-message,
+.status-error {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--border-accent);
+  background: var(--bg-panel);
+}
+.status-error {
+  color: var(--text-danger);
+  border-color: var(--border-danger);
+}
+.main-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
-.bottom-row { margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-@media (max-width: 900px) { .bottom-row { grid-template-columns: 1fr; } }
+.bottom-row {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .bottom-row {
+    grid-template-columns: 1fr;
+  }
+}
 
-.bottom-row-2{ margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px }
-@media (max-width: 1100px) { .bottom-row-2{ grid-template-columns: 1fr 1fr } }
-@media (max-width: 700px) { .bottom-row-2{ grid-template-columns: 1fr } }
-@media (max-width: 420px) { .app-container { padding: 12px; } }
+.bottom-row-2 {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 1100px) {
+  .bottom-row-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 700px) {
+  .bottom-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 420px) {
+  .app-container {
+    padding: 12px;
+  }
+}
 </style>

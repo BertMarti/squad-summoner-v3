@@ -39,18 +39,16 @@ export default defineConfig(({ command, mode }) => {
 
   // Barrera: una clave de API jamás debe acabar en la web pública.
   if (isPages && command === 'build' && env.VITE_GOOGLE_API_KEY) {
-    throw new Error('VITE_GOOGLE_API_KEY está definida en una compilación para GitHub Pages: se publicaría la clave. Quítala.')
+    throw new Error(
+      'VITE_GOOGLE_API_KEY está definida en una compilación para GitHub Pages: se publicaría la clave. Quítala.',
+    )
   }
 
   const serverUrl = (env.VITE_SERVER_URL || 'http://localhost:3000').replace(/\/+$/, '')
 
   return {
     base: isPages ? PAGES_BASE : '/',
-    plugins: [
-      vue(),
-      command === 'serve' ? vueDevTools() : null,
-      contentSecurityPolicy(isPages ? [] : [serverUrl]),
-    ],
+    plugins: [vue(), command === 'serve' ? vueDevTools() : null, contentSecurityPolicy(isPages ? [] : [serverUrl])],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

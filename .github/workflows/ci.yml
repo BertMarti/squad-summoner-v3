@@ -18,7 +18,7 @@ jobs:
     name: Secretos (gitleaks)
     runs-on: ubuntu-latest
     env:
-      GITLEAKS_VERSION: "8.30.1"
+      GITLEAKS_VERSION: '8.30.1'
     steps:
       - uses: actions/checkout@v7
         with:
@@ -86,7 +86,7 @@ jobs:
       - name: Instalar sin descargar Chromium
         run: npm ci --ignore-scripts
         env:
-          PUPPETEER_SKIP_DOWNLOAD: "true"
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
       - name: Sintaxis
         run: find . -name '*.js' -not -path './node_modules/*' -not -path './test/*' -print0 | xargs -0 -n1 node --check
       # Quedan vulnerabilidades altas transitivas de puppeteer (vía whatsapp-web.js) sin arreglo

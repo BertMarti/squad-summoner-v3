@@ -22,7 +22,9 @@ describe('sendToServer', () => {
 
   it('propaga el error del servidor', async () => {
     const fetchImpl = vi.fn(async () => jsonResponse(503, { error: 'WhatsApp no está listo' }))
-    await expect(sendToServer('hola', { fetchImpl: fetchImpl as unknown as typeof fetch })).rejects.toThrow('WhatsApp no está listo')
+    await expect(sendToServer('hola', { fetchImpl: fetchImpl as unknown as typeof fetch })).rejects.toThrow(
+      'WhatsApp no está listo',
+    )
   })
 
   it('explica cuando el servidor no está arrancado', async () => {

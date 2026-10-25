@@ -4,7 +4,7 @@ import { ref } from 'vue'
 export const useTerminalStore = defineStore('terminal', () => {
   const terminalText = ref('')
   const logLines = ref<{ ts: string; text: string }[]>([
-    { ts: new Date().toLocaleTimeString(), text: 'Sistema iniciado.' }
+    { ts: new Date().toLocaleTimeString(), text: 'Sistema iniciado.' },
   ])
 
   function setText(t: string) {

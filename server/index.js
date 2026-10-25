@@ -74,7 +74,9 @@ client.on('disconnected', (reason) => {
 
 client.initialize().catch((err) => {
   console.error('❌ No se pudo iniciar WhatsApp:', err && err.message ? err.message : err);
-  console.error('   Comprueba que Chromium está instalado (en Raspberry Pi: sudo apt install chromium) y vuelve a ejecutar npm run setup.');
+  console.error(
+    '   Comprueba que Chromium está instalado (en Raspberry Pi: sudo apt install chromium) y vuelve a ejecutar npm run setup.',
+  );
 });
 
 // --- Rutas ---
@@ -84,21 +86,26 @@ app.get('/health', (_req, res) => {
 
 // CORS solo impide leer la respuesta: createOriginGuard impide que otra web dispare el envío
 // y va antes del limitador para que sus intentos no consuman el cupo del origen legítimo.
-app.post('/send-mission', createOriginGuard(ALLOWED_ORIGINS), createRateLimiter({ windowMs: 60_000, max: 10 }), async (req, res) => {
-  const result = validateMissionBody(req.body);
-  if (!result.ok) return res.status(400).json({ error: result.error });
+app.post(
+  '/send-mission',
+  createOriginGuard(ALLOWED_ORIGINS),
+  createRateLimiter({ windowMs: 60_000, max: 10 }),
+  async (req, res) => {
+    const result = validateMissionBody(req.body);
+    if (!result.ok) return res.status(400).json({ error: result.error });
 
-  if (!whatsappReady) return res.status(503).json({ error: 'WhatsApp no está listo todavía. Escanea el QR.' });
+    if (!whatsappReady) return res.status(503).json({ error: 'WhatsApp no está listo todavía. Escanea el QR.' });
 
-  try {
-    await client.sendMessage(GROUP_ID, result.message);
-    console.log('Mensaje enviado correctamente.');
-    return res.json({ success: true });
-  } catch (error) {
-    console.error('Error al enviar mensaje:', error && error.message ? error.message : error);
-    return res.status(500).json({ error: 'Error al enviar el mensaje a WhatsApp.' });
-  }
-});
+    try {
+      await client.sendMessage(GROUP_ID, result.message);
+      console.log('Mensaje enviado correctamente.');
+      return res.json({ success: true });
+    } catch (error) {
+      console.error('Error al enviar mensaje:', error && error.message ? error.message : error);
+      return res.status(500).json({ error: 'Error al enviar el mensaje a WhatsApp.' });
+    }
+  },
+);
 
 // JSON mal formado u otros errores: respuesta genérica sin trazas.
 app.use((err, _req, res, _next) => {
@@ -112,7 +119,8 @@ const server = app.listen(PORT, HOST, () => {
 });
 
 server.on('error', (err) => {
-  if (err && err.code === 'EADDRINUSE') console.error(`❌ El puerto ${PORT} ya está en uso. Cierra el otro programa o cambia PORT en .env.`);
+  if (err && err.code === 'EADDRINUSE')
+    console.error(`❌ El puerto ${PORT} ya está en uso. Cierra el otro programa o cambia PORT en .env.`);
   else console.error('❌ No se pudo abrir el servidor:', err && err.message ? err.message : err);
   process.exit(1);
 });

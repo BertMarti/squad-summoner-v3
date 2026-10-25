@@ -2,90 +2,142 @@
 /* Fuente Chakra Petch alojada en la propia web (@fontsource, importada en main.ts): sin peticiones a Google Fonts. */
 
 :root {
-    /* --- TEMA OSCURO (Por defecto, basado en tu referencia) --- */
-    --bg-app: #05080c; /* Fondo principal muy oscuro */
-    --bg-panel: #0d121d; /* Fondo de los paneles/tarjetas */
-    --bg-input: #151b26; /* Fondo de inputs */
-    
-    --text-primary: #ffffff;
-    --text-secondary: #8a94a6;
-    --text-accent: #ffbd00; /* Amarillo/Dorado para títulos y acentos */
-    --text-danger: #ff4c4c;
+  /* --- TEMA OSCURO (Por defecto, basado en tu referencia) --- */
+  --bg-app: #05080c; /* Fondo principal muy oscuro */
+  --bg-panel: #0d121d; /* Fondo de los paneles/tarjetas */
+  --bg-input: #151b26; /* Fondo de inputs */
 
-    --border-color: #1f2a3d;
-    --border-accent: #ffbd00;
-    --border-danger: #ff4c4c;
-    
-    --btn-primary-bg: #ffbd00;
-    --btn-primary-text: #05080c;
-    --btn-secondary-bg: transparent;
-    --btn-secondary-border: #8a94a6;
-    
-    --terminal-bg: #0a0f18;
-    --terminal-header-bg: #0d121d;
-    --terminal-text: #4db8ff; /* Azul cián para el texto del terminal */
+  --text-primary: #ffffff;
+  --text-secondary: #8a94a6;
+  --text-accent: #ffbd00; /* Amarillo/Dorado para títulos y acentos */
+  --text-danger: #ff4c4c;
 
-    --shadow-accent: 0 0 15px rgba(255, 189, 0, 0.3);
-    
-    --font-stack: 'Chakra Petch', sans-serif;
+  --border-color: #1f2a3d;
+  --border-accent: #ffbd00;
+  --border-danger: #ff4c4c;
+
+  --btn-primary-bg: #ffbd00;
+  --btn-primary-text: #05080c;
+  --btn-secondary-bg: transparent;
+  --btn-secondary-border: #8a94a6;
+
+  --terminal-bg: #0a0f18;
+  --terminal-header-bg: #0d121d;
+  --terminal-text: #4db8ff; /* Azul cián para el texto del terminal */
+
+  --shadow-accent: 0 0 15px rgba(255, 189, 0, 0.3);
+
+  --font-stack: 'Chakra Petch', sans-serif;
 }
 
 /* --- TEMA CLARO (Accesibilidad) --- */
 .light-mode {
-    --bg-app: #f0f2f5;
-    --bg-panel: #ffffff;
-    --bg-input: #e4e6eb;
-    
-    --text-primary: #1c1e21;
-    --text-secondary: #606770;
-    --text-accent: #8a6400; /* Contraste AA sobre blanco */
-    
-    --border-color: #dddfe2;
-    --border-accent: #d69e00;
-    
-    --btn-primary-text: #05080c;
-    --btn-secondary-border: #606770;
-    
-    --terminal-bg: #212529; /* El terminal se mantiene oscuro por contraste */
-    --terminal-header-bg: #2c3035;
-    /* --terminal-text se mantiene igual */
+  --bg-app: #f0f2f5;
+  --bg-panel: #ffffff;
+  --bg-input: #e4e6eb;
+
+  --text-primary: #1c1e21;
+  --text-secondary: #606770;
+  --text-accent: #8a6400; /* Contraste AA sobre blanco */
+
+  --border-color: #dddfe2;
+  --border-accent: #d69e00;
+
+  --btn-primary-text: #05080c;
+  --btn-secondary-border: #606770;
+
+  --terminal-bg: #212529; /* El terminal se mantiene oscuro por contraste */
+  --terminal-header-bg: #2c3035;
+  /* --terminal-text se mantiene igual */
 }
 
-:focus-visible { outline: 2px solid var(--border-accent); outline-offset: 2px; }
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-button, a, input, select { min-height: 44px; }
+:focus-visible {
+  outline: 2px solid var(--border-accent);
+  outline-offset: 2px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+button,
+a,
+input,
+select {
+  min-height: 44px;
+}
 
 /* --- Estilos Base --- */
 body {
-    margin: 0;
-    overflow-x: hidden;
-    background-color: var(--bg-app);
-    color: var(--text-primary);
-    font-family: var(--font-stack);
-    /* Patrón sutil de fondo tech */
-    background-image: 
-        linear-gradient(to bottom, rgba(5, 8, 12, 0.9), rgba(5, 8, 12, 1)),
-        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415L51.8 0h2.827zM5.373 0l-.83.828L5.96 2.243 8.2 0H5.374zM48.97 0l3.657 3.657-1.414 1.414L46.143 0h2.828zM11.03 0L7.372 3.657 8.787 5.07 13.857 0h-2.828zM40.485 0l.83.828-1.415 1.415L37.658 0h2.827zM19.515 0l-.83.828L20.1 2.243 22.343 0h-2.828zM34.828 0l3.657 3.657-1.414 1.414L32 0h2.828zM25.172 0l-3.657 3.657 1.414 1.414L28 0h-2.828zm7.07 5.071l3.536 3.535-1.414 1.415-3.536-3.536 1.414-1.414zM27.757 5.071l-3.535 3.535 1.414 1.415 3.535-3.536-1.414-1.414zm21.92-1.414l3.536 3.536-1.414 1.414-3.536-3.536 1.414-1.414zM10.323 3.657l-3.536 3.536 1.414 1.414 3.536-3.536-1.414-1.414zM57.456 6.485l3.535 3.536-1.414 1.414-3.535-3.536 1.414-1.414zM2.544 6.485L-1 10.02l1.414 1.414 3.536-3.536L2.544 6.485zm50.384 1.415l3.536 3.535-1.414 1.414-3.536-3.536 1.414-1.414zM7.07 7.9l-3.535 3.535 1.414 1.414 3.535-3.536L7.07 7.9zm41.901 1.414l3.536 3.536-1.414 1.414-3.536-3.536-1.414-1.414zM11.03 9.314l-3.536 3.536 1.414 1.414 3.536-3.536-1.414-1.414zm33.415 1.415l3.535 3.535-1.414 1.414-3.535-3.536 1.414-1.414zM15.544 10.73l-3.535 3.535 1.414 1.414 3.535-3.536-1.414-1.414zm24.93 1.414l3.535 3.536-1.414 1.414-3.535-3.536-1.414-1.414zM19.515 12.143l-3.536 3.536 1.414 1.414 3.536-3.536-1.414-1.414zm16.444 1.414l3.536 3.535-1.414 1.414-3.536-3.536 1.414-1.414zM24.029 13.557l-3.535 3.535 1.414 1.414 3.535-3.536-1.414-1.414zM31.535 14.97l3.536 3.536-1.414 1.414-3.536-3.536 1.414-1.414zM28.464 14.97l-3.535 3.536 1.414 1.414 3.535-3.536-1.414-1.414zm7.07 2.83l.83.828-1.415 1.415-.828-.83 1.414-1.414zM24.464 17.8l-.83.828 1.415 1.415.828-.83-1.414-1.414zM31.535 20.628l.83.828-1.415 1.415-.828-.83 1.414-1.414zM28.464 20.628l-.83.828 1.415 1.415.828-.83-1.414-1.414zM34.828 23.456l.83.828-1.415 1.415-.828-.83 1.414-1.414zM25.172 23.456l-.83.828 1.415 1.415.828-.83-1.414-1.414zM37.657 26.284l.83.828-1.415 1.415-.828-.83 1.414-1.414zM22.343 26.284l-.83.828 1.415 1.415.828-.83-1.414-1.414zM40.485 29.113l.83.828-1.415 1.415-.828-.83 1.414-1.414zM19.515 29.113l-.83.828 1.415 1.415.828-.83-1.414-1.414zM43.314 31.94l.83.828-1.415 1.415-.828-.83 1.414-1.414zM16.686 31.94l-.83.828 1.415 1.415.828-.83-1.414-1.414zM46.142 34.77l.83.828-1.415 1.415-.828-.83 1.414-1.414zM13.858 34.77l-.83.828 1.415 1.415.828-.83-1.414-1.414zM48.97 37.598l.83.828-1.415 1.415-.828-.83 1.414-1.414zM11.03 37.598l-.83.828 1.415 1.415.828-.83-1.414-1.414zM51.8 40.426l.83.828-1.415 1.415-.828-.83 1.414-1.414zM8.2 40.426l-.83.828 1.415 1.415.828-.83-1.414-1.414zM54.627 43.254l.83.828-1.415 1.415-.828-.83 1.414-1.414zM5.373 43.254l-.83.828 1.415 1.415.828-.83-1.414-1.414zM57.456 46.083l.83.828-1.415 1.415-.828-.83 1.414-1.414zM2.544 46.083l-.83.828 1.415 1.415.828-.83-1.414-1.414zM60.284 48.91l.83.828-1.415 1.415-.828-.83 1.414-1.414zM-.284 48.91l-.83.828 1.415 1.415.828-.83-1.414-1.414zM57.456 51.74l.83.828-1.415 1.415-.828-.83 1.414-1.414zM2.544 51.74l-.83.828 1.415 1.415.828-.83-1.414-1.414zM54.627 54.568l.83.828-1.415 1.415-.828-.83 1.414-1.414zM5.373 54.568l-.83.828 1.415 1.415.828-.83-1.414-1.414zM51.8 57.396l.83.828-1.415 1.415-.828-.83 1.414-1.414zM8.2 57.396l-.83.828 1.415 1.415.828-.83-1.414-1.414zM48.97 60.225l.83.828-1.415 1.415-.828-.83 1.414-1.414zM11.03 60.225l-.83.828 1.415 1.415.828-.83-1.414-1.414z' fill='%231f2a3d' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
-    min-height: 100vh;
-    transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  overflow-x: hidden;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-stack);
+  /* Patrón sutil de fondo tech */
+  background-image:
+    linear-gradient(to bottom, rgba(5, 8, 12, 0.9), rgba(5, 8, 12, 1)),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415L51.8 0h2.827zM5.373 0l-.83.828L5.96 2.243 8.2 0H5.374zM48.97 0l3.657 3.657-1.414 1.414L46.143 0h2.828zM11.03 0L7.372 3.657 8.787 5.07 13.857 0h-2.828zM40.485 0l.83.828-1.415 1.415L37.658 0h2.827zM19.515 0l-.83.828L20.1 2.243 22.343 0h-2.828zM34.828 0l3.657 3.657-1.414 1.414L32 0h2.828zM25.172 0l-3.657 3.657 1.414 1.414L28 0h-2.828zm7.07 5.071l3.536 3.535-1.414 1.415-3.536-3.536 1.414-1.414zM27.757 5.071l-3.535 3.535 1.414 1.415 3.535-3.536-1.414-1.414zm21.92-1.414l3.536 3.536-1.414 1.414-3.536-3.536 1.414-1.414zM10.323 3.657l-3.536 3.536 1.414 1.414 3.536-3.536-1.414-1.414zM57.456 6.485l3.535 3.536-1.414 1.414-3.535-3.536 1.414-1.414zM2.544 6.485L-1 10.02l1.414 1.414 3.536-3.536L2.544 6.485zm50.384 1.415l3.536 3.535-1.414 1.414-3.536-3.536 1.414-1.414zM7.07 7.9l-3.535 3.535 1.414 1.414 3.535-3.536L7.07 7.9zm41.901 1.414l3.536 3.536-1.414 1.414-3.536-3.536-1.414-1.414zM11.03 9.314l-3.536 3.536 1.414 1.414 3.536-3.536-1.414-1.414zm33.415 1.415l3.535 3.535-1.414 1.414-3.535-3.536 1.414-1.414zM15.544 10.73l-3.535 3.535 1.414 1.414 3.535-3.536-1.414-1.414zm24.93 1.414l3.535 3.536-1.414 1.414-3.535-3.536-1.414-1.414zM19.515 12.143l-3.536 3.536 1.414 1.414 3.536-3.536-1.414-1.414zm16.444 1.414l3.536 3.535-1.414 1.414-3.536-3.536 1.414-1.414zM24.029 13.557l-3.535 3.535 1.414 1.414 3.535-3.536-1.414-1.414zM31.535 14.97l3.536 3.536-1.414 1.414-3.536-3.536 1.414-1.414zM28.464 14.97l-3.535 3.536 1.414 1.414 3.535-3.536-1.414-1.414zm7.07 2.83l.83.828-1.415 1.415-.828-.83 1.414-1.414zM24.464 17.8l-.83.828 1.415 1.415.828-.83-1.414-1.414zM31.535 20.628l.83.828-1.415 1.415-.828-.83 1.414-1.414zM28.464 20.628l-.83.828 1.415 1.415.828-.83-1.414-1.414zM34.828 23.456l.83.828-1.415 1.415-.828-.83 1.414-1.414zM25.172 23.456l-.83.828 1.415 1.415.828-.83-1.414-1.414zM37.657 26.284l.83.828-1.415 1.415-.828-.83 1.414-1.414zM22.343 26.284l-.83.828 1.415 1.415.828-.83-1.414-1.414zM40.485 29.113l.83.828-1.415 1.415-.828-.83 1.414-1.414zM19.515 29.113l-.83.828 1.415 1.415.828-.83-1.414-1.414zM43.314 31.94l.83.828-1.415 1.415-.828-.83 1.414-1.414zM16.686 31.94l-.83.828 1.415 1.415.828-.83-1.414-1.414zM46.142 34.77l.83.828-1.415 1.415-.828-.83 1.414-1.414zM13.858 34.77l-.83.828 1.415 1.415.828-.83-1.414-1.414zM48.97 37.598l.83.828-1.415 1.415-.828-.83 1.414-1.414zM11.03 37.598l-.83.828 1.415 1.415.828-.83-1.414-1.414zM51.8 40.426l.83.828-1.415 1.415-.828-.83 1.414-1.414zM8.2 40.426l-.83.828 1.415 1.415.828-.83-1.414-1.414zM54.627 43.254l.83.828-1.415 1.415-.828-.83 1.414-1.414zM5.373 43.254l-.83.828 1.415 1.415.828-.83-1.414-1.414zM57.456 46.083l.83.828-1.415 1.415-.828-.83 1.414-1.414zM2.544 46.083l-.83.828 1.415 1.415.828-.83-1.414-1.414zM60.284 48.91l.83.828-1.415 1.415-.828-.83 1.414-1.414zM-.284 48.91l-.83.828 1.415 1.415.828-.83-1.414-1.414zM57.456 51.74l.83.828-1.415 1.415-.828-.83 1.414-1.414zM2.544 51.74l-.83.828 1.415 1.415.828-.83-1.414-1.414zM54.627 54.568l.83.828-1.415 1.415-.828-.83 1.414-1.414zM5.373 54.568l-.83.828 1.415 1.415.828-.83-1.414-1.414zM51.8 57.396l.83.828-1.415 1.415-.828-.83 1.414-1.414zM8.2 57.396l-.83.828 1.415 1.415.828-.83-1.414-1.414zM48.97 60.225l.83.828-1.415 1.415-.828-.83 1.414-1.414zM11.03 60.225l-.83.828 1.415 1.415.828-.83-1.414-1.414z' fill='%231f2a3d' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+  min-height: 100vh;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
-body.light-mode { background-image: none; }
+body.light-mode {
+  background-image: none;
+}
 
-input, select, button, textarea {
-    font-family: var(--font-stack);
+input,
+select,
+button,
+textarea {
+  font-family: var(--font-stack);
 }
 
 /* --- Utilidades --- */
-.fade-in { animation: fadeIn 0.3s ease-in; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* Estilos de scrollbar para webkit */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--bg-app); }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-app);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
 
 @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -6,8 +6,16 @@
  * - Si no (p. ej. `node scripts/setup.mjs`), se usa `npm` y, solo en Windows, `shell: true`: desde Node 20.12.2
  *   `spawnSync('npm.cmd')` sin shell falla con EINVAL. Los argumentos son siempre constantes del script.
  */
-function npmCommand({ execPath = process.execPath, npmExecPath = process.env.npm_execpath, platform = process.platform } = {}) {
-  if (npmExecPath && /\.(c|m)?js$/i.test(npmExecPath) && npmExecPath.split(/[\\/]/).pop().toLowerCase().startsWith('npm')) {
+function npmCommand({
+  execPath = process.execPath,
+  npmExecPath = process.env.npm_execpath,
+  platform = process.platform,
+} = {}) {
+  if (
+    npmExecPath &&
+    /\.(c|m)?js$/i.test(npmExecPath) &&
+    npmExecPath.split(/[\\/]/).pop().toLowerCase().startsWith('npm')
+  ) {
     return { cmd: execPath, prefix: [npmExecPath], shell: false };
   }
   return { cmd: 'npm', prefix: [], shell: platform === 'win32' };

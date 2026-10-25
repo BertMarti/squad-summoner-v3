@@ -26,7 +26,9 @@ const LINK_TIMEOUT_MS = 3 * 60_000;
 
 function saveGroupId(id) {
   const envPath = path.join(ROOT_DIR, '.env');
-  const base = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : fs.readFileSync(path.join(ROOT_DIR, '.env.example'), 'utf8');
+  const base = fs.existsSync(envPath)
+    ? fs.readFileSync(envPath, 'utf8')
+    : fs.readFileSync(path.join(ROOT_DIR, '.env.example'), 'utf8');
   fs.writeFileSync(envPath, setEnvValue(base, 'WHATSAPP_GROUP_ID', id), { mode: 0o600 });
   fs.chmodSync(envPath, 0o600);
 }
@@ -42,14 +44,23 @@ async function main() {
   for (const signal of ['SIGINT', 'SIGTERM']) {
     process.once(signal, () => {
       console.log('\nCancelado.');
-      client.destroy().catch(() => {}).finally(() => process.exit(130));
+      client
+        .destroy()
+        .catch(() => {})
+        .finally(() => process.exit(130));
     });
   }
   let timer;
   const ready = new Promise((resolve, reject) => {
     client.once('ready', resolve);
-    client.once('auth_failure', () => reject(new Error('WhatsApp ha rechazado la vinculación. Borra server/.wwebjs_auth y vuelve a intentarlo.')));
-    timer = setTimeout(() => reject(new Error('No se ha vinculado WhatsApp en 3 minutos. Vuelve a ejecutar el comando y escanea el QR.')), LINK_TIMEOUT_MS);
+    client.once('auth_failure', () =>
+      reject(new Error('WhatsApp ha rechazado la vinculación. Borra server/.wwebjs_auth y vuelve a intentarlo.')),
+    );
+    timer = setTimeout(
+      () =>
+        reject(new Error('No se ha vinculado WhatsApp en 3 minutos. Vuelve a ejecutar el comando y escanea el QR.')),
+      LINK_TIMEOUT_MS,
+    );
   });
   try {
     await Promise.all([client.initialize(), ready]);
@@ -69,7 +80,9 @@ async function main() {
       return;
     }
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    const answer = (await rl.question('\n¿Qué número quieres usar para «📲 ENVIAR AL GRUPO»? (Enter para salir) ')).trim();
+    const answer = (
+      await rl.question('\n¿Qué número quieres usar para «📲 ENVIAR AL GRUPO»? (Enter para salir) ')
+    ).trim();
     rl.close();
     const chosen = groups[Number(answer) - 1];
     if (!answer) return;
@@ -78,7 +91,9 @@ async function main() {
       return;
     }
     saveGroupId(chosen.id);
-    console.log(`✅ Guardado en .env: los mensajes irán a «${chosen.name}». Ahora arranca el servidor con: npm run server`);
+    console.log(
+      `✅ Guardado en .env: los mensajes irán a «${chosen.name}». Ahora arranca el servidor con: npm run server`,
+    );
   } catch (error) {
     console.error(`❌ No se pudo vincular WhatsApp: ${error && error.message ? error.message : error}`);
     process.exitCode = 1;

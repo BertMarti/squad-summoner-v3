@@ -14,11 +14,25 @@ const googleError = (code: number, status: string, message: string, reason?: str
     message,
     status,
     ...(reason
-      ? { details: [{ '@type': 'type.googleapis.com/google.rpc.ErrorInfo', reason, domain: 'googleapis.com', metadata: { service: 'generativelanguage.googleapis.com' } }] }
+      ? {
+          details: [
+            {
+              '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+              reason,
+              domain: 'googleapis.com',
+              metadata: { service: 'generativelanguage.googleapis.com' },
+            },
+          ],
+        }
       : {}),
   },
 })
-const REAL_400 = googleError(400, 'INVALID_ARGUMENT', 'API key not valid. Please pass a valid API key.', 'API_KEY_INVALID')
+const REAL_400 = googleError(
+  400,
+  'INVALID_ARGUMENT',
+  'API key not valid. Please pass a valid API key.',
+  'API_KEY_INVALID',
+)
 
 const jsonResponse = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -50,10 +64,26 @@ describe('errores de Gemini con el formato real del SDK @google/genai', () => {
 
   it.each([
     [400, REAL_400, 'clave'],
-    [403, googleError(403, 'PERMISSION_DENIED', 'Method doesn\'t allow unregistered callers.'), 'clave'],
+    [403, googleError(403, 'PERMISSION_DENIED', "Method doesn't allow unregistered callers."), 'clave'],
     [401, googleError(401, 'UNAUTHENTICATED', 'Request had invalid authentication credentials.'), 'clave'],
-    [429, googleError(429, 'RESOURCE_EXHAUSTED', 'You exceeded your current quota, please check your plan and billing details.'), 'limite'],
-    [404, googleError(404, 'NOT_FOUND', 'models/gemini-x is not found for API version v1beta, or is not supported for generateContent.'), 'modelo'],
+    [
+      429,
+      googleError(
+        429,
+        'RESOURCE_EXHAUSTED',
+        'You exceeded your current quota, please check your plan and billing details.',
+      ),
+      'limite',
+    ],
+    [
+      404,
+      googleError(
+        404,
+        'NOT_FOUND',
+        'models/gemini-x is not found for API version v1beta, or is not supported for generateContent.',
+      ),
+      'modelo',
+    ],
     [503, googleError(503, 'UNAVAILABLE', 'The model is overloaded. Please try again later.'), 'saturado'],
     [504, googleError(504, 'DEADLINE_EXCEEDED', 'Deadline expired before operation could complete.'), 'tiempo'],
     [400, googleError(400, 'FAILED_PRECONDITION', 'User location is not supported for the API use.'), 'region'],
@@ -64,7 +94,10 @@ describe('errores de Gemini con el formato real del SDK @google/genai', () => {
   })
 
   it('un 404 no se confunde con el límite aunque el mensaje diga «generateContent»', async () => {
-    const error = await sdkErrorFor(404, googleError(404, 'NOT_FOUND', 'models/x is not supported for generateContent.'))
+    const error = await sdkErrorFor(
+      404,
+      googleError(404, 'NOT_FOUND', 'models/x is not supported for generateContent.'),
+    )
     expect(friendlyGeminiError(error, MODEL)).toContain(`«${MODEL}» no está disponible`)
   })
 
@@ -89,7 +122,13 @@ describe('errores de Gemini con el formato real del SDK @google/genai', () => {
 
 describe('generateWithGemini', () => {
   it('envía la clave solo en la cabecera x-goog-api-key, nunca en la URL, y no escribe en consola', async () => {
-    const logs = [vi.spyOn(console, 'log'), vi.spyOn(console, 'warn'), vi.spyOn(console, 'error'), vi.spyOn(console, 'info'), vi.spyOn(console, 'debug')]
+    const logs = [
+      vi.spyOn(console, 'log'),
+      vi.spyOn(console, 'warn'),
+      vi.spyOn(console, 'error'),
+      vi.spyOn(console, 'info'),
+      vi.spyOn(console, 'debug'),
+    ]
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => okGenerate('  ¡A las armas!  '))
     const text = await generateWithGemini(KEY, 'prompt', { model: MODEL, fetch: fetchMock })
     expect(text).toBe('¡A las armas!')
@@ -118,14 +157,17 @@ describe('generateWithGemini', () => {
   })
 
   it('respuesta vacía → error claro', async () => {
-    await expect(generateWithGemini(KEY, 'p', { model: MODEL, fetch: async () => okGenerate('   ') })).rejects.toThrow(/respuesta vacía/)
+    await expect(generateWithGemini(KEY, 'p', { model: MODEL, fetch: async () => okGenerate('   ') })).rejects.toThrow(
+      /respuesta vacía/,
+    )
   })
 })
 
 describe('validateApiKey', () => {
   it('consulta el modelo (GET, sin gastar cuota) con la clave en cabecera', async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      jsonResponse(200, { name: `models/${MODEL}`, displayName: 'Gemini 2.5 Flash' }))
+      jsonResponse(200, { name: `models/${MODEL}`, displayName: 'Gemini 2.5 Flash' }),
+    )
     expect(await validateApiKey(KEY, { model: MODEL, fetch: fetchMock })).toEqual({ ok: true })
     const [input, init] = fetchMock.mock.calls[0]!
     expect(String(input)).toMatch(new RegExp(`/models/${MODEL.replace(/\./g, '\\.')}(\\?|$)`))

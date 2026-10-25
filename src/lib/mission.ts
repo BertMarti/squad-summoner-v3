@@ -18,12 +18,14 @@ export function isGameId(value: unknown): value is GameId {
  */
 export function cleanField(value: unknown, max = MAX_FIELD_LENGTH): string {
   if (typeof value !== 'string') return ''
-  return value
-    // eslint-disable-next-line no-control-regex
-    .replace(/[\u0000-\u001f\u007f"`]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, max)
+  return (
+    value
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u001f\u007f"`]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, max)
+  )
 }
 
 /** Acepta solo horas HH:MM válidas (24 h). Devuelve '' si no lo es. */

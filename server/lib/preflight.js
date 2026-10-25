@@ -24,18 +24,26 @@ function findProblems({
   const problems = [];
   const [major, minor] = nodeVersion.split('.').map(Number);
   if (major < 20 || (major === 20 && minor < 19)) {
-    problems.push(`Necesitas Node.js 20.19 o superior (tienes ${nodeVersion}). Instálalo desde https://nodejs.org o con nvm.`);
+    problems.push(
+      `Necesitas Node.js 20.19 o superior (tienes ${nodeVersion}). Instálalo desde https://nodejs.org o con nvm.`,
+    );
   }
   if (!exists(path.join(SERVER_DIR, 'node_modules', 'whatsapp-web.js'))) {
-    problems.push('Faltan las dependencias del servidor. Ejecuta: npm run setup y responde «s» al envío automático a WhatsApp (o: cd server && npm ci).');
+    problems.push(
+      'Faltan las dependencias del servidor. Ejecuta: npm run setup y responde «s» al envío automático a WhatsApp (o: cd server && npm ci).',
+    );
   }
   if (needsSystemChromium({ platform, arch }) && !findChromium({ env, platform, exists })) {
-    problems.push('En este equipo (Linux ARM, p. ej. Raspberry Pi) hace falta el Chromium del sistema: sudo apt install chromium (y vuelve a ejecutar npm run setup).');
+    problems.push(
+      'En este equipo (Linux ARM, p. ej. Raspberry Pi) hace falta el Chromium del sistema: sudo apt install chromium (y vuelve a ejecutar npm run setup).',
+    );
   }
   if (needEnvFile && !exists(path.join(ROOT_DIR, '.env'))) {
     problems.push('No hay archivo .env en la carpeta del proyecto. Ejecuta: npm run setup');
   } else if (needGroupId && !isValidGroupId((env.WHATSAPP_GROUP_ID || '').trim())) {
-    problems.push('Falta el ID del grupo de WhatsApp (WHATSAPP_GROUP_ID en .env, formato …@g.us). Ejecuta: npm run server:grupos para ver tus grupos y elegir uno.');
+    problems.push(
+      'Falta el ID del grupo de WhatsApp (WHATSAPP_GROUP_ID en .env, formato …@g.us). Ejecuta: npm run server:grupos para ver tus grupos y elegir uno.',
+    );
   }
   return problems;
 }

@@ -9,33 +9,33 @@ updates:
     open-pull-requests-limit: 5
     groups:
       web:
-        patterns: ["*"]
-        update-types: ["minor", "patch"]
+        patterns: ['*']
+        update-types: ['minor', 'patch']
     ignore:
       # vitest 5 exige Node ≥ 22 (cerrada la PR #3).
       - dependency-name: vitest
-        update-types: ["version-update:semver-major"]
+        update-types: ['version-update:semver-major']
       # TypeScript 7 (nativo) aún no es compatible con vue-tsc 3.
       - dependency-name: typescript
-        update-types: ["version-update:semver-major"]
+        update-types: ['version-update:semver-major']
       # Vite 8 (Rolldown) y su ecosistema: migración pendiente.
       - dependency-name: vite
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@vitejs/plugin-vue"
-        update-types: ["version-update:semver-major"]
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@vitejs/plugin-vue'
+        update-types: ['version-update:semver-major']
       - dependency-name: vite-plugin-vue-devtools
-        update-types: ["version-update:semver-major"]
+        update-types: ['version-update:semver-major']
       # Pinia 4 y @vue/tsconfig 0.9: cambios de API/configuración sin migrar.
       - dependency-name: pinia
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@vue/tsconfig"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@vue/tsconfig'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
       # npm-run-all2 ≥ 8 pide npm ≥ 10 (la Pi tiene npm 9).
       - dependency-name: npm-run-all2
-        update-types: ["version-update:semver-major"]
+        update-types: ['version-update:semver-major']
       # Los tipos de Node siguen la versión de Node que se usa (20/22/24), no la última.
-      - dependency-name: "@types/node"
-        update-types: ["version-update:semver-major"]
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: npm
     directory: /server
     schedule:
@@ -43,12 +43,12 @@ updates:
     open-pull-requests-limit: 5
     groups:
       servidor:
-        patterns: ["*"]
-        update-types: ["minor", "patch"]
+        patterns: ['*']
+        update-types: ['minor', 'patch']
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
     groups:
       acciones:
-        patterns: ["*"]
+        patterns: ['*']

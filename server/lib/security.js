@@ -6,7 +6,12 @@
 /** Igual que MAX_MESSAGE_LENGTH en src/lib/mission.ts */
 const MAX_MESSAGE_LENGTH = 4000;
 
-const DEFAULT_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:4173', 'http://127.0.0.1:4173'];
+const DEFAULT_ORIGINS = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173',
+];
 
 /** Lista de orígenes permitidos para CORS (ALLOWED_ORIGINS separados por comas). */
 function parseAllowedOrigins(value) {
