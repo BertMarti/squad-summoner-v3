@@ -18,4 +18,6 @@ No abras una issue pública. Usa **[Report a vulnerability](https://github.com/B
 - El `.env` y la sesión de WhatsApp (`server/.wwebjs_auth/`) están en `.gitignore`: contienen secretos.
 - El servidor de WhatsApp escucha solo en `127.0.0.1`, acepta peticiones únicamente de los orígenes de `ALLOWED_ORIGINS`,
   valida y limita los mensajes y aplica un límite de envíos por minuto.
+- `SERVER_TOKEN` es obligatorio si el servidor se abre a la red (por ejemplo, con `HOST=0.0.0.0`): se envía solo en la cabecera
+  `Authorization: Bearer …` y se compara en tiempo constante. Nunca lo pongas en la URL ni lo publiques.
 - El CI ejecuta gitleaks, `npm audit`, tipos, pruebas y build en cada PR; Dependabot propone actualizaciones semanales.

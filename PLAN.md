@@ -13,19 +13,23 @@ accesibilidad y móvil, GitHub Pages con CSP, CI con gitleaks, Dependabot, READM
 - Servidor: 11 → 5 vulnerabilidades altas transitivas con `overrides`. Dependabot: #2 fusionada, #3 cerrada con ignores.
 - Decidido el TTS: se elimina el código muerto (queda como idea).
 
+**25/10/2026 · v3.3.0 (fase 3)**
+- Tonos épico, cutre y pasivo-agresivo para IA y demo; encuesta determinista de asistencia con límite de 4000 caracteres.
+- Historial de las 10 últimas transmisiones, recuperación, repetición y guardado opcional con nombres de reclutas.
+- Deep Rock Galactic y Destiny 2 con ilustraciones propias.
+- `SERVER_TOKEN` opcional en local y obligatorio al abrir el servidor a la red; `npm run setup` lo genera y la web lo envía
+  en la cabecera.
+- ESLint 10, Prettier 3, pruebas de componentes con `happy-dom`, CI actualizado y Dependabot PR #5 fusionada.
+
 ## ⏭️ Siguiente (prioridad alta → baja)
 
 1. Cuando la Pi tenga Node 22: Vitest 5, Vite 8, TypeScript 7 (cuando `vue-tsc` lo soporte), Pinia 4 y quitar los
    `ignore` de `.github/dependabot.yml`.
 2. Quitar los `overrides` y las altas de `extract-zip` en cuanto `whatsapp-web.js` publique una versión con Puppeteer ≥ 25.13.
-3. ESLint + Prettier y paso de lint en el CI.
-4. Pruebas de componentes con `@vue/test-utils` + `jsdom` (WelcomeGuide, ConfigModal, GameSelector, TerminalOutput).
-5. Token opcional entre web y servidor (`SERVER_TOKEN`) para quien abra el servidor a la red local.
 
 ## 💡 Ideas
 
-- Más juegos (Deep Rock Galactic, Destiny 2…) siguiendo la skill `anadir-juego`.
-- Plantillas propias del usuario y elegir el tono (épico, cutre, pasivo-agresivo).
-- Historial de transmisiones (en memoria o con «recordar») y botón «repetir la última».
-- Encuesta rápida de asistencia en el mensaje (✅ voy / ❌ no puedo).
+- Plantillas propias del usuario.
+- Encuesta nativa de WhatsApp enviada por el servidor (Poll de `whatsapp-web.js`).
+- Más juegos siguiendo la skill `anadir-juego`.
 - Voz: leer la transmisión con TTS (`buildAudioPrompt` sigue en `src/lib/prompts.ts`).

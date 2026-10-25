@@ -34,14 +34,16 @@ cantina. Luego la copias o la mandas por WhatsApp con un toque.
 | 🏴 **Helldivers 2** | Propaganda máxima por la Democracia Gestionada. ¡LIBER-TÉ! |
 | ⚔️ **Space Marine 2** | Decretos góticos del Imperio: la impuntualidad es herejía. |
 | 🐾 **Monster Hunter** (World, Rise o Wilds) | La Encargada te espera en la cantina con las armas afiladas. |
+| ⛏️ **Deep Rock Galactic** | ¡Rock and Stone! La extracción no espera a ningún enano. |
+| 🌌 **Destiny 2** | Convocatoria para Guardianes: el destino de la escuadra está en juego. |
 | 🖊️ **Personalizado** | Escribes el nombre de tu juego y la IA se mete en su papel. |
 
 ## 📸 Así se ve
 
 <p align="center">
-  <img src="docs/img/captura-escritorio.png" alt="Squad Summoner en el ordenador: selector de juegos, reclutas, hora y una transmisión de Space Marine 2 en el terminal" width="72%">
+  <img src="docs/img/captura-escritorio.png" alt="Squad Summoner en el ordenador: seis juegos, reclutas, hora, tono cutre, encuesta de asistencia, una transmisión de Deep Rock Galactic y el historial" width="72%">
   &nbsp;
-  <img src="docs/img/captura-movil.png" alt="Squad Summoner en el móvil: la transmisión generada con los botones Copiar y Compartir en WhatsApp" width="22%">
+  <img src="docs/img/captura-movil.png" alt="Squad Summoner en el móvil: la transmisión con la encuesta ✅ voy / ❌ no puedo y los botones Copiar y Compartir en WhatsApp" width="22%">
 </p>
 
 ## 🕹️ Cómo se usa, paso a paso
@@ -49,12 +51,21 @@ cantina. Luego la copias o la mandas por WhatsApp con un toque.
 1. **Abre la web**: <https://bertmarti.github.io/squad-summoner-v3/> (funciona en el ordenador y en el móvil).
 2. **01 · Selecciona el teatro**: toca la tarjeta de tu juego.
 3. **02 · Parámetros**: escribe los nombres de los reclutas (por ejemplo «Alex, Marta y Juan») y la hora.
-4. Pulsa **📢 GENERAR TRANSMISIÓN** y mira cómo aparece la orden en el terminal.
-5. Envíala:
+4. Elige el **tono**: Épico, Cutre o Pasivo-agresivo. El épico es el tono predeterminado.
+5. Si quieres, marca **📋 Añadir encuesta de asistencia (✅ voy / ❌ no puedo)** para añadir esas respuestas al final del mensaje.
+6. Pulsa **📢 GENERAR TRANSMISIÓN** y mira cómo aparece la orden en el terminal.
+7. Envíala:
    - **📋 COPIAR** para pegarla donde quieras, o
    - **🟢 COMPARTIR EN WHATSAPP**, que abre WhatsApp con el texto listo: solo eliges el grupo y envías.
 
 ¿Quieres otra versión? Vuelve a pulsar el botón: cada transmisión es distinta.
+
+## 🗂️ Historial y repetir la última
+
+El panel **HISTORIAL** conserva las últimas 10 transmisiones durante la visita. Pulsa **VER** para recuperar una o
+**REPETIR** para generar otra con el mismo juego, reclutas, hora y tono. También puedes usar **🔁 REPETIR LA ÚLTIMA** bajo
+los botones de generación. Por defecto el historial se borra al recargar; marca **Recordar historial en este navegador** si
+quieres conservarlo. **VACIAR HISTORIAL** lo elimina cuando quieras.
 
 La primera vez verás una guía de bienvenida con tres pasos. Puedes volver a abrirla cuando quieras con **❓ AYUDA** en la
 cabecera. En cada sección encontrarás también un botón **?** con ayuda contextual.
@@ -87,6 +98,21 @@ grupo concreto, puedes ejecutar la torre de comunicaciones en tu ordenador:
 5. Arranca la torre con `npm run server` y déjala abierta. En **otra** terminal ejecuta `npm run dev` y abre
    <http://localhost:5173>: junto a cada transmisión aparecerá **📲 ENVIAR AL GRUPO**.
 
+### ¿Lo usas desde otro equipo de casa?
+
+`npm run setup` crea un **token secreto** en tu archivo `.env` (`SERVER_TOKEN`) sin mostrarlo en pantalla. Si abres la web
+con `npm run dev` en el mismo ordenador, la web lo usa sola y no tienes que hacer nada.
+
+Si quieres usar la torre desde otro equipo de casa (por ejemplo, la torre en una Raspberry Pi en `192.168.1.50`):
+
+1. En el `.env` del equipo de la torre pon `HOST=0.0.0.0` y añade a `ALLOWED_ORIGINS` la dirección desde la que abrirás la
+   web (por ejemplo `http://192.168.1.50:5173`). Reinicia con `npm run server`.
+2. Sin token, la torre **se niega a arrancar** abierta a la red: así nadie más de tu wifi puede mandar mensajes a tu grupo.
+3. En la web, abre **⚙️ CONFIGURAR API** → **Servidor de WhatsApp (opcional)** y pega el valor de `SERVER_TOKEN`. Solo se
+   usa durante esa visita: no se guarda en el navegador.
+
+La web publicada en GitHub Pages no muestra esta opción (no puede hablar con tu torre).
+
 La sesión queda en tu ordenador. El botón **🟢 COMPARTIR EN WHATSAPP** sigue funcionando sin instalar el servidor.
 
 ## 🧭 Lo que tienes que hacer tú
@@ -101,6 +127,27 @@ La sesión queda en tu ordenador. El botón **🟢 COMPARTIR EN WHATSAPP** sigue
 
 Sí. La web es gratuita y de código abierto, y Google ofrece claves de Gemini con un uso gratuito más que suficiente para
 convocar a tu escuadrón. En modo demo no necesitas ni eso.
+</details>
+
+<details>
+<summary><b>¿Se guarda mi historial?</b></summary>
+
+No por defecto: solo vive en memoria y desaparece al recargar. Si marcas **Recordar historial en este navegador**, se guarda
+en ese navegador e incluye los nombres de los reclutas. Puedes desmarcarlo o pulsar **VACIAR HISTORIAL**.
+</details>
+
+<details>
+<summary><b>¿Qué es la encuesta de asistencia?</b></summary>
+
+Es un bloque que se añade al final del mensaje para que el grupo responda con **✅ voy** o **❌ no puedo**. No depende de la
+IA y respeta el límite de 4000 caracteres.
+</details>
+
+<details>
+<summary><b>¿Para qué sirve el token?</b></summary>
+
+Protege el servidor de WhatsApp cuando lo abres a otros equipos de tu casa. Se envía de forma segura junto a la petición y no
+se incluye en la dirección web. Si usas solo `localhost`, no necesitas configurarlo manualmente.
 </details>
 
 <details>

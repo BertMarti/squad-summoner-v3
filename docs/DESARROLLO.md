@@ -10,8 +10,8 @@ Para la explicación de usuario, vuelve al [README](../README.md).
 | Web («Centro de Mando») | Vue 3 (`<script setup lang="ts">`) · TypeScript 5.9 · Vite 7 · Pinia 3 |
 | IA | Google Gemini con `@google/genai` (modelo por defecto `gemini-2.5-flash`) |
 | Servidor («Torre de Comunicaciones», opcional) | Node.js · Express 5 · whatsapp-web.js (Puppeteer) · qrcode-terminal · dotenv · cors |
-| Pruebas | Vitest 4 (entorno `node`; Vitest 5 exige Node ≥ 22.12) |
-| CI/CD | GitHub Actions: `ci.yml` (gitleaks, matriz Node 20/22, tipos, pruebas, build, audit) y `pages.yml` (GitHub Pages) |
+| Pruebas | Vitest 4 (entorno `node`; componentes en `happy-dom`; Vitest 5 exige Node ≥ 22.12) |
+| CI/CD | GitHub Actions: `ci.yml` (gitleaks, matriz Node 20/22, lint, formato, tipos, pruebas, build, audit) y `pages.yml` (GitHub Pages) |
 
 ## Requisitos
 
@@ -43,6 +43,8 @@ El servidor y la web leen el mismo `.env` de la raíz. Plantilla completa en [`.
 | `PORT` | servidor | Puerto (por defecto `3000`). |
 | `HOST` | servidor | Interfaz de escucha (por defecto `127.0.0.1`; `0.0.0.0` lo expone a tu red). |
 | `ALLOWED_ORIGINS` | servidor | Orígenes web permitidos por CORS, separados por comas (por defecto los de Vite en localhost). |
+| `SERVER_TOKEN` | servidor | Token opcional para autorizar el envío; obligatorio si `HOST` no es local y debe tener al menos 24 caracteres. |
+| `VITE_SERVER_TOKEN` | web | Token que la web envía en `Authorization: Bearer`. Solo con `npm run dev`: `vite.config.ts` lo anula en todo build (Pages o local); ahí se pega en ⚙️ → Servidor y vive solo en memoria. |
 | `CHROMIUM_PATH` | servidor | Ruta al Chromium/Chrome del sistema; necesaria en Linux ARM como Raspberry Pi. |
 
 > ⚠️ **Todo lo que empieza por `VITE_` acaba dentro del JavaScript compilado.** No pongas `VITE_GOOGLE_API_KEY` en una
@@ -60,6 +62,8 @@ El servidor y la web leen el mismo `.env` de la raíz. Plantilla completa en [`.
 | `npm run build:pages` | Build para GitHub Pages: base `/squad-summoner-v3/`, sin clave y sin botón de envío al servidor. |
 | `npm run type-check` | `vue-tsc --build` (app, configuración de Vite y pruebas). |
 | `npm test` / `npm run test:watch` | Vitest una vez / en modo vigilancia. |
+| `npm run lint` / `npm run lint:fix` | Comprueba / corrige ESLint para Vue, TypeScript y reglas de seguridad. |
+| `npm run format` / `npm run format:check` | Formatea / comprueba el formato con Prettier. |
 | `npm run preview` | Sirve `dist/` con Vite. |
 | `npm run server` | Arranca el servidor de WhatsApp (`server/index.js`). |
 | `npm run setup` | Comprueba Node/npm, instala dependencias, crea `.env` con permisos 600 y prepara Chromium/servidor opcional. |
@@ -85,24 +89,28 @@ El servidor y la web leen el mismo `.env` de la raíz. Plantilla completa en [`.
 │   │   ├── gemini.ts           # Cliente @google/genai, timeout 45 s y validación GET
 │   │   ├── geminiErrors.ts     # Clasificación de ApiError y mensajes en español
 │   │   ├── storage.ts          # localStorage con prefijo y migración de USER_API_KEY
-│   │   ├── mission.ts          # Saneado de campos, hora HH:MM, ids de juego
+│   │   ├── mission.ts          # Saneado de campos, hora HH:MM, ids y títulos de juego
 │   │   ├── prompts.ts          # Prompts por juego
 │   │   ├── demo.ts             # Plantillas del modo demo (con cabecera DEMO)
+│   │   ├── tones.ts            # Tonos de generación y demo
+│   │   ├── poll.ts             # Encuesta determinista de asistencia
+│   │   ├── history.ts          # Modelo y almacenamiento del historial
 │   │   └── whatsapp.ts         # Enlace wa.me y validación del mensaje
 │   ├── services/whatsappServer.ts # POST /send-mission con timeout y errores claros
-│   ├── stores/                 # Pinia: apiKey, mission, terminal, processQueue
+│   ├── stores/                 # Pinia: apiKey, mission, terminal, processQueue, history, serverToken
 │   └── types/index.ts
 ├── public/games/*.svg          # Ilustraciones propias de cada juego
 ├── server/
 │   ├── index.js                # Express + whatsapp-web.js
 │   ├── lib/security.js         # Validación, CORS, cabeceras y limitador (puro, con pruebas)
+│   ├── lib/token.js            # SERVER_TOKEN: cabecera Bearer, tiempo constante, guardia y generación
 │   ├── lib/preflight.js        # Comprobaciones previas y mensajes en español
 │   ├── lib/chromium.js         # Detección de Chromium del sistema
 │   ├── lib/whatsappClient.js   # Cliente y ayuda del QR
 │   ├── lib/envFile.js          # Leer/editar .env sin imprimir valores
 │   ├── lib/terminalText.js     # Sanea nombres de grupos antes de imprimirlos
 │   ├── grupos.js               # Vincula, lista grupos y guarda WHATSAPP_GROUP_ID
-│   └── test/                   # security.test.js y setup.test.js
+│   └── test/                   # security.test.js, token.test.js y setup.test.js
 ├── scripts/setup.mjs           # Asistente `npm run setup`
 └── .github/                    # CI, Pages y Dependabot
 ```
@@ -145,6 +153,10 @@ comando guardará `WHATSAPP_GROUP_ID` en `.env`. Los nombres se sanean antes de 
 - Escucha en `127.0.0.1` por defecto (`HOST`).
 - CORS con lista blanca (`ALLOWED_ORIGINS`, sin distinguir mayúsculas); además `createOriginGuard` rechaza con 403
   las peticiones con `Origin` no permitido **antes** del limitador, para que una web ajena no gaste el cupo de envíos.
+- Si existe `SERVER_TOKEN`, se exige `Authorization: Bearer …`; la comparación usa SHA-256 y `crypto.timingSafeEqual`.
+  El orden de protección es **Origin → token → limitador**. Si falta o no coincide, responde `401`.
+- Si `HOST` no es local, el servidor no arranca sin un `SERVER_TOKEN` de al menos 24 caracteres. `npm run setup` lo genera
+  junto a `VITE_SERVER_TOKEN` sin mostrarlo; nunca se acepta el token en la URL.
 - `express.json({ limit: '16kb' })`; el mensaje debe ser texto, se eliminan los caracteres de control (salvo saltos de línea y tabuladores) y debe tener de 1 a 4000 caracteres.
 - Limitador: 10 envíos por minuto e IP (`429` con `Retry-After`).
 - Cabeceras `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, CSP `default-src 'none'`; sin `X-Powered-By`.
@@ -173,10 +185,13 @@ comando guardará `WHATSAPP_GROUP_ID` en `.env`. Los nombres se sanean antes de 
 npm test
 ```
 
-- `src/lib/__tests__/` — saneado, prompts, demo y wa.me.
+- `src/lib/__tests__/` — saneado, prompts, demo, wa.me, tonos, encuesta, historial y juegos nuevos.
+- `src/components/__tests__/` — WelcomeGuide, ConfigModal, GameSelector, TerminalOutput, MissionControls,
+  TransmissionHistory y App (flujo completo), con `happy-dom` (cada archivo declara `// @vitest-environment happy-dom`).
 - `src/services/__tests__/` — envío al servidor (con `fetch` simulado).
 - `src/stores/__tests__/`, `src/composables/__tests__/` — stores de Pinia y traducción de errores de Gemini.
-- `server/test/` — validación, CORS, cabeceras y limitador del servidor.
+- `server/test/` — validación, CORS, cabeceras, limitador, token y asistente del servidor.
+- Total actual: **169** pruebas.
 
 ## Despliegue en GitHub Pages
 
@@ -201,7 +216,7 @@ python3 -m http.server 8080 --directory /tmp/pages   # abre http://localhost:808
 `.github/workflows/ci.yml` (push a `master`, PR y manual), con `permissions: contents: read`:
 
 1. **gitleaks** (binario oficial verificado con su suma) sobre todo el historial y el árbol.
-2. **Web**: matriz Node 20 y 22, `npm ci`, `type-check`, `test`, `build-only`, `build:pages`, búsqueda de claves en `dist/` y `npm audit --audit-level=high`.
+2. **Web**: matriz Node 20 y 22, `npm ci`, `lint`, `format:check`, `type-check`, `test`, `build-only`, `build:pages`, búsqueda de claves en `dist/` y `npm audit --audit-level=high`.
 3. **Servidor**: `npm ci --ignore-scripts`, `node --check` y `npm audit --audit-level=critical` (ver vulnerabilidades conocidas
    en [MEMORY.md](../MEMORY.md)).
 
@@ -209,6 +224,9 @@ Dependabot (`.github/dependabot.yml`) propone cada semana actualizaciones agrupa
 En la web ignora los saltos mayores de Vitest, TypeScript, Vite, el plugin de Vue, Pinia, `@vue/tsconfig`, `npm-run-all2`
 y los tipos de Node; agrupa solo menores y parches. La PR #2 del servidor se fusionó y la PR #3 de la web, con esos majors,
 se cerró; los menores se aplicaron manualmente.
+
+El reformateo está en un commit separado listado en `.git-blame-ignore-revs`; para ignorarlo al usar blame:
+`git config blame.ignoreRevsFile .git-blame-ignore-revs`.
 
 ## Más documentación
 
