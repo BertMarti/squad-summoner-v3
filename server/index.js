@@ -22,6 +22,7 @@ const {
   securityHeaders,
   createRateLimiter,
 } = require('./lib/security');
+const { checkTokenConfig, createTokenGuard } = require('./lib/token');
 
 // --- Configuración (ver .env.example) ---
 const PORT = Number(process.env.PORT) || 3000;
@@ -29,6 +30,13 @@ const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '127.0.0.1';
 const GROUP_ID = (process.env.WHATSAPP_GROUP_ID || '').trim();
 const ALLOWED_ORIGINS = parseAllowedOrigins(process.env.ALLOWED_ORIGINS);
+// Token opcional (obligatorio si HOST abre el servidor a la red). Lo genera «npm run setup».
+const SERVER_TOKEN = (process.env.SERVER_TOKEN || '').trim();
+const tokenConfig = checkTokenConfig({ host: HOST, token: SERVER_TOKEN });
+if (!tokenConfig.ok) {
+  console.error(`❌ ${tokenConfig.error}`);
+  process.exit(1);
+}
 
 if (!isValidGroupId(GROUP_ID)) {
   console.error('❌ WHATSAPP_GROUP_ID no tiene formato «…@g.us». Ejecuta: npm run server:grupos para elegir tu grupo.');
@@ -46,7 +54,7 @@ app.use(
       return cb(null, false);
     },
     methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     maxAge: 600,
   }),
 );
@@ -84,11 +92,13 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true, whatsapp: whatsappReady ? 'ready' : 'starting' });
 });
 
-// CORS solo impide leer la respuesta: createOriginGuard impide que otra web dispare el envío
-// y va antes del limitador para que sus intentos no consuman el cupo del origen legítimo.
+// CORS solo impide leer la respuesta: createOriginGuard impide que otra web dispare el envío,
+// createTokenGuard exige el SERVER_TOKEN (si lo hay) y ambos van antes del limitador
+// para que los intentos ajenos no consuman el cupo del origen legítimo.
 app.post(
   '/send-mission',
   createOriginGuard(ALLOWED_ORIGINS),
+  createTokenGuard(SERVER_TOKEN),
   createRateLimiter({ windowMs: 60_000, max: 10 }),
   async (req, res) => {
     const result = validateMissionBody(req.body);
@@ -116,6 +126,11 @@ app.use((err, _req, res, _next) => {
 
 const server = app.listen(PORT, HOST, () => {
   console.log(`🚀 Servidor backend en http://${HOST}:${PORT} (orígenes permitidos: ${ALLOWED_ORIGINS.join(', ')})`);
+  console.log(
+    tokenConfig.required
+      ? '🔐 Token activado: la web debe enviar el SERVER_TOKEN (cabecera Authorization).'
+      : 'ℹ️ Sin SERVER_TOKEN: solo este equipo puede usar el servidor (HOST local).',
+  );
 });
 
 server.on('error', (err) => {

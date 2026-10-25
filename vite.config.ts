@@ -48,6 +48,8 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     base: isPages ? PAGES_BASE : '/',
+    // El token del servidor local nunca viaja a la web pública (no hay servidor en Pages).
+    define: isPages ? { 'import.meta.env.VITE_SERVER_TOKEN': '""' } : {},
     plugins: [vue(), command === 'serve' ? vueDevTools() : null, contentSecurityPolicy(isPages ? [] : [serverUrl])],
     resolve: {
       alias: {

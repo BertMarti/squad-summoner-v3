@@ -174,6 +174,17 @@ if (existsSync(join(SERVER, 'node_modules', 'whatsapp-web.js'))) {
 }
 if (chromium) setEnv('CHROMIUM_PATH', chromium)
 
+// Token entre la web y el servidor: imprescindible si abres el servidor a la red (HOST=0.0.0.0).
+const { ensureServerToken } = require(join(SERVER, 'lib', 'token.js'))
+const tokenResult = ensureServerToken(readFileSync(ENV_PATH, 'utf8'))
+if (tokenResult.created) {
+  writeFileSync(ENV_PATH, tokenResult.text, { mode: 0o600 })
+  console.log('✅ Generado un token secreto (SERVER_TOKEN) y compartido con la web local (VITE_SERVER_TOKEN).')
+  console.log('   Si abres la web desde otro equipo, no copies el .env: pega el token en ⚙️ CONFIGURAR API → Servidor.')
+} else {
+  console.log('✅ Ya tienes un token del servidor (SERVER_TOKEN).')
+}
+
 let groupId = (envValues.get('WHATSAPP_GROUP_ID') || '').trim()
 if (isValidGroupId(groupId)) {
   console.log('✅ Ya tienes un grupo configurado (WHATSAPP_GROUP_ID).')

@@ -15,5 +15,11 @@ export const SERVER_URL = (import.meta.env.VITE_SERVER_URL || 'http://localhost:
 /** Modelo de Gemini para generar el texto. */
 export const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash'
 
+/**
+ * Token del servidor de WhatsApp (SERVER_TOKEN) para la web local; lo escribe «npm run setup» como VITE_SERVER_TOKEN.
+ * En Pages siempre vacío (vite.config.ts lo anula en esa compilación).
+ */
+export const ENV_SERVER_TOKEN = IS_STATIC_DEMO ? '' : (import.meta.env.VITE_SERVER_TOKEN || '').trim()
+
 /** Clave incrustada en la compilación (solo para uso local; vacía en Pages). */
 export const ENV_API_KEY = IS_STATIC_DEMO ? '' : (import.meta.env.VITE_GOOGLE_API_KEY || '').trim()
