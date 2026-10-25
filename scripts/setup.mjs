@@ -150,7 +150,9 @@ if (!wantsServer) {
 const { findChromium, needsSystemChromium } = require(join(SERVER, 'lib', 'chromium.js'))
 const { isValidGroupId } = require(join(SERVER, 'lib', 'security.js'))
 const envValues = parseEnv(readFileSync(ENV_PATH, 'utf8'))
-const chromium = findChromium({ env: { CHROMIUM_PATH: envValues.get('CHROMIUM_PATH') || process.env.CHROMIUM_PATH || '' } })
+const chromium = findChromium({
+  env: { CHROMIUM_PATH: envValues.get('CHROMIUM_PATH') || process.env.CHROMIUM_PATH || '' },
+})
 
 if (needsSystemChromium() && !chromium) {
   console.log('\n⚠️ Este equipo es Linux ARM (por ejemplo una Raspberry Pi) y Puppeteer no trae navegador para él.')
@@ -171,6 +173,17 @@ if (existsSync(join(SERVER, 'node_modules', 'whatsapp-web.js'))) {
   if (!run(['ci', '--no-audit', '--no-fund'], { cwd: SERVER })) finish(1)
 }
 if (chromium) setEnv('CHROMIUM_PATH', chromium)
+
+// Token entre la web y el servidor: imprescindible si abres el servidor a la red (HOST=0.0.0.0).
+const { ensureServerToken } = require(join(SERVER, 'lib', 'token.js'))
+const tokenResult = ensureServerToken(readFileSync(ENV_PATH, 'utf8'))
+if (tokenResult.created) {
+  writeFileSync(ENV_PATH, tokenResult.text, { mode: 0o600 })
+  console.log('✅ Generado un token secreto (SERVER_TOKEN); «npm run dev» lo envía solo (VITE_SERVER_TOKEN).')
+  console.log('   Si abres la web desde otro equipo o usas un build, pega el token en ⚙️ CONFIGURAR API → Servidor.')
+} else {
+  console.log('✅ Ya tienes un token del servidor (SERVER_TOKEN).')
+}
 
 let groupId = (envValues.get('WHATSAPP_GROUP_ID') || '').trim()
 if (isValidGroupId(groupId)) {
@@ -199,5 +212,5 @@ console.log('\n🎖️ Listo. Siguientes pasos:')
 let n = 1
 if (!isValidGroupId(groupId)) console.log(`   ${n++}. npm run server:grupos   (escanea el QR y elige tu grupo)`)
 console.log(`   ${n++}. npm run server          (déjalo abierto)`)
-console.log(`   ${n++}. En otra terminal: npm run dev   y abre http://localhost:5173`)
+console.log(`   ${n}. En otra terminal: npm run dev   y abre http://localhost:5173`)
 finish(0)

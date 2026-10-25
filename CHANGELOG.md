@@ -4,6 +4,35 @@ Todos los cambios notables del proyecto están documentados en este archivo.
 
 ---
 
+## [3.3.0] — 2026-10-25 (Fase 3: tono, historial, encuesta y token del servidor)
+
+### ✨ Añadido
+- Selector de tono (Épico, Cutre y Pasivo-agresivo), aplicado a la IA y al modo demo.
+- Encuesta de asistencia determinista (✅ voy / ❌ no puedo), respetando el máximo de 4000 caracteres.
+- Historial de las 10 últimas transmisiones, recuperación, repetición y persistencia opcional con nombres de reclutas.
+- Deep Rock Galactic y Destiny 2, con ilustraciones propias.
+
+### 🔒 Seguridad
+- `SERVER_TOKEN` en la cabecera `Authorization: Bearer …`, obligatorio al abrir el servidor a una red no local y comparado
+  en tiempo constante. `npm run setup` lo genera (y `VITE_SERVER_TOKEN`) sin mostrarlo; ningún build incrusta el token.
+- El prompt avisa de que lo entrecomillado son datos, no instrucciones.
+- Límite de 30 intentos de autenticación por minuto contra el token; `npm run dev -- --host` se niega a arrancar con
+  `VITE_SERVER_TOKEN` en el `.env`; basura en la clave del historial ya no activa «Recordar».
+
+### 🐛 Correcciones
+- Las respuestas de la IA de más de 4000 caracteres se recortan en vez de quedarse sin poder enviarse.
+
+### 🧪 Calidad
+- ESLint 10 con reglas de seguridad y Prettier 3; ambos se ejecutan en el CI para Node 20 y 22.
+- Pruebas de componentes con `@vue/test-utils` y `happy-dom`, además de pruebas para tonos, encuesta, historial y token.
+
+### 🔄 Dependencias
+- Dependabot PR #5 (`@types/node` 24.19.2) fusionada.
+- Se mantiene `whatsapp-web.js` 1.34.7 con Puppeteer 24.38, los `overrides` y las alertas conocidas de `extract-zip`.
+- `js-beautify` usa `nopt` `^9` para mantener compatibilidad con Node 20.
+
+---
+
 ## [3.2.0] — 2026-10-24 (Fase 2: fácil de usar, nueva IA y origen compartido)
 
 ### ✨ Añadido
@@ -201,4 +230,3 @@ Seguimos [Semantic Versioning](https://semver.org/):
 - **MAJOR** (X.0.0) — Cambios incompatibles o hitos principales
 - **MINOR** (x.Y.0) — Nuevas features compatibles
 - **PATCH** (x.y.Z) — Bug fixes y mejoras pequeñas
-

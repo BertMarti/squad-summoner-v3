@@ -14,6 +14,38 @@ describe('sendToServer', () => {
     expect(JSON.parse(String(init.body))).toEqual({ message: '¡A jugar!' })
   })
 
+  it('sin token no manda cabecera Authorization', async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse(200, { success: true }))
+    await sendToServer('hola', { fetchImpl: fetchImpl as unknown as typeof fetch })
+    const [, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit]
+    expect((init.headers as Record<string, string>).Authorization).toBeUndefined()
+  })
+
+  it('con token lo manda en la cabecera Authorization y nunca en la URL', async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse(200, { success: true }))
+    const token = 'token-de-prueba-0123456789abcdef'
+    await sendToServer('hola', { fetchImpl: fetchImpl as unknown as typeof fetch, token: ` ${token} ` })
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit]
+    expect((init.headers as Record<string, string>).Authorization).toBe(`Bearer ${token}`)
+    expect(url).not.toContain(token)
+    expect(String(init.body)).not.toContain(token)
+  })
+
+  it('rechaza tokens con caracteres que permitirían inyectar cabeceras', async () => {
+    const fetchImpl = vi.fn()
+    await expect(
+      sendToServer('hola', { fetchImpl: fetchImpl as unknown as typeof fetch, token: 'abc\r\nX-Otra: 1' }),
+    ).rejects.toThrow(/token/)
+    expect(fetchImpl).not.toHaveBeenCalled()
+  })
+
+  it('explica qué hacer con un 401 sin mensaje', async () => {
+    const fetchImpl = vi.fn(async () => new Response('', { status: 401 }))
+    await expect(sendToServer('hola', { fetchImpl: fetchImpl as unknown as typeof fetch })).rejects.toThrow(
+      /SERVER_TOKEN/,
+    )
+  })
+
   it('no llama al servidor con un mensaje vacío', async () => {
     const fetchImpl = vi.fn()
     await expect(sendToServer('  ', { fetchImpl: fetchImpl as unknown as typeof fetch })).rejects.toThrow(/válida/)
@@ -22,7 +54,9 @@ describe('sendToServer', () => {
 
   it('propaga el error del servidor', async () => {
     const fetchImpl = vi.fn(async () => jsonResponse(503, { error: 'WhatsApp no está listo' }))
-    await expect(sendToServer('hola', { fetchImpl: fetchImpl as unknown as typeof fetch })).rejects.toThrow('WhatsApp no está listo')
+    await expect(sendToServer('hola', { fetchImpl: fetchImpl as unknown as typeof fetch })).rejects.toThrow(
+      'WhatsApp no está listo',
+    )
   })
 
   it('explica cuando el servidor no está arrancado', async () => {

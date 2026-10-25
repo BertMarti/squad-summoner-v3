@@ -27,7 +27,7 @@ jobs:
       - name: Build con base /squad-summoner-v3/ y sin claves
         run: npm run build:pages
         env:
-          VITE_GOOGLE_API_KEY: ""
+          VITE_GOOGLE_API_KEY: ''
       - name: Comprobar que no se publica ninguna clave
         run: |
           if grep -rEo 'AIza[0-9A-Za-z_-]{35}' dist; then echo "Clave de Google en dist/"; exit 1; fi

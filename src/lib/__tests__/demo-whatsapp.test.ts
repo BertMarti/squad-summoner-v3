@@ -6,7 +6,9 @@ import { MAX_MESSAGE_LENGTH } from '../mission'
 describe('generateDemoMessage', () => {
   it('marca siempre el texto como DEMO', () => {
     for (const game of ['hd2', 'sm2', 'mh', 'custom', '']) {
-      expect(generateDemoMessage({ game })).toMatch(new RegExp(`^${DEMO_BANNER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
+      expect(generateDemoMessage({ game })).toMatch(
+        new RegExp(`^${DEMO_BANNER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`),
+      )
     }
   })
   it('incluye reclutas y hora', () => {
@@ -16,7 +18,9 @@ describe('generateDemoMessage', () => {
   })
   it('todas las plantillas generan texto con cualquier índice', () => {
     for (const [game, list] of Object.entries(DEMO_TEMPLATES)) {
-      list.forEach((_, i) => expect(generateDemoMessage({ game }, () => i).length).toBeGreaterThan(DEMO_BANNER.length + 20))
+      list.forEach((_, i) =>
+        expect(generateDemoMessage({ game }, () => i).length).toBeGreaterThan(DEMO_BANNER.length + 20),
+      )
     }
     expect(generateDemoMessage({ game: 'hd2' }, () => 99)).toContain(DEMO_BANNER)
   })

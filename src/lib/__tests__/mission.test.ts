@@ -33,6 +33,21 @@ describe('normalizeMission', () => {
     expect(normalizeMission({ game: 'fortnite' }).game).toBe('')
   })
   it('tolera null y campos ausentes', () => {
-    expect(normalizeMission(null)).toEqual({ game: '', subGame: '', customGameName: '', recruits: '', time: '' })
+    expect(normalizeMission(null)).toEqual({
+      game: '',
+      subGame: '',
+      customGameName: '',
+      recruits: '',
+      time: '',
+      tone: 'epico',
+      poll: false,
+    })
+  })
+  it('acepta solo tonos conocidos y poll booleano', () => {
+    expect(normalizeMission({ tone: 'cutre', poll: true })).toMatchObject({ tone: 'cutre', poll: true })
+    expect(normalizeMission({ tone: 'grosero' as never, poll: 'sí' as never })).toMatchObject({
+      tone: 'epico',
+      poll: false,
+    })
   })
 })

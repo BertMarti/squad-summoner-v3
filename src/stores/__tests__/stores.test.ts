@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useTerminalStore } from '../terminal'
 import { useProcessQueue } from '../processQueue'
@@ -59,7 +59,7 @@ describe('stores', () => {
       const p1 = store.enqueue()
       const p2 = store.enqueue()
       store.cancel(p1.id)
-      expect(store.processes.find(x => x.id === p1.id)).toBeUndefined()
+      expect(store.processes.find((x) => x.id === p1.id)).toBeUndefined()
       expect(store.processes.length).toBe(1)
       expect(store.processes[0]?.id).toBe(p2.id)
     })
@@ -82,5 +82,89 @@ describe('stores', () => {
       expect(store.mission.game).toBe('hd2')
       expect(store.mission.recruits).toBe('5')
     })
+  })
+})
+
+describe('useHistoryStore y useServerTokenStore (fase 3)', () => {
+  const PREFIX = 'squad-summoner-v3:'
+  const memory = new Map<string, string>()
+  const fakeStorage = {
+    getItem: (k: string) => memory.get(k) ?? null,
+    setItem: (k: string, v: string) => void memory.set(k, v),
+    removeItem: (k: string) => void memory.delete(k),
+  }
+
+  beforeEach(() => {
+    memory.clear()
+    vi.stubGlobal('localStorage', fakeStorage)
+    setActivePinia(createPinia())
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('por defecto el historial vive solo en memoria', async () => {
+    const { useHistoryStore } = await import('../history')
+    const h = useHistoryStore()
+    h.add('hola', { game: 'hd2' }, 'demo')
+    expect(h.last?.text).toBe('hola')
+    expect(h.remember).toBe(false)
+    expect(memory.size).toBe(0)
+  })
+
+  it('con «recordar» se guarda con prefijo y al desmarcarlo se borra', async () => {
+    const { useHistoryStore } = await import('../history')
+    const h = useHistoryStore()
+    h.add('uno', { game: 'hd2' }, 'demo')
+    h.setRemember(true)
+    expect(JSON.parse(memory.get(`${PREFIX}historial`)!)).toHaveLength(1)
+    h.add('dos', { game: 'sm2' }, 'ia')
+    expect(JSON.parse(memory.get(`${PREFIX}historial`)!)).toHaveLength(2)
+    expect([...memory.keys()].every((k) => k.startsWith(PREFIX))).toBe(true)
+
+    setActivePinia(createPinia())
+    const again = useHistoryStore()
+    expect(again.remember).toBe(true)
+    expect(again.entries.map((e) => e.text)).toEqual(['dos', 'uno'])
+
+    again.setRemember(false)
+    expect(memory.has(`${PREFIX}historial`)).toBe(false)
+    expect(again.entries).toHaveLength(2)
+    again.clear()
+    expect(again.isEmpty).toBe(true)
+  })
+
+  it('basura en la clave del historial no activa «recordar» y se limpia', async () => {
+    const { useHistoryStore } = await import('../history')
+    for (const junk of ['{"hack":1}', 'no es json', '[{"id":"x","text":"<img src=x>"}]']) {
+      memory.clear()
+      memory.set(`${PREFIX}historial`, junk)
+      setActivePinia(createPinia())
+      const h = useHistoryStore()
+      expect(h.remember).toBe(false)
+      expect(h.isEmpty).toBe(true)
+      expect(memory.has(`${PREFIX}historial`)).toBe(false)
+      h.add('hola', { game: 'hd2' }, 'demo')
+      expect(memory.size).toBe(0)
+    }
+  })
+
+  it('un historial vaciado con «recordar» sigue recordándose', async () => {
+    const { useHistoryStore } = await import('../history')
+    const h = useHistoryStore()
+    h.add('uno', { game: 'hd2' }, 'demo')
+    h.setRemember(true)
+    h.clear()
+    expect(memory.get(`${PREFIX}historial`)).toBe('[]')
+    setActivePinia(createPinia())
+    expect(useHistoryStore().remember).toBe(true)
+  })
+
+  it('el token pegado vive solo en memoria', async () => {
+    const { useServerTokenStore } = await import('../serverToken')
+    const t = useServerTokenStore()
+    expect(t.source).toBe('ninguno')
+    t.setToken('  token-de-prueba-0123456789abcdef ')
+    expect(t.effectiveToken).toBe('token-de-prueba-0123456789abcdef')
+    expect(t.source).toBe('manual')
+    expect(memory.size).toBe(0)
   })
 })

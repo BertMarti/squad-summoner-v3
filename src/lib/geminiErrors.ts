@@ -10,15 +10,7 @@
  */
 
 export type GeminiErrorKind =
-  | 'clave'
-  | 'limite'
-  | 'conexion'
-  | 'tiempo'
-  | 'modelo'
-  | 'saturado'
-  | 'region'
-  | 'peticion'
-  | 'desconocido'
+  'clave' | 'limite' | 'conexion' | 'tiempo' | 'modelo' | 'saturado' | 'region' | 'peticion' | 'desconocido'
 
 export interface GeminiErrorInfo {
   kind: GeminiErrorKind
@@ -61,21 +53,32 @@ export function classifyGeminiError(error: unknown): GeminiErrorInfo {
   const info = { httpStatus, apiStatus, reason, detail }
 
   if (httpStatus === undefined && !body) {
-    if (name === 'AbortError' || name === 'TimeoutError' || /\b(aborted|timed? ?out)\b/i.test(message)) return { kind: 'tiempo' }
-    if (/^(Failed to fetch|Load failed|fetch failed)$|^NetworkError\b/.test(message) || /NetworkError when attempting to fetch/.test(message)) {
+    if (name === 'AbortError' || name === 'TimeoutError' || /\b(aborted|timed? ?out)\b/i.test(message))
+      return { kind: 'tiempo' }
+    if (
+      /^(Failed to fetch|Load failed|fetch failed)$|^NetworkError\b/.test(message) ||
+      /NetworkError when attempting to fetch/.test(message)
+    ) {
       return { kind: 'conexion' }
     }
     return { kind: 'desconocido', detail: message || undefined }
   }
 
-  if (reason === 'API_KEY_INVALID' || httpStatus === 401 || httpStatus === 403 || apiStatus === 'PERMISSION_DENIED' || apiStatus === 'UNAUTHENTICATED') {
+  if (
+    reason === 'API_KEY_INVALID' ||
+    httpStatus === 401 ||
+    httpStatus === 403 ||
+    apiStatus === 'PERMISSION_DENIED' ||
+    apiStatus === 'UNAUTHENTICATED'
+  ) {
     return { kind: 'clave', ...info }
   }
   if (httpStatus === 429 || apiStatus === 'RESOURCE_EXHAUSTED') return { kind: 'limite', ...info }
   if (httpStatus === 404 || apiStatus === 'NOT_FOUND') return { kind: 'modelo', ...info }
   if (httpStatus === 503 || apiStatus === 'UNAVAILABLE') return { kind: 'saturado', ...info }
   if (httpStatus === 504 || apiStatus === 'DEADLINE_EXCEEDED') return { kind: 'tiempo', ...info }
-  if (apiStatus === 'FAILED_PRECONDITION' && /location|region|country/i.test(detail ?? '')) return { kind: 'region', ...info }
+  if (apiStatus === 'FAILED_PRECONDITION' && /location|region|country/i.test(detail ?? ''))
+    return { kind: 'region', ...info }
   if (httpStatus === 400) return { kind: 'peticion', ...info }
   return { kind: 'desconocido', ...info }
 }
@@ -100,7 +103,8 @@ export function geminiErrorMessage(info: GeminiErrorInfo, model: string): string
     case 'peticion':
       return `Gemini ha rechazado la petición (400${info.detail ? `: ${info.detail}` : ''}).`
     default:
-      if (info.httpStatus) return `Gemini ha devuelto un error (${info.httpStatus}${info.detail ? `: ${info.detail}` : ''}). Vuelve a intentarlo.`
+      if (info.httpStatus)
+        return `Gemini ha devuelto un error (${info.httpStatus}${info.detail ? `: ${info.detail}` : ''}). Vuelve a intentarlo.`
       return info.detail || 'Error al conectar con la IA.'
   }
 }
@@ -119,6 +123,7 @@ export function apiKeyFormatWarning(key: string): string | null {
   const k = key.trim()
   if (!k) return 'Pega tu clave de Gemini.'
   if (/\s/.test(k)) return 'La clave no puede tener espacios: cópiala de nuevo.'
-  if (!/^AIza[0-9A-Za-z_-]{35}$/.test(k)) return 'No parece una clave de Gemini (suelen empezar por «AIza» y tener 39 caracteres). Revisa que la has copiado entera.'
+  if (!/^AIza[0-9A-Za-z_-]{35}$/.test(k))
+    return 'No parece una clave de Gemini (suelen empezar por «AIza» y tener 39 caracteres). Revisa que la has copiado entera.'
   return null
 }

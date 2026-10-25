@@ -23,7 +23,10 @@ async function createClient(apiKey: string, options: GeminiOptions): Promise<Goo
   const { GoogleGenAI } = await import('@google/genai')
   return new GoogleGenAI({
     apiKey,
-    httpOptions: { timeout: options.timeoutMs ?? GEMINI_TIMEOUT_MS, ...(options.fetch ? { fetch: options.fetch } : {}) },
+    httpOptions: {
+      timeout: options.timeoutMs ?? GEMINI_TIMEOUT_MS,
+      ...(options.fetch ? { fetch: options.fetch } : {}),
+    },
   })
 }
 
@@ -33,13 +36,18 @@ export async function generateWithGemini(apiKey: string, prompt: string, options
   if (!key) throw new Error('Falta la API key de Gemini. Pulsa «⚙️ CONFIGURAR API» o usa el modo demo.')
   let text: string | undefined
   try {
-    const response = await (await createClient(key, options)).models.generateContent({ model: options.model, contents: prompt })
+    const response = await (
+      await createClient(key, options)
+    ).models.generateContent({ model: options.model, contents: prompt })
     text = response.text
   } catch (error: unknown) {
-    throw new Error(friendlyGeminiError(error, options.model))
+    throw new Error(friendlyGeminiError(error, options.model), { cause: error })
   }
   const clean = (text ?? '').trim()
-  if (!clean) throw new Error('La IA ha devuelto una respuesta vacía (puede que la haya bloqueado su filtro). Vuelve a intentarlo.')
+  if (!clean)
+    throw new Error(
+      'La IA ha devuelto una respuesta vacía (puede que la haya bloqueado su filtro). Vuelve a intentarlo.',
+    )
   return clean
 }
 

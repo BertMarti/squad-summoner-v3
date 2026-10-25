@@ -16,12 +16,12 @@ const { createWhatsappClient, QR_HELP } = require('./lib/whatsappClient');
 const {
   parseAllowedOrigins,
   isOriginAllowed,
-  createOriginGuard,
+  createSendMissionGuards,
   isValidGroupId,
   validateMissionBody,
   securityHeaders,
-  createRateLimiter,
 } = require('./lib/security');
+const { checkTokenConfig } = require('./lib/token');
 
 // --- Configuración (ver .env.example) ---
 const PORT = Number(process.env.PORT) || 3000;
@@ -29,6 +29,13 @@ const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '127.0.0.1';
 const GROUP_ID = (process.env.WHATSAPP_GROUP_ID || '').trim();
 const ALLOWED_ORIGINS = parseAllowedOrigins(process.env.ALLOWED_ORIGINS);
+// Token opcional (obligatorio si HOST abre el servidor a la red). Lo genera «npm run setup».
+const SERVER_TOKEN = (process.env.SERVER_TOKEN || '').trim();
+const tokenConfig = checkTokenConfig({ host: HOST, token: SERVER_TOKEN });
+if (!tokenConfig.ok) {
+  console.error(`❌ ${tokenConfig.error}`);
+  process.exit(1);
+}
 
 if (!isValidGroupId(GROUP_ID)) {
   console.error('❌ WHATSAPP_GROUP_ID no tiene formato «…@g.us». Ejecuta: npm run server:grupos para elegir tu grupo.');
@@ -46,7 +53,7 @@ app.use(
       return cb(null, false);
     },
     methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     maxAge: 600,
   }),
 );
@@ -74,7 +81,9 @@ client.on('disconnected', (reason) => {
 
 client.initialize().catch((err) => {
   console.error('❌ No se pudo iniciar WhatsApp:', err && err.message ? err.message : err);
-  console.error('   Comprueba que Chromium está instalado (en Raspberry Pi: sudo apt install chromium) y vuelve a ejecutar npm run setup.');
+  console.error(
+    '   Comprueba que Chromium está instalado (en Raspberry Pi: sudo apt install chromium) y vuelve a ejecutar npm run setup.',
+  );
 });
 
 // --- Rutas ---
@@ -82,26 +91,29 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true, whatsapp: whatsappReady ? 'ready' : 'starting' });
 });
 
-// CORS solo impide leer la respuesta: createOriginGuard impide que otra web dispare el envío
-// y va antes del limitador para que sus intentos no consuman el cupo del origen legítimo.
-app.post('/send-mission', createOriginGuard(ALLOWED_ORIGINS), createRateLimiter({ windowMs: 60_000, max: 10 }), async (req, res) => {
-  const result = validateMissionBody(req.body);
-  if (!result.ok) return res.status(400).json({ error: result.error });
+// CORS solo impide leer la respuesta. createSendMissionGuards (server/lib/security.js), en orden:
+// Origin (403) → límite de autenticación 30/min → SERVER_TOKEN (401) → límite de envíos 10/min.
+app.post(
+  '/send-mission',
+  ...createSendMissionGuards({ allowed: ALLOWED_ORIGINS, token: SERVER_TOKEN }),
+  async (req, res) => {
+    const result = validateMissionBody(req.body);
+    if (!result.ok) return res.status(400).json({ error: result.error });
 
-  if (!whatsappReady) return res.status(503).json({ error: 'WhatsApp no está listo todavía. Escanea el QR.' });
+    if (!whatsappReady) return res.status(503).json({ error: 'WhatsApp no está listo todavía. Escanea el QR.' });
 
-  try {
-    await client.sendMessage(GROUP_ID, result.message);
-    console.log('Mensaje enviado correctamente.');
-    return res.json({ success: true });
-  } catch (error) {
-    console.error('Error al enviar mensaje:', error && error.message ? error.message : error);
-    return res.status(500).json({ error: 'Error al enviar el mensaje a WhatsApp.' });
-  }
-});
+    try {
+      await client.sendMessage(GROUP_ID, result.message);
+      console.log('Mensaje enviado correctamente.');
+      return res.json({ success: true });
+    } catch (error) {
+      console.error('Error al enviar mensaje:', error && error.message ? error.message : error);
+      return res.status(500).json({ error: 'Error al enviar el mensaje a WhatsApp.' });
+    }
+  },
+);
 
 // JSON mal formado u otros errores: respuesta genérica sin trazas.
-// eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
   console.error('Petición rechazada:', err && err.message ? err.message : err);
   const status = err && err.status && err.status < 500 ? err.status : 500;
@@ -110,10 +122,16 @@ app.use((err, _req, res, _next) => {
 
 const server = app.listen(PORT, HOST, () => {
   console.log(`🚀 Servidor backend en http://${HOST}:${PORT} (orígenes permitidos: ${ALLOWED_ORIGINS.join(', ')})`);
+  console.log(
+    tokenConfig.required
+      ? '🔐 Token activado: la web debe enviar el SERVER_TOKEN (cabecera Authorization).'
+      : 'ℹ️ Sin SERVER_TOKEN: solo este equipo puede usar el servidor (HOST local).',
+  );
 });
 
 server.on('error', (err) => {
-  if (err && err.code === 'EADDRINUSE') console.error(`❌ El puerto ${PORT} ya está en uso. Cierra el otro programa o cambia PORT en .env.`);
+  if (err && err.code === 'EADDRINUSE')
+    console.error(`❌ El puerto ${PORT} ya está en uso. Cierra el otro programa o cambia PORT en .env.`);
   else console.error('❌ No se pudo abrir el servidor:', err && err.message ? err.message : err);
   process.exit(1);
 });
