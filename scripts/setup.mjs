@@ -199,5 +199,5 @@ console.log('\n🎖️ Listo. Siguientes pasos:')
 let n = 1
 if (!isValidGroupId(groupId)) console.log(`   ${n++}. npm run server:grupos   (escanea el QR y elige tu grupo)`)
 console.log(`   ${n++}. npm run server          (déjalo abierto)`)
-console.log(`   ${n++}. En otra terminal: npm run dev   y abre http://localhost:5173`)
+console.log(`   ${n}. En otra terminal: npm run dev   y abre http://localhost:5173`)
 finish(0)

@@ -51,6 +51,10 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
+      - name: Lint (ESLint) y formato (Prettier)
+        run: |
+          npm run lint
+          npm run format:check
       - name: Tipos (vue-tsc)
         run: npm run type-check
       - name: Pruebas (vitest)

@@ -36,7 +36,7 @@ export async function generateWithGemini(apiKey: string, prompt: string, options
     const response = await (await createClient(key, options)).models.generateContent({ model: options.model, contents: prompt })
     text = response.text
   } catch (error: unknown) {
-    throw new Error(friendlyGeminiError(error, options.model))
+    throw new Error(friendlyGeminiError(error, options.model), { cause: error })
   }
   const clean = (text ?? '').trim()
   if (!clean) throw new Error('La IA ha devuelto una respuesta vacía (puede que la haya bloqueado su filtro). Vuelve a intentarlo.')

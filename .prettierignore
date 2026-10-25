@@ -1,0 +1,10 @@
+dist/
+coverage/
+node_modules/
+server/node_modules/
+server/.wwebjs_auth/
+server/.wwebjs_cache/
+package-lock.json
+server/package-lock.json
+public/
+*.md

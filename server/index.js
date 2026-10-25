@@ -101,7 +101,6 @@ app.post('/send-mission', createOriginGuard(ALLOWED_ORIGINS), createRateLimiter(
 });
 
 // JSON mal formado u otros errores: respuesta genérica sin trazas.
-// eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
   console.error('Petición rechazada:', err && err.message ? err.message : err);
   const status = err && err.status && err.status < 500 ? err.status : 500;

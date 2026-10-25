@@ -2,7 +2,7 @@
   <section class="queue">
     <div class="header">COLA DE ACCIONES</div>
     <ul>
-      <li v-for="(p, i) in processes" :key="p.id" :class="p.status">
+      <li v-for="p in processes" :key="p.id" :class="p.status">
         <div class="left">
           <span class="dot">{{ p.emoji }}</span>
           <div class="meta">

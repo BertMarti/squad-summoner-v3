@@ -19,8 +19,9 @@ export async function sendToServer(message: string, { timeoutMs = 15_000, fetchI
       signal: controller.signal,
     })
   } catch (e) {
-    if ((e as Error)?.name === 'AbortError') throw new Error('El servidor de WhatsApp no responde (tiempo agotado).')
-    throw new Error(`No se puede conectar con el servidor de WhatsApp en ${SERVER_URL}. ¿Lo has arrancado?`)
+    if ((e as Error)?.name === 'AbortError')
+      throw new Error('El servidor de WhatsApp no responde (tiempo agotado).', { cause: e })
+    throw new Error(`No se puede conectar con el servidor de WhatsApp en ${SERVER_URL}. ¿Lo has arrancado?`, { cause: e })
   } finally {
     clearTimeout(timer)
   }
