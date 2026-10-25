@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, computed } from 'vue'
 import { useGemini } from './composables/useGemini'
 import { useMissionStore } from '@/stores/mission'
 import { useTerminalStore } from '@/stores/terminal'
@@ -10,6 +10,12 @@ import { useApiKeyStore } from '@/stores/apiKey'
 import { generateDemoMessage } from '@/lib/demo'
 import { isSendableMessage } from '@/lib/whatsapp'
 import { sendToServer } from '@/services/whatsappServer'
+import { withAttendancePoll } from '@/lib/poll'
+import { GAME_TITLES } from '@/lib/mission'
+import { TONES } from '@/lib/tones'
+import type { HistoryEntry } from '@/lib/history'
+import { useHistoryStore } from '@/stores/history'
+import { useServerTokenStore } from '@/stores/serverToken'
 import type { ProcessItem } from '@/types'
 
 // Importar Componentes
@@ -17,6 +23,7 @@ import AppHeader from '@/components/panels/AppHeader.vue'
 import GameSelector from '@/components/panels/GameSelector.vue'
 import MissionControls from '@/components/panels/MissionControls.vue'
 import TerminalOutput from '@/components/panels/TerminalOutput.vue'
+import TransmissionHistory from '@/components/panels/TransmissionHistory.vue'
 import ConfigModal from './components/ConfigModal.vue'
 import WelcomeGuide from './components/WelcomeGuide.vue'
 import {
@@ -70,6 +77,8 @@ const { generateText, isGenerating } = useGemini()
 const terminalStore = useTerminalStore()
 const processQueue = useProcessQueue()
 const missionStore = useMissionStore()
+const historyStore = useHistoryStore()
+const serverTokenStore = useServerTokenStore()
 const tickerItems = ref<string[]>(['ALERTA: PUERTA NORTE COMPROMETIDA', 'INFO: Enlace estable'])
 const squad = ref([
   { name: 'Alex', initials: 'AX', role: 'Infiltrador', status: 'ok', statusLabel: 'OK' },
@@ -113,6 +122,12 @@ const resetStatus = () => {
   gameError.value = ''
 }
 
+const saveTransmission = (text: string, source: HistoryEntry['source']) => {
+  const final = missionStore.mission.poll ? withAttendancePoll(text) : text
+  terminalText.value = final
+  historyStore.add(final, { ...missionStore.mission }, source)
+}
+
 const handleRun = async () => {
   resetStatus()
   if (!missionStore.mission.game) {
@@ -126,7 +141,7 @@ const handleRun = async () => {
   terminalStore.addLog(apiKey ? '📡 Generación solicitada a Gemini' : '🧪 Generación de ejemplo sin API key')
   try {
     const text = apiKey ? await generateText(apiKey, missionStore.mission) : generateDemoMessage(missionStore.mission)
-    terminalText.value = text
+    saveTransmission(text, apiKey ? 'ia' : 'demo')
     statusMessage.value = apiKey
       ? 'Transmisión generada con Gemini.'
       : 'Sin API key: texto de ejemplo. Configura tu clave para usar la IA'
@@ -144,7 +159,7 @@ const handleRunDemo = () => {
     return
   }
   terminalError.value = ''
-  terminalText.value = generateDemoMessage(missionStore.mission)
+  saveTransmission(generateDemoMessage(missionStore.mission), 'demo')
   statusMessage.value = 'Modo demo: transmisión generada sin conexión.'
   terminalStore.addLog('🧪 Transmisión generada en modo demo')
 }
@@ -155,7 +170,7 @@ const handleSendWhatsapp = async () => {
   resetStatus()
   terminalStore.addLog('📲 Enviando transmisión al grupo')
   try {
-    await sendToServer(terminalText.value)
+    await sendToServer(terminalText.value, { token: serverTokenStore.effectiveToken })
     statusMessage.value = 'Transmisión enviada al grupo.'
     terminalStore.addLog('✅ Transmisión enviada al grupo')
   } catch (error: unknown) {
@@ -165,6 +180,34 @@ const handleSendWhatsapp = async () => {
     isSending.value = false
   }
 }
+
+const repeatEntry = async (entry?: HistoryEntry) => {
+  const selected = entry ?? historyStore.last
+  if (!selected || isGenerating.value) return
+  missionStore.update({ ...selected.mission })
+  await handleRun()
+  if (!terminalError.value) statusMessage.value = 'Repetida la convocatoria: mismo juego, reclutas, hora y tono.'
+}
+
+const showEntry = async (entry: HistoryEntry) => {
+  terminalText.value = entry.text
+  terminalError.value = ''
+  resetStatus()
+  statusMessage.value = 'Transmisión del historial recuperada: puedes copiarla o compartirla.'
+  await nextTick()
+  outputRef.value?.focus()
+}
+
+const lastSummary = computed(() => {
+  const entry = historyStore.last
+  if (!entry) return ''
+  const title =
+    entry.mission.game === 'custom'
+      ? entry.mission.customGameName || 'Personalizado'
+      : GAME_TITLES[entry.mission.game as keyof typeof GAME_TITLES]
+  const tone = TONES.find((item) => item.id === entry.mission.tone)?.label || 'Épico'
+  return `${title || 'Personalizado'} · ${entry.mission.time || 'sin hora'} · ${tone}`
+})
 
 const saveUserConfig = () => {
   showConfig.value = false
@@ -236,9 +279,11 @@ const closeConfig = () => {
           :sending="isSending"
           :has-api-key="apiKeyStore.hasKey"
           :key-source="apiKeyStore.source"
+          :last-summary="lastSummary"
           @generate="handleRun"
           @run-demo="handleRunDemo"
           @open-config="showConfig = true"
+          @repeat-last="repeatEntry()"
         />
       </section>
 
@@ -252,6 +297,7 @@ const closeConfig = () => {
           :static-demo="IS_STATIC_DEMO"
           @send="handleSendWhatsapp"
         />
+        <TransmissionHistory @show="showEntry" @repeat="repeatEntry" />
       </section>
     </main>
     <div class="status-region" role="status" aria-live="polite">

@@ -19,7 +19,7 @@ const runDemo = () => emit('demo')
     </p>
     <ol>
       <li>Elige juego</li>
-      <li>Escribe reclutas y hora</li>
+      <li>Escribe reclutas, hora y tono</li>
       <li>Genera y comparte</li>
     </ol>
     <div class="guide-actions">

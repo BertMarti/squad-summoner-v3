@@ -3,9 +3,16 @@ import { useMissionStore } from '@/stores/mission'
 import HelpTip from '@/components/HelpTip.vue'
 import type { ApiKeySource } from '@/stores/apiKey'
 import { GEMINI_MODEL } from '@/config'
+import { TONES } from '@/lib/tones'
 
-const props = defineProps<{ loading: boolean; sending: boolean; hasApiKey: boolean; keySource: ApiKeySource }>()
-const emit = defineEmits<{ generate: []; runDemo: []; openConfig: [] }>()
+const props = defineProps<{
+  loading: boolean
+  sending: boolean
+  hasApiKey: boolean
+  keySource: ApiKeySource
+  lastSummary: string
+}>()
+const emit = defineEmits<{ generate: []; runDemo: []; openConfig: []; repeatLast: [] }>()
 const missionStore = useMissionStore()
 </script>
 
@@ -37,6 +44,25 @@ const missionStore = useMissionStore()
         <input id="mission-time" class="tech-input" type="time" v-model="missionStore.mission.time" />
       </div>
     </div>
+    <fieldset class="tone-fieldset" aria-describedby="tone-hint">
+      <legend>TONO</legend>
+      <div class="tone-options">
+        <label
+          v-for="tone in TONES"
+          :key="tone.id"
+          class="tone-option"
+          :class="{ selected: missionStore.mission.tone === tone.id }"
+        >
+          <input v-model="missionStore.mission.tone" type="radio" name="tone" :value="tone.id" />
+          <span>{{ tone.icon }} {{ tone.label }}</span>
+        </label>
+      </div>
+      <p id="tone-hint" class="tone-hint">{{ TONES.find((tone) => tone.id === missionStore.mission.tone)?.hint }}</p>
+    </fieldset>
+    <label class="poll-option" for="attendance-poll">
+      <input id="attendance-poll" v-model="missionStore.mission.poll" type="checkbox" />
+      <span>📋 Añadir encuesta de asistencia (✅ voy / ❌ no puedo)</span>
+    </label>
   </div>
 
   <p class="api-status" v-if="props.hasApiKey">
@@ -54,6 +80,16 @@ const missionStore = useMissionStore()
   <button type="button" class="btn-demo" @click="emit('runDemo')" :disabled="props.loading">
     {{ props.loading ? 'GENERANDO...' : '🧪 MODO DEMO' }}
   </button>
+  <button
+    type="button"
+    class="btn-repeat"
+    :disabled="props.loading || !props.lastSummary"
+    aria-describedby="repeat-hint"
+    @click="emit('repeatLast')"
+  >
+    🔁 REPETIR LA ÚLTIMA
+  </button>
+  <small id="repeat-hint" class="repeat-hint">{{ props.lastSummary || 'No hay transmisiones en el historial.' }}</small>
 </template>
 
 <style scoped>
@@ -154,6 +190,78 @@ button:disabled {
   font-size: 0.8rem;
   margin: 0 0 10px;
 }
+.tone-fieldset {
+  min-width: 0;
+  margin: 20px 0 14px;
+  padding: 0;
+  border: 0;
+}
+.tone-fieldset legend {
+  padding: 0;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.tone-options {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.tone-option {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-align: center;
+}
+.tone-option.selected {
+  border-color: var(--border-accent);
+  color: var(--text-accent);
+  background: var(--bg-input);
+}
+.tone-option input {
+  position: absolute;
+  opacity: 0;
+}
+.tone-option input:focus-visible + span {
+  outline: 2px solid var(--border-accent);
+  outline-offset: 4px;
+}
+.tone-hint,
+.repeat-hint {
+  display: block;
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+.poll-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+.poll-option span {
+  font-size: 0.85rem;
+}
+.poll-option input {
+  accent-color: var(--border-accent);
+}
+.btn-repeat {
+  background: transparent;
+  border: 1px solid var(--border-accent);
+  color: var(--text-accent);
+}
 .config-link {
   min-height: 0;
   padding: 0;
@@ -169,6 +277,9 @@ button:disabled {
   }
   .time-group {
     flex-basis: auto;
+  }
+  .tone-options {
+    flex-direction: column;
   }
 }
 </style>
