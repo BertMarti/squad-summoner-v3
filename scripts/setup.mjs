@@ -179,8 +179,8 @@ const { ensureServerToken } = require(join(SERVER, 'lib', 'token.js'))
 const tokenResult = ensureServerToken(readFileSync(ENV_PATH, 'utf8'))
 if (tokenResult.created) {
   writeFileSync(ENV_PATH, tokenResult.text, { mode: 0o600 })
-  console.log('✅ Generado un token secreto (SERVER_TOKEN) y compartido con la web local (VITE_SERVER_TOKEN).')
-  console.log('   Si abres la web desde otro equipo, no copies el .env: pega el token en ⚙️ CONFIGURAR API → Servidor.')
+  console.log('✅ Generado un token secreto (SERVER_TOKEN); «npm run dev» lo envía solo (VITE_SERVER_TOKEN).')
+  console.log('   Si abres la web desde otro equipo o usas un build, pega el token en ⚙️ CONFIGURAR API → Servidor.')
 } else {
   console.log('✅ Ya tienes un token del servidor (SERVER_TOKEN).')
 }

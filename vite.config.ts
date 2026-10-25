@@ -48,8 +48,9 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     base: isPages ? PAGES_BASE : '/',
-    // El token del servidor local nunca viaja a la web pública (no hay servidor en Pages).
-    define: isPages ? { 'import.meta.env.VITE_SERVER_TOKEN': '""' } : {},
+    // El token del servidor solo se incrusta con «npm run dev» (servido en este equipo). Ningún build (ni Pages ni
+    // uno local que alguien pueda servir o copiar) lo lleva dentro: ahí se pega en ⚙️ CONFIGURAR API → Servidor.
+    define: command === 'build' ? { 'import.meta.env.VITE_SERVER_TOKEN': '""' } : {},
     plugins: [vue(), command === 'serve' ? vueDevTools() : null, contentSecurityPolicy(isPages ? [] : [serverUrl])],
     resolve: {
       alias: {

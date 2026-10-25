@@ -17,7 +17,7 @@ export const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-fla
 
 /**
  * Token del servidor de WhatsApp (SERVER_TOKEN) para la web local; lo escribe «npm run setup» como VITE_SERVER_TOKEN.
- * En Pages siempre vacío (vite.config.ts lo anula en esa compilación).
+ * Solo llega con «npm run dev»: vite.config.ts lo anula en TODO build (Pages o local), donde se pega a mano.
  */
 export const ENV_SERVER_TOKEN = IS_STATIC_DEMO ? '' : (import.meta.env.VITE_SERVER_TOKEN || '').trim()
 

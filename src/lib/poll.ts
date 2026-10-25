@@ -15,8 +15,9 @@ export function hasAttendancePoll(text: string): boolean {
  * (con «…») y conserva siempre la encuesta completa. Es determinista: no depende de la IA.
  */
 export function withAttendancePoll(text: string): string {
-  const body = text.trimEnd()
-  if (hasAttendancePoll(body)) return body
+  let body = text.trimEnd()
+  // Si ya la lleva (p. ej. al repetir), se quita y se vuelve a poner: así el límite se cumple siempre.
+  if (hasAttendancePoll(body)) body = body.slice(0, body.length - POLL_BLOCK.length).trimEnd()
   const room = MAX_MESSAGE_LENGTH - POLL_BLOCK.length - SEPARATOR.length
   const trimmed = body.length > room ? `${body.slice(0, room - 1).trimEnd()}…` : body
   return trimmed ? `${trimmed}${SEPARATOR}${POLL_BLOCK}` : POLL_BLOCK

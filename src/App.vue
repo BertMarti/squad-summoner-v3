@@ -8,7 +8,7 @@ import { IS_STATIC_DEMO } from '@/config'
 import { readStored, writeStored, STORAGE_KEYS } from '@/lib/storage'
 import { useApiKeyStore } from '@/stores/apiKey'
 import { generateDemoMessage } from '@/lib/demo'
-import { isSendableMessage } from '@/lib/whatsapp'
+import { fitMessage, isSendableMessage } from '@/lib/whatsapp'
 import { sendToServer } from '@/services/whatsappServer'
 import { withAttendancePoll } from '@/lib/poll'
 import { GAME_TITLES } from '@/lib/mission'
@@ -123,7 +123,7 @@ const resetStatus = () => {
 }
 
 const saveTransmission = (text: string, source: HistoryEntry['source']) => {
-  const final = missionStore.mission.poll ? withAttendancePoll(text) : text
+  const final = missionStore.mission.poll ? withAttendancePoll(text) : fitMessage(text)
   terminalText.value = final
   historyStore.add(final, { ...missionStore.mission }, source)
 }
