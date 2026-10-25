@@ -8,12 +8,15 @@ import { readStored, removeStored, writeStored, STORAGE_KEYS } from '@/lib/stora
  * Historial de transmisiones.
  * - Por defecto SOLO en memoria (se pierde al recargar).
  * - Con «Recordar historial» se guarda en este navegador (clave con prefijo `squad-summoner-v3:historial`).
- *   Que exista esa clave es lo que indica que la persona lo pidió; desmarcarlo la borra.
+ *   Que haya ahí un historial válido es lo que indica que la persona lo pidió; desmarcarlo la borra.
  */
 export const useHistoryStore = defineStore('history', () => {
   const saved = readStored(STORAGE_KEYS.history)
   const entries = ref<HistoryEntry[]>(parseHistory(saved))
-  const remember = ref(saved !== null)
+  // Solo cuenta como «recordar» si lo guardado es un historial válido (o uno vacío guardado por nosotros):
+  // basura escrita en esa clave por otra web del mismo origen no activa la casilla.
+  const remember = ref(parseHistory(saved).length > 0 || saved === '[]')
+  if (saved !== null && !remember.value) removeStored(STORAGE_KEYS.history)
 
   const last = computed<HistoryEntry | null>(() => entries.value[0] ?? null)
   const isEmpty = computed(() => entries.value.length === 0)

@@ -16,13 +16,12 @@ const { createWhatsappClient, QR_HELP } = require('./lib/whatsappClient');
 const {
   parseAllowedOrigins,
   isOriginAllowed,
-  createOriginGuard,
+  createSendMissionGuards,
   isValidGroupId,
   validateMissionBody,
   securityHeaders,
-  createRateLimiter,
 } = require('./lib/security');
-const { checkTokenConfig, createTokenGuard } = require('./lib/token');
+const { checkTokenConfig } = require('./lib/token');
 
 // --- Configuración (ver .env.example) ---
 const PORT = Number(process.env.PORT) || 3000;
@@ -92,14 +91,11 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true, whatsapp: whatsappReady ? 'ready' : 'starting' });
 });
 
-// CORS solo impide leer la respuesta: createOriginGuard impide que otra web dispare el envío,
-// createTokenGuard exige el SERVER_TOKEN (si lo hay) y ambos van antes del limitador
-// para que los intentos ajenos no consuman el cupo del origen legítimo.
+// CORS solo impide leer la respuesta. createSendMissionGuards (server/lib/security.js), en orden:
+// Origin (403) → límite de autenticación 30/min → SERVER_TOKEN (401) → límite de envíos 10/min.
 app.post(
   '/send-mission',
-  createOriginGuard(ALLOWED_ORIGINS),
-  createTokenGuard(SERVER_TOKEN),
-  createRateLimiter({ windowMs: 60_000, max: 10 }),
+  ...createSendMissionGuards({ allowed: ALLOWED_ORIGINS, token: SERVER_TOKEN }),
   async (req, res) => {
     const result = validateMissionBody(req.body);
     if (!result.ok) return res.status(400).json({ error: result.error });

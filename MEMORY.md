@@ -6,7 +6,7 @@
 
 - Versión **3.3.0**. Web Vue 3 + Vite 7 + Pinia 3, servidor opcional Express 5 + whatsapp-web.js 1.34.7.
 - Publicación en GitHub Pages con Actions desde `master` (`https://bertmarti.github.io/squad-summoner-v3/`).
-- **169 pruebas** Vitest 4 (lógica pura, componentes, Gemini con el SDK real y `fetch` simulado, almacenamiento,
+- **178 pruebas** Vitest 4 (lógica pura, componentes, Gemini con el SDK real y `fetch` simulado, almacenamiento,
   stores, servidor y asistente).
 - CI: gitleaks, ESLint, Prettier, web en Node 20 y 22 (tipos, pruebas, builds, `npm audit`), servidor. Dependabot semanal
   con ignores.
@@ -42,6 +42,10 @@
   `crypto.timingSafeEqual`). Así abrir el servidor a la red no deja el envío al grupo sin autenticación.
 - **`VITE_SERVER_TOKEN` solo en `npm run dev`** (25/10, revisión cruzada): `vite.config.ts` lo anula en todo build para
   que un `dist/` servido o copiado no lleve el token; el que se pega en ⚙️ vive solo en memoria.
+- **Revisión de Fable de la PR #6** (25/10): `npm run dev -- --host` con `VITE_SERVER_TOKEN` en el `.env` falla a
+  propósito (el token se serviría en `/src/config.ts` a toda la wifi); para la red, `build` + `preview -- --host`.
+  Límite de autenticación de 30/min antes del token. «Recordar historial» solo se activa si la clave guardada es un
+  historial válido (o `[]`); la basura de otra web del origen se borra.
 - **Respuestas largas de la IA** (25/10): `fitMessage` las recorta a 4000 caracteres (si no, no se podían enviar ni guardar
   en el historial); el prompt incluye `DATA_RULE` (lo entrecomillado son datos, no órdenes).
 - **Tono, encuesta e historial** (25/10, fase 3): los tonos afectan a IA y demo; la encuesta es determinista y se añade

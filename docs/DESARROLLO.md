@@ -44,7 +44,7 @@ El servidor y la web leen el mismo `.env` de la raíz. Plantilla completa en [`.
 | `HOST` | servidor | Interfaz de escucha (por defecto `127.0.0.1`; `0.0.0.0` lo expone a tu red). |
 | `ALLOWED_ORIGINS` | servidor | Orígenes web permitidos por CORS, separados por comas (por defecto los de Vite en localhost). |
 | `SERVER_TOKEN` | servidor | Token opcional para autorizar el envío; obligatorio si `HOST` no es local y debe tener al menos 24 caracteres. |
-| `VITE_SERVER_TOKEN` | web | Token que la web envía en `Authorization: Bearer`. Solo con `npm run dev`: `vite.config.ts` lo anula en todo build (Pages o local); ahí se pega en ⚙️ → Servidor y vive solo en memoria. |
+| `VITE_SERVER_TOKEN` | web | Token que la web envía en `Authorization: Bearer`. Solo con `npm run dev` en local: `vite.config.ts` lo anula en todo build (Pages o local) y `npm run dev -- --host` falla si está definido (`scripts/devHost.ts`). En la red: `npm run build && npm run preview -- --host` (puerto 4173, `ALLOWED_ORIGINS=http://192.168.1.50:4173`) y el token se pega en ⚙️ → Servidor, solo en memoria. |
 | `CHROMIUM_PATH` | servidor | Ruta al Chromium/Chrome del sistema; necesaria en Linux ARM como Raspberry Pi. |
 
 > ⚠️ **Todo lo que empieza por `VITE_` acaba dentro del JavaScript compilado.** No pongas `VITE_GOOGLE_API_KEY` en una
@@ -154,7 +154,8 @@ comando guardará `WHATSAPP_GROUP_ID` en `.env`. Los nombres se sanean antes de 
 - CORS con lista blanca (`ALLOWED_ORIGINS`, sin distinguir mayúsculas); además `createOriginGuard` rechaza con 403
   las peticiones con `Origin` no permitido **antes** del limitador, para que una web ajena no gaste el cupo de envíos.
 - Si existe `SERVER_TOKEN`, se exige `Authorization: Bearer …`; la comparación usa SHA-256 y `crypto.timingSafeEqual`.
-  El orden de protección es **Origin → token → limitador**. Si falta o no coincide, responde `401`.
+  El orden (`createSendMissionGuards`) es **Origin (403) → límite de autenticación 30/min (429) → token (401) → límite de
+  envíos 10/min**: la fuerza bruta contra el token está limitada y los intentos fallidos no gastan el cupo de envíos.
 - Si `HOST` no es local, el servidor no arranca sin un `SERVER_TOKEN` de al menos 24 caracteres. `npm run setup` lo genera
   junto a `VITE_SERVER_TOKEN` sin mostrarlo; nunca se acepta el token en la URL.
 - `express.json({ limit: '16kb' })`; el mensaje debe ser texto, se eliminan los caracteres de control (salvo saltos de línea y tabuladores) y debe tener de 1 a 4000 caracteres.
@@ -191,7 +192,7 @@ npm test
 - `src/services/__tests__/` — envío al servidor (con `fetch` simulado).
 - `src/stores/__tests__/`, `src/composables/__tests__/` — stores de Pinia y traducción de errores de Gemini.
 - `server/test/` — validación, CORS, cabeceras, limitador, token y asistente del servidor.
-- Total actual: **169** pruebas.
+- Total actual: **178** pruebas.
 
 ## Despliegue en GitHub Pages
 

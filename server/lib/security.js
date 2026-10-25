@@ -81,7 +81,12 @@ function securityHeaders(_req, res, next) {
  * Limitador de peticiones muy simple en memoria (por IP).
  * Evita que una página abierta dispare cientos de mensajes seguidos.
  */
-function createRateLimiter({ windowMs = 60_000, max = 10, now = Date.now } = {}) {
+function createRateLimiter({
+  windowMs = 60_000,
+  max = 10,
+  now = Date.now,
+  message = 'Demasiados envíos seguidos. Espera un minuto.',
+} = {}) {
   const hits = new Map();
   return function rateLimit(req, res, next) {
     const key = req.ip || 'local';
@@ -94,7 +99,7 @@ function createRateLimiter({ windowMs = 60_000, max = 10, now = Date.now } = {})
     if (recent.length >= max) {
       hits.set(key, recent);
       res.setHeader('Retry-After', String(Math.ceil(windowMs / 1000)));
-      return res.status(429).json({ error: 'Demasiados envíos seguidos. Espera un minuto.' });
+      return res.status(429).json({ error: message });
     }
     recent.push(t);
     hits.set(key, recent);
@@ -102,7 +107,36 @@ function createRateLimiter({ windowMs = 60_000, max = 10, now = Date.now } = {})
   };
 }
 
+/** Limitador de intentos de autenticación (30/min por IP): frena la fuerza bruta contra SERVER_TOKEN. */
+function createAuthLimiter({ now = Date.now } = {}) {
+  return createRateLimiter({
+    windowMs: 60_000,
+    max: 30,
+    now,
+    message: 'Demasiados intentos con el token del servidor. Espera un minuto.',
+  });
+}
+
+/**
+ * Cadena de protección de POST /send-mission, en este orden:
+ * 1. Origin permitido (403): otra web no puede disparar el envío ni gastar cupos.
+ * 2. Límite de autenticación (30/min): sin fuerza bruta ilimitada contra el token.
+ * 3. SERVER_TOKEN (401) si está configurado.
+ * 4. Límite de envíos (10/min): solo lo consumen peticiones ya autenticadas.
+ */
+function createSendMissionGuards({ allowed, token = '', now = Date.now }) {
+  const { createTokenGuard } = require('./token');
+  return [
+    createOriginGuard(allowed),
+    createAuthLimiter({ now }),
+    createTokenGuard(token),
+    createRateLimiter({ windowMs: 60_000, max: 10, now }),
+  ];
+}
+
 module.exports = {
+  createAuthLimiter,
+  createSendMissionGuards,
   MAX_MESSAGE_LENGTH,
   DEFAULT_ORIGINS,
   parseAllowedOrigins,

@@ -103,13 +103,16 @@ grupo concreto, puedes ejecutar la torre de comunicaciones en tu ordenador:
 `npm run setup` crea un **token secreto** en tu archivo `.env` (`SERVER_TOKEN`) sin mostrarlo en pantalla. Si abres la web
 con `npm run dev` en el mismo ordenador, la web lo usa sola y no tienes que hacer nada.
 
-Si quieres usar la torre desde otro equipo de casa (por ejemplo, la torre en una Raspberry Pi en `192.168.1.50`):
+Si quieres usar la torre desde otro equipo de casa (por ejemplo, la torre y la web en una Raspberry Pi en `192.168.1.50`):
 
-1. En el `.env` del equipo de la torre pon `HOST=0.0.0.0` y añade a `ALLOWED_ORIGINS` la dirección desde la que abrirás la
-   web (por ejemplo `http://192.168.1.50:5173`). Reinicia con `npm run server`.
-2. Sin token, la torre **se niega a arrancar** abierta a la red: así nadie más de tu wifi puede mandar mensajes a tu grupo.
-3. En la web, abre **⚙️ CONFIGURAR API** → **Servidor de WhatsApp (opcional)** y pega el valor de `SERVER_TOKEN`. Solo se
-   usa durante esa visita: no se guarda en el navegador.
+1. En el `.env` de ese equipo pon `HOST=0.0.0.0` y `ALLOWED_ORIGINS=http://192.168.1.50:4173`. Reinicia la torre con
+   `npm run server`. Sin token, la torre **se niega a arrancar** abierta a la red: así nadie más de tu wifi puede mandar
+   mensajes a tu grupo.
+2. Sirve la web a la red con `npm run build && npm run preview -- --host` (no uses `npm run dev -- --host`: llevaría el
+   token dentro y la web se niega a arrancar así).
+3. Desde el otro equipo abre <http://192.168.1.50:4173>, entra en **⚙️ CONFIGURAR API** → **Servidor de WhatsApp
+   (opcional)** y pega el valor de `SERVER_TOKEN` de tu `.env`. Solo se usa durante esa visita: no se guarda en el
+   navegador.
 
 La web publicada en GitHub Pages no muestra esta opción (no puede hablar con tu torre).
 

@@ -132,6 +132,32 @@ describe('useHistoryStore y useServerTokenStore (fase 3)', () => {
     expect(again.isEmpty).toBe(true)
   })
 
+  it('basura en la clave del historial no activa «recordar» y se limpia', async () => {
+    const { useHistoryStore } = await import('../history')
+    for (const junk of ['{"hack":1}', 'no es json', '[{"id":"x","text":"<img src=x>"}]']) {
+      memory.clear()
+      memory.set(`${PREFIX}historial`, junk)
+      setActivePinia(createPinia())
+      const h = useHistoryStore()
+      expect(h.remember).toBe(false)
+      expect(h.isEmpty).toBe(true)
+      expect(memory.has(`${PREFIX}historial`)).toBe(false)
+      h.add('hola', { game: 'hd2' }, 'demo')
+      expect(memory.size).toBe(0)
+    }
+  })
+
+  it('un historial vaciado con «recordar» sigue recordándose', async () => {
+    const { useHistoryStore } = await import('../history')
+    const h = useHistoryStore()
+    h.add('uno', { game: 'hd2' }, 'demo')
+    h.setRemember(true)
+    h.clear()
+    expect(memory.get(`${PREFIX}historial`)).toBe('[]')
+    setActivePinia(createPinia())
+    expect(useHistoryStore().remember).toBe(true)
+  })
+
   it('el token pegado vive solo en memoria', async () => {
     const { useServerTokenStore } = await import('../serverToken')
     const t = useServerTokenStore()

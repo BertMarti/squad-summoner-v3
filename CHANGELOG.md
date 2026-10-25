@@ -16,6 +16,8 @@ Todos los cambios notables del proyecto están documentados en este archivo.
 - `SERVER_TOKEN` en la cabecera `Authorization: Bearer …`, obligatorio al abrir el servidor a una red no local y comparado
   en tiempo constante. `npm run setup` lo genera (y `VITE_SERVER_TOKEN`) sin mostrarlo; ningún build incrusta el token.
 - El prompt avisa de que lo entrecomillado son datos, no instrucciones.
+- Límite de 30 intentos de autenticación por minuto contra el token; `npm run dev -- --host` se niega a arrancar con
+  `VITE_SERVER_TOKEN` en el `.env`; basura en la clave del historial ya no activa «Recordar».
 
 ### 🐛 Correcciones
 - Las respuestas de la IA de más de 4000 caracteres se recortan en vez de quedarse sin poder enviarse.

@@ -141,3 +141,57 @@ describe('securityHeaders', () => {
     expect(next).toHaveBeenCalled();
   });
 });
+
+describe('createSendMissionGuards (orden Origin → límite de autenticación → token → límite de envíos)', () => {
+  const token = 'token-de-prueba-0123456789abcdef';
+  const allowed = ['http://localhost:5173'];
+
+  /** Ejecuta la cadena como Express: se para en la primera respuesta. */
+  function run(guards, headers) {
+    const res = { statusCode: 200, body: undefined, headers: {} };
+    res.status = (c) => ((res.statusCode = c), res);
+    res.json = (b) => ((res.body = b), res);
+    res.setHeader = (k, v) => (res.headers[k.toLowerCase()] = v);
+    const req = { ip: '192.168.1.50', get: (n) => headers[n.toLowerCase()] };
+    let passed = false;
+    const step = (i) => {
+      if (i === guards.length) return void (passed = true);
+      guards[i](req, res, () => step(i + 1));
+    };
+    step(0);
+    return { passed, status: passed ? 200 : res.statusCode, body: res.body };
+  }
+
+  it('limita la fuerza bruta del token a 30 intentos por minuto', () => {
+    let t = 0;
+    const guards = sec.createSendMissionGuards({ allowed, token, now: () => t });
+    const bad = { origin: 'http://localhost:5173', authorization: 'Bearer token-adivinado-000000000000' };
+    for (let i = 0; i < 30; i++) expect(run(guards, bad).status).toBe(401);
+    const blocked = run(guards, bad);
+    expect(blocked.status).toBe(429);
+    expect(blocked.body.error).toMatch(/intentos con el token/);
+    // Pasado un minuto se puede volver a intentar.
+    t = 61_000;
+    expect(run(guards, { ...bad, authorization: `Bearer ${token}` }).passed).toBe(true);
+  });
+
+  it('el límite de 10 envíos por minuto sigue al final, solo para peticiones autenticadas', () => {
+    const guards = sec.createSendMissionGuards({ allowed, token, now: () => 0 });
+    const ok = { origin: 'http://localhost:5173', authorization: `Bearer ${token}` };
+    for (let i = 0; i < 10; i++) expect(run(guards, ok).passed).toBe(true);
+    const r = run(guards, ok);
+    expect(r.status).toBe(429);
+    expect(r.body.error).toMatch(/envíos seguidos/);
+  });
+
+  it('un Origin ajeno se rechaza con 403 antes de gastar ningún cupo', () => {
+    const guards = sec.createSendMissionGuards({ allowed, token, now: () => 0 });
+    for (let i = 0; i < 50; i++) expect(run(guards, { origin: 'https://malo.example' }).status).toBe(403);
+    expect(run(guards, { origin: 'http://localhost:5173', authorization: `Bearer ${token}` }).passed).toBe(true);
+  });
+
+  it('sin SERVER_TOKEN (uso local) deja pasar sin cabecera', () => {
+    const guards = sec.createSendMissionGuards({ allowed, token: '', now: () => 0 });
+    expect(run(guards, {}).passed).toBe(true);
+  });
+});
