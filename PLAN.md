@@ -23,6 +23,7 @@ accesibilidad y móvil, GitHub Pages con CSP, CI con gitleaks, Dependabot, READM
 
 ## ⏭️ Siguiente (prioridad alta → baja)
 
+0. **Alberto:** prueba real con clave de Gemini y WhatsApp (pasos en el README, «Lo que tienes que hacer tú»).
 1. Cuando la Pi tenga Node 22: Vitest 5, Vite 8, TypeScript 7 (cuando `vue-tsc` lo soporte), Pinia 4 y quitar los
    `ignore` de `.github/dependabot.yml`.
 2. Quitar los `overrides` y las altas de `extract-zip` en cuanto `whatsapp-web.js` publique una versión con Puppeteer ≥ 25.13.
