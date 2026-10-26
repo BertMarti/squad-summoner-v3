@@ -123,6 +123,16 @@ La sesión queda en tu ordenador. El botón **🟢 COMPARTIR EN WHATSAPP** sigue
 - Consigue tu clave gratuita en [Google AI Studio](https://aistudio.google.com/apikey) si quieres usar la IA; si no, usa el modo demo.
 - Si instalas el servidor en una Raspberry Pi, instala antes Chromium con `sudo apt install chromium`.
 
+**Pendiente del mantenedor (Alberto):** todo lo de la versión 3.3.0 está probado con pruebas automáticas y en modo demo,
+pero falta una prueba real de punta a punta:
+
+1. Con una **clave real de Gemini**: ⚙️ CONFIGURAR API → PROBAR CLAVE → GENERAR TRANSMISIÓN con cada tono (Épico, Cutre
+   y Pasivo-agresivo) y con la encuesta marcada.
+2. Con **WhatsApp real**: `npm run setup`, `npm run server:grupos`, `npm run server` y **📲 ENVIAR AL GRUPO** a un grupo de
+   prueba.
+3. **Desde otro equipo de casa**, con `HOST=0.0.0.0` y el token pegado en ⚙️, siguiendo «¿Lo usas desde otro equipo de
+   casa?». Comprueba también que sin token la torre se niega a arrancar abierta a la red.
+
 ## ❓ Preguntas frecuentes
 
 <details>
@@ -198,7 +208,7 @@ Sí, con el botón ☀️ de arriba a la derecha. La web recuerda tu elección.
 Este proyecto usa librerías de terceros para la automatización de WhatsApp. Úsalo con responsabilidad y evita el spam.
 El Administratum no se hace responsable de bloqueos por parte de Meta.
 
-**SQUAD SUMMONER** no está afiliado con Arrowhead Game Studios, Capcom ni Games Workshop. Los nombres de los juegos
+**SQUAD SUMMONER** no está afiliado con Arrowhead Game Studios, Capcom, Games Workshop, Ghost Ship Games ni Bungie. Los nombres de los juegos
 pertenecen a sus dueños; las ilustraciones de la web son propias.
 
 ---
