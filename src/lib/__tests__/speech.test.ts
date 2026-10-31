@@ -144,7 +144,10 @@ describe('useSpeech', () => {
 
   it('un error dentro del propio speak() (p. ej. not-allowed) deja la lectura parada con el aviso', () => {
     const { win, synth } = fakeWindow()
-    synth.speak.mockImplementation((u: FakeUtterance) => u.onerror?.({ error: 'not-allowed' }))
+    synth.speak.mockImplementation((u: FakeUtterance) => {
+      u.onerror?.({ error: 'not-allowed' })
+      return 0
+    })
     const s = useSpeech(win as never)
     expect(s.speak('Uno. Dos.')).toBe(false)
     expect(synth.speak).toHaveBeenCalledTimes(1)
