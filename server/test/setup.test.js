@@ -94,7 +94,7 @@ describe('preflight', () => {
 describe('grupos: nombres de WhatsApp seguros para la terminal', () => {
   it('quita secuencias ANSI, controles y marcas bidi, y recorta', () => {
     expect(safeName('\u001b[2J\u001b[31mRojo\u001b[0m')).toBe('Rojo');
-    expect(safeName('a\u0007b‮c\r\nd')).toBe('abcd');
+    expect(safeName('a\u0007b\u202ec\r\nd')).toBe('abcd');
     expect(safeName('x'.repeat(100)).length).toBe(60);
     expect(safeName('')).toBe('(sin nombre)');
   });
