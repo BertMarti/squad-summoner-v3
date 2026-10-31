@@ -37,6 +37,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
   display: inline;
 }
 .help-button {
+  position: relative;
   min-width: 32px;
   min-height: 32px;
   margin-left: 6px;
@@ -48,6 +49,12 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
   font: 700 0.85rem var(--font-stack);
   vertical-align: middle;
   cursor: pointer;
+}
+/* Zona táctil de 44 × 44 px sin agrandar el círculo de 32 px (WCAG 2.5.5). */
+.help-button::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
 }
 .help-text {
   display: block;

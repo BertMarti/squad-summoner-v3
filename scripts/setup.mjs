@@ -26,7 +26,7 @@ Uso:  npm run setup            (pregunta lo mínimo)
       npm run setup -- --yes   (sin preguntas: solo prepara la web)
 
 Qué hace:
-  1. Comprueba que tienes Node.js 20.19+ y npm.
+  1. Comprueba que tienes Node.js 20.19 o posterior de la serie 20, o 22.12 o posterior, y npm.
   2. Instala las dependencias de la web si faltan.
   3. Crea el archivo .env a partir de .env.example (si ya existe, no lo pisa).
   4. Opcional: prepara el envío automático a un grupo de WhatsApp
@@ -97,7 +97,9 @@ function step(title) {
 step('1/4 · Comprobando requisitos')
 const [major, minor] = process.versions.node.split('.').map(Number)
 if (major < 20 || (major === 20 && minor < 19) || (major === 22 && minor < 12) || major === 21) {
-  console.error(`❌ Necesitas Node.js 20.19 o superior (o 22.12+). Tienes ${process.versions.node}.`)
+  console.error(
+    `❌ Necesitas Node.js 20.19 o posterior de la serie 20, o 22.12 o posterior. Tienes ${process.versions.node}.`,
+  )
   console.error('   Instálalo desde https://nodejs.org (versión LTS) o con nvm: nvm install --lts')
   finish(1)
 }

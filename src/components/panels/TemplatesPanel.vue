@@ -269,7 +269,15 @@ const onKeydown = (event: KeyboardEvent) => {
       <small v-if="store.isFull" class="limit-note">Máximo {{ MAX_TEMPLATES }} plantillas</small>
       <button type="button" :disabled="store.isEmpty" @click="exportAll">⬇️ EXPORTAR</button>
       <button type="button" @click="chooseImport">⬆️ IMPORTAR</button>
-      <input ref="fileInput" class="sr-only" type="file" accept="application/json,.json" @change="importFile" />
+      <input
+        ref="fileInput"
+        class="sr-only"
+        type="file"
+        tabindex="-1"
+        aria-hidden="true"
+        accept="application/json,.json"
+        @change="importFile"
+      />
     </div>
     <p v-if="importMessage" class="import-status" role="status">{{ importMessage }}</p>
     <p v-if="importError" class="template-error" role="alert">{{ importError }}</p>

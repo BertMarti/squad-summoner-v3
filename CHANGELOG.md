@@ -27,7 +27,7 @@ Todos los cambios notables del proyecto están documentados en este archivo.
 ### 🔄 Dependencias
 - Vite 8, Pinia 4, `@vue/tsconfig` 0.9 y menores de `@google/genai`, ESLint y `vue-tsc`. Siguen aplazadas Vitest 5 y
   `npm-run-all2` 9 (exigen Node 22; la Raspberry Pi usa Node 20) y TypeScript 7 (no compatible con `vue-tsc` 3).
-- Servidor 1.3.0: requiere Node 20.19+ o 22.12+.
+- Servidor 1.3.0: requiere Node.js 20.19 o posterior de la serie 20, o 22.12 o posterior.
 
 ### 🧹 Eliminado
 - `buildAudioPrompt`: la voz lee la transmisión tal cual, sin una llamada extra a Gemini.

@@ -15,7 +15,7 @@ Para la explicación de usuario, vuelve al [README](../README.md).
 
 ## Requisitos
 
-- Node.js `^20.19.0` o `>=22.12.0` (lo piden Vite 8 y el servidor).
+- Node.js 20.19 o posterior de la serie 20, o 22.12 o posterior (`^20.19.0 || >=22.12.0`; lo piden Vite 8 y el servidor).
 - Una API key de Gemini de [Google AI Studio](https://aistudio.google.com/apikey) si quieres usar la IA (sin ella hay modo demo).
 - Para el servidor: una cuenta de WhatsApp en el móvil y un sistema donde Puppeteer pueda lanzar Chromium.
 
@@ -27,6 +27,13 @@ cd squad-summoner-v3
 npm ci                 # web
 npm run setup          # comprueba requisitos, instala y crea .env
 npm run server:grupos  # opcional: vincula WhatsApp y elige el grupo
+```
+
+Si instalas el servidor a mano en Linux ARM (Raspberry Pi) en vez de con `npm run setup`, evita que Puppeteer descargue
+un Chrome x64 que no sirve (~170 MB) y usa el Chromium del sistema (`sudo apt install chromium`):
+
+```sh
+cd server && PUPPETEER_SKIP_DOWNLOAD=1 npm ci
 ```
 
 ## Variables de entorno (`.env` en la raíz)

@@ -158,6 +158,13 @@ describe('TemplatesPanel', () => {
 
   it('IMPORTAR un archivo válido muestra el resumen; uno no válido, el motivo', async () => {
     const w = mountPanel()
+    const fileInput = w.get('input[type="file"]')
+    // El input real no se alcanza con el teclado: lo abre el botón ⬆️ IMPORTAR.
+    expect(fileInput.attributes('tabindex')).toBe('-1')
+    expect(fileInput.attributes('aria-hidden')).toBe('true')
+    const click = vi.spyOn(fileInput.element as HTMLInputElement, 'click').mockImplementation(() => undefined)
+    await btn(w, '⬆️ IMPORTAR').trigger('click')
+    expect(click).toHaveBeenCalled()
     const raw = exportTemplates([{ id: 'p-1', name: 'Importada', text: 'Hola', createdAt: '', updatedAt: '' }])
     await pickFile(w, new File([raw], 'plantillas.json', { type: 'application/json' }))
     expect(w.get('.import-status[role="status"]').text()).toBe('1 plantilla importada.')

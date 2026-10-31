@@ -1,5 +1,8 @@
 /// <reference types="vite/client" />
 
+/** Versión de package.json (la inyecta vite.config.ts). */
+declare const __APP_VERSION__: string
+
 interface ImportMetaEnv {
   readonly VITE_GOOGLE_API_KEY?: string
   readonly VITE_SERVER_URL?: string

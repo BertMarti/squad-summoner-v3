@@ -39,6 +39,11 @@ afterEach(() => {
 })
 
 describe('App (flujo completo)', () => {
+  it('la cabecera muestra la versión de package.json', async () => {
+    const { version } = (await import('../../../package.json')).default
+    expect(mountApp().get('.top-bar small').text()).toBe(`PROTOCOLO DE INVOCACIÓN TÁCTICA V${version}`)
+  })
+
   it('demo con encuesta: la transmisión lleva la encuesta y entra en el historial', async () => {
     const w = mountApp()
     await pickGame(w, 'Deep Rock Galactic')

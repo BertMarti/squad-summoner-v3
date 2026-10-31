@@ -194,12 +194,14 @@ describe('exportar e importar', () => {
         { nombre: 'Sin texto' },
         'cadena',
         { nombre: 'Enorme', texto: 'x'.repeat(MAX_MESSAGE_LENGTH * 3) },
+        { nombre: 'Un poco larga', texto: 'x'.repeat(MAX_MESSAGE_LENGTH + 1) },
       ],
     })
     const r = importTemplates(raw, current, NOW)
-    expect(r).toMatchObject({ added: 1, duplicated: 1, invalid: 4, overLimit: 0 })
+    expect(r).toMatchObject({ added: 1, duplicated: 1, invalid: 5, overLimit: 0 })
     expect(r.list.map((t) => t.name)).toEqual(['Uno', 'Uno (2)'])
-    expect(describeImport(r)).toBe('1 plantilla importada, 1 ya existía, 4 no válidas descartadas.')
+    expect(describeImport(r)).toBe('1 plantilla importada, 1 ya existía, 5 no válidas descartadas.')
+    expect(r.list.some((t) => t.name === 'Un poco larga')).toBe(false)
   })
 
   it('respeta el máximo de plantillas', () => {

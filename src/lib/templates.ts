@@ -312,7 +312,8 @@ export function importTemplates(raw: string, current: readonly UserTemplate[], n
     const name = cleanTemplateName(item && typeof item === 'object' ? item.nombre : '')
     const rawText = item && typeof item === 'object' ? item.texto : ''
     const text = cleanTemplateText(rawText)
-    if (!name || !text || typeof rawText !== 'string' || rawText.length > MAX_MESSAGE_LENGTH * 2) {
+    // Un texto de más de 4000 caracteres no se recorta en silencio: cuenta como no válido.
+    if (!name || !text || typeof rawText !== 'string' || validateTemplateInput(name, rawText)) {
       result.invalid++
       continue
     }

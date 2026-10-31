@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { readFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig, loadEnv, type Plugin } from 'vite'
@@ -8,6 +9,8 @@ import { assertDevTokenNotExposed } from './scripts/devHost.ts'
 
 /** Nombre del repo: base de la web en GitHub Pages (https://bertmarti.github.io/squad-summoner-v3/). */
 const PAGES_BASE = '/squad-summoner-v3/'
+/** Versión que se muestra en la cabecera (sale de package.json). */
+const APP_VERSION: string = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version
 
 /** Inserta una Content-Security-Policy en el index.html compilado (no en desarrollo, para no romper el HMR). */
 function contentSecurityPolicy(connectSrc: string[]): Plugin {
@@ -61,7 +64,10 @@ export default defineConfig(({ command, mode }) => {
     base: isPages ? PAGES_BASE : '/',
     // El token del servidor solo se incrusta con «npm run dev» (servido en este equipo). Ningún build (ni Pages ni
     // uno local que alguien pueda servir o copiar) lo lleva dentro: ahí se pega en ⚙️ CONFIGURAR API → Servidor.
-    define: command === 'build' ? { 'import.meta.env.VITE_SERVER_TOKEN': '""' } : {},
+    define: {
+      __APP_VERSION__: JSON.stringify(APP_VERSION),
+      ...(command === 'build' ? { 'import.meta.env.VITE_SERVER_TOKEN': '""' } : {}),
+    },
     plugins: [
       devTokenGuard(env.VITE_SERVER_TOKEN),
       vue(),
