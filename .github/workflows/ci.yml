@@ -89,7 +89,31 @@ jobs:
           PUPPETEER_SKIP_DOWNLOAD: 'true'
       - name: Sintaxis
         run: find . -name '*.js' -not -path './node_modules/*' -not -path './test/*' -print0 | xargs -0 -n1 node --check
-      # Quedan vulnerabilidades altas transitivas de puppeteer (vía whatsapp-web.js) sin arreglo
-      # compatible; se vigila al menos que no aparezca ninguna crítica.
-      - name: Auditoría (falla solo con críticas)
-        run: npm audit --audit-level=critical
+      # Desde la 3.4.0 los overrides (@puppeteer/browsers 3, archiver 8) dejan el servidor sin avisos de npm audit.
+      - name: Auditoría (falla con altas)
+        run: npm audit --audit-level=high
+
+  servidor-chrome:
+    # Con el override de @puppeteer/browsers 3 (sin extract-zip), comprueba en x64 que Puppeteer sigue
+    # descargando y arrancando Chrome como al instalar el servidor en un PC (en la Pi se usa el del sistema).
+    name: Servidor · descarga y arranque de Chrome (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - name: Instalar descargando Chrome (como en un PC)
+        run: npm ci
+      - name: Arrancar Chrome y cargar whatsapp-web.js
+        run: node scripts/comprobar-chrome.js

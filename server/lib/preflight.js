@@ -23,9 +23,10 @@ function findProblems({
 } = {}) {
   const problems = [];
   const [major, minor] = nodeVersion.split('.').map(Number);
-  if (major < 20 || (major === 20 && minor < 19)) {
+  // 20.19+ o 22.12+: Puppeteer usa @puppeteer/browsers 3 (módulo ES cargado con require), que necesita esas versiones.
+  if (major < 20 || (major === 20 && minor < 19) || major === 21 || (major === 22 && minor < 12)) {
     problems.push(
-      `Necesitas Node.js 20.19 o superior (tienes ${nodeVersion}). Instálalo desde https://nodejs.org o con nvm.`,
+      `Necesitas Node.js 20.19 o superior (o 22.12+; tienes ${nodeVersion}). Instálalo desde https://nodejs.org o con nvm.`,
     );
   }
   if (!exists(path.join(SERVER_DIR, 'node_modules', 'whatsapp-web.js'))) {

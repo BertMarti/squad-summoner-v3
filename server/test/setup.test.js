@@ -78,6 +78,9 @@ describe('preflight', () => {
   });
   it('explica cada cosa que falta, con el comando para arreglarla', () => {
     expect(findProblems({ ...base, nodeVersion: '18.20.0' })[0]).toMatch(/Node\.js 20\.19/);
+    expect(findProblems({ ...base, nodeVersion: '22.11.0' })[0]).toMatch(/22\.12/);
+    expect(findProblems({ ...base, nodeVersion: '21.7.3' })[0]).toMatch(/Node\.js 20\.19/);
+    expect(findProblems({ ...base, nodeVersion: '22.12.0' })).toEqual([]);
     expect(findProblems({ ...base, exists: (p) => !p.includes('node_modules') })[0]).toMatch(/npm run setup/);
     expect(
       findProblems({ ...base, arch: 'arm64', exists: (p) => !p.startsWith('/usr/bin') && !p.startsWith('/snap') })[0],
