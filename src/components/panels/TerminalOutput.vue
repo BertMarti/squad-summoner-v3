@@ -4,9 +4,10 @@ import { buildWhatsappShareUrl } from '@/lib/whatsapp'
 import { DEMO_BANNER } from '@/lib/demo'
 import { useTerminalStore } from '@/stores/terminal'
 import HelpTip from '@/components/HelpTip.vue'
+import SpeechControls from './SpeechControls.vue'
 
 const props = defineProps<{ output: string; loading: boolean; error: string; sending: boolean; staticDemo: boolean }>()
-const emit = defineEmits<{ send: [] }>()
+const emit = defineEmits<{ send: []; saveTemplate: [] }>()
 const copied = ref(false)
 const terminalStore = useTerminalStore()
 const terminalBody = ref<HTMLElement | null>(null)
@@ -76,6 +77,11 @@ const copyToClipboard = async () => {
         <pre class="text-content">{{ output }}</pre>
         <span class="cursor">_</span>
       </div>
+    </div>
+    <!-- Fuera de la región aria-live del texto: los botones no se anuncian como «transmisión nueva». -->
+    <div v-if="output && !loading && !error" class="terminal-footer">
+      <SpeechControls :text="output" />
+      <button type="button" class="save-template" @click="emit('saveTemplate')">⭐ GUARDAR COMO PLANTILLA</button>
     </div>
   </section>
 </template>
@@ -202,6 +208,31 @@ const copyToClipboard = async () => {
 .error-output {
   color: var(--text-danger);
   white-space: pre-wrap;
+}
+.terminal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 10px 20px;
+  background: var(--terminal-header-bg);
+  border-top: 1px solid var(--border-color);
+}
+.save-template {
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 700;
+}
+.save-template:hover {
+  border-color: var(--border-accent);
+  color: var(--text-accent);
 }
 @keyframes blink {
   50% {
