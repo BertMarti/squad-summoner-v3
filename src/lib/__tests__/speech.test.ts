@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { MAX_CHUNK, isSpeechSupported, pickSpanishVoice, splitForSpeech, textForSpeech } from '../speech'
-import { useSpeech } from '@/composables/useSpeech'
+import { MAX_CHUNK, SPEECH_FAILED, isSpeechSupported, pickSpanishVoice, splitForSpeech, textForSpeech } from '../speech'
+import { WATCHDOG_MS, useSpeech } from '@/composables/useSpeech'
 import { DEMO_BANNER } from '../demo'
 
 describe('isSpeechSupported', () => {
@@ -78,6 +78,8 @@ class FakeUtterance {
 function fakeWindow(voices = [{ name: 'Mónica', lang: 'es-ES', localService: true }]) {
   const spoken: FakeUtterance[] = []
   const synth = {
+    speaking: false,
+    pending: false,
     speak: vi.fn((u: FakeUtterance) => spoken.push(u)),
     cancel: vi.fn(),
     pause: vi.fn(),
@@ -137,6 +139,38 @@ describe('useSpeech', () => {
     expect(s.state.value).toBe('speaking')
     spoken[0]!.onerror?.({ error: 'synthesis-failed' })
     expect(s.state.value).toBe('idle')
+    expect(s.error.value).toBe(SPEECH_FAILED)
+  })
+
+  it('si el navegador acepta speak() pero no lee (sin voces), se para y lo explica', () => {
+    vi.useFakeTimers()
+    try {
+      const { win } = fakeWindow([])
+      const s = useSpeech(win as never)
+      s.speak('Hola')
+      vi.advanceTimersByTime(WATCHDOG_MS)
+      expect(s.state.value).toBe('idle')
+      expect(s.error.value).toBe(SPEECH_FAILED)
+      s.speak('Otra vez')
+      expect(s.error.value).toBe('')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('si está leyendo de verdad, la vigilancia no la corta', () => {
+    vi.useFakeTimers()
+    try {
+      const { win, synth } = fakeWindow()
+      const s = useSpeech(win as never)
+      s.speak('Hola')
+      synth.speaking = true
+      vi.advanceTimersByTime(WATCHDOG_MS)
+      expect(s.state.value).toBe('speaking')
+      expect(s.error.value).toBe('')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('sin voz española usa lang es-ES y la voz por defecto; nada que leer devuelve false', () => {

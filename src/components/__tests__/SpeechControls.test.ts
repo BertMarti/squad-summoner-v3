@@ -13,12 +13,14 @@ class FakeUtterance {
   constructor(public text: string) {}
 }
 
-let synth: Record<string, ReturnType<typeof vi.fn>>
+let synth: Record<string, ReturnType<typeof vi.fn> | boolean>
 let spoken: FakeUtterance[]
 
 beforeEach(() => {
   spoken = []
   synth = {
+    speaking: true,
+    pending: false,
     speak: vi.fn((u: FakeUtterance) => spoken.push(u)),
     cancel: vi.fn(),
     pause: vi.fn(),

@@ -1,7 +1,10 @@
 import { computed, getCurrentInstance, onBeforeUnmount, ref, shallowRef } from 'vue'
-import { isSpeechSupported, pickSpanishVoice, splitForSpeech, textForSpeech } from '@/lib/speech'
+import { SPEECH_FAILED, isSpeechSupported, pickSpanishVoice, splitForSpeech, textForSpeech } from '@/lib/speech'
 
 export type SpeechState = 'idle' | 'speaking' | 'paused'
+
+/** Tiempo para comprobar que la lectura ha empezado de verdad. */
+export const WATCHDOG_MS = 3000
 
 /**
  * Leer en voz alta con `speechSynthesis` (Web Speech API): local y gratis, sin llamadas a Gemini.
@@ -19,6 +22,9 @@ export function useSpeech(
   const state = ref<SpeechState>('idle')
   const voice = shallowRef<SpeechSynthesisVoice | null>(null)
   const voiceName = computed(() => voice.value?.name ?? '')
+  /** Motivo en español si la última lectura no pudo empezar o falló ('' si todo bien). */
+  const error = ref('')
+  let watchdog: ReturnType<typeof setTimeout> | undefined
   // Cada lectura tiene su número: los eventos de una lectura cancelada no tocan el estado de la siguiente.
   let session = 0
 
@@ -37,6 +43,7 @@ export function useSpeech(
   function stop() {
     session++
     state.value = 'idle'
+    clearTimeout(watchdog)
     try {
       synth?.cancel()
     } catch {
@@ -50,6 +57,7 @@ export function useSpeech(
     const chunks = splitForSpeech(textForSpeech(text))
     if (!chunks.length) return false
     stop()
+    error.value = ''
     if (!voice.value) loadVoice()
     const id = session
     chunks.forEach((chunk, index) => {
@@ -64,11 +72,22 @@ export function useSpeech(
       }
       utterance.onerror = (event: SpeechSynthesisErrorEvent) => {
         // «interrupted»/«canceled» llegan al parar a propósito.
-        if (id === session && event.error !== 'interrupted' && event.error !== 'canceled') stop()
+        if (id === session && event.error !== 'interrupted' && event.error !== 'canceled') {
+          stop()
+          error.value = SPEECH_FAILED
+        }
       }
       synth.speak(utterance)
     })
     state.value = 'speaking'
+    // Algunos navegadores (p. ej. Chromium en Linux sin voces instaladas) aceptan speak() pero no leen ni avisan:
+    // si a los pocos segundos no está leyendo ni tiene nada en cola, se para y se explica.
+    watchdog = setTimeout(() => {
+      if (id === session && state.value === 'speaking' && !synth.speaking && !synth.pending) {
+        stop()
+        error.value = SPEECH_FAILED
+      }
+    }, WATCHDOG_MS)
     return true
   }
 
@@ -90,5 +109,5 @@ export function useSpeech(
   }
   if (getCurrentInstance()) onBeforeUnmount(dispose)
 
-  return { supported, state, voiceName, speak, pause, resume, stop, dispose }
+  return { supported, state, voiceName, error, speak, pause, resume, stop, dispose }
 }

@@ -14,6 +14,10 @@ export const MAX_CHUNK = 220
 export const SPEECH_UNSUPPORTED =
   'Tu navegador no puede leer en voz alta (no tiene la Web Speech API). Prueba con Chrome, Edge, Safari o Firefox actualizados.'
 
+/** Explicación cuando el navegador tiene la API pero no consigue leer (sin voces instaladas, error de síntesis). */
+export const SPEECH_FAILED =
+  'No se ha podido leer en voz alta: este navegador no tiene voces instaladas o ha fallado la síntesis. En Linux, instala speech-dispatcher (o espeak-ng) y reinicia el navegador.'
+
 export interface VoiceLike {
   name: string
   lang: string

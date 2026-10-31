@@ -4,7 +4,7 @@ import { useSpeech } from '@/composables/useSpeech'
 import { SPEECH_UNSUPPORTED } from '@/lib/speech'
 
 const props = defineProps<{ text: string }>()
-const { supported, state, voiceName, speak, pause, resume, stop } = useSpeech()
+const { supported, state, voiceName, error, speak, pause, resume, stop } = useSpeech()
 const unsupportedId = 'speech-unsupported'
 
 watch(
@@ -35,6 +35,7 @@ watch(
       {{ state === 'speaking' ? 'Leyendo en voz alta…' : state === 'paused' ? 'Lectura en pausa' : '' }}
     </span>
     <small v-if="supported && voiceName">Voz: {{ voiceName }}</small>
+    <small v-if="error" class="speech-help" role="alert">{{ error }}</small>
     <small v-if="!supported" :id="unsupportedId" class="speech-help">{{ SPEECH_UNSUPPORTED }}</small>
   </div>
 </template>
