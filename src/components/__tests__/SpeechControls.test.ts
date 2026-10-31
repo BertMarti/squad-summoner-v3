@@ -78,7 +78,8 @@ describe('SpeechControls', () => {
   it('se para al desmontar', async () => {
     const w = mountControls()
     await w.get('button').trigger('click')
-    synth.cancel!.mockClear()
+    const cancel = synth.cancel as ReturnType<typeof vi.fn>
+    cancel.mockClear()
     w.unmount()
     expect(synth.cancel).toHaveBeenCalled()
   })

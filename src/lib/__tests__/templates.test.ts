@@ -110,6 +110,11 @@ describe('textToTemplate', () => {
     expect(textToTemplate('A la partida con A', { recruits: 'A' })).toBe('A la partida con A')
   })
 
+  it('solo sustituye palabras completas', () => {
+    expect(textToTemplate('Alex y Alexandra, ALEX', { recruits: 'Alex' })).toBe('{reclutas} y Alexandra, {RECLUTAS}')
+    expect(textToTemplate('A las 21:30 o 121:305', { time: '21:30' })).toBe('A las {hora} o 121:305')
+  })
+
   it('escapa los valores al buscarlos (no son expresiones regulares)', () => {
     expect(textToTemplate('Hola a.b y axb', { recruits: 'a.b' })).toBe('Hola {reclutas} y axb')
   })
@@ -135,6 +140,10 @@ describe('almacenamiento', () => {
     expect(parseTemplates(null)).toEqual([])
     expect(parseTemplates('{"a":1}')).toBeNull()
     expect(parseTemplates('no es json')).toBeNull()
+  })
+
+  it('lo guardado demasiado grande (de otra web del origen) ni se analiza', () => {
+    expect(parseTemplates(`[${'"x",'.repeat(200_000)}"x"]`)).toBeNull()
   })
 
   it('descarta entradas no válidas, ids repetidos o raros y recorta al máximo', () => {

@@ -104,8 +104,22 @@ const toggleVariables = (checked: boolean) => {
   if (!editedByUser.value) text.value = textToTemplate(originalText.value, missionStore.mission, checked)
 }
 const useTemplate = (value: string) => emit('use', renderTemplate(value, missionStore.mission))
-const askDelete = (id: string) => (deleteId.value = id)
-const cancelDelete = () => (deleteId.value = null)
+// Al pedir confirmación, el foco pasa a CANCELAR (opción segura); al cancelar, vuelve a BORRAR.
+const askDelete = async (id: string) => {
+  deleteId.value = id
+  await nextTick()
+  panel.value?.querySelector<HTMLButtonElement>('.delete-confirmation .cancel-delete')?.focus()
+}
+const cancelDelete = async () => {
+  const id = deleteId.value
+  deleteId.value = null
+  await nextTick()
+  const name = id ? store.byId(id)?.name : ''
+  if (name)
+    [...(panel.value?.querySelectorAll<HTMLButtonElement>('.template-actions button') ?? [])]
+      .find((b) => b.getAttribute('aria-label') === `Borrar ${name}`)
+      ?.focus()
+}
 const remove = (id: string) => {
   store.remove(id)
   deleteId.value = null
@@ -207,7 +221,7 @@ const onKeydown = (event: KeyboardEvent) => {
         <div v-else class="delete-confirmation">
           <span>¿Borrar «{{ template.name }}»?</span>
           <button type="button" @click="remove(template.id)">SÍ, BORRAR</button>
-          <button type="button" @click="cancelDelete">CANCELAR</button>
+          <button type="button" class="cancel-delete" @click="cancelDelete">CANCELAR</button>
         </div>
       </li>
     </ul>

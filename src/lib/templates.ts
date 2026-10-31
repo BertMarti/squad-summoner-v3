@@ -28,6 +28,8 @@ export const MAX_TEMPLATES = 30
 export const MAX_TEMPLATE_NAME = 60
 /** Tamaño máximo de un archivo de importación (bytes). */
 export const MAX_IMPORT_BYTES = 200_000
+/** Tamaño máximo de lo guardado en el navegador (30 plantillas de 4000 caracteres con escapes JSON caben de sobra). */
+export const MAX_STORED_CHARS = 500_000
 /** Identificación del formato de exportación. */
 export const EXPORT_APP = 'squad-summoner-v3'
 export const EXPORT_KIND = 'plantillas'
@@ -143,8 +145,10 @@ export function textToTemplate(
   for (const [value, name] of replacements) {
     if (value.length < 2) continue
     const upper = value.toUpperCase()
-    if (upper !== value) body = body.replace(new RegExp(escapeRegExp(upper), 'g'), `{${name.toUpperCase()}}`)
-    body = body.replace(new RegExp(escapeRegExp(value), 'g'), `{${name}}`)
+    // Solo palabras completas: «Alex» no toca «Alexandra».
+    const whole = (v: string) => new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(v)}(?![\\p{L}\\p{N}])`, 'gu')
+    if (upper !== value) body = body.replace(whole(upper), `{${name.toUpperCase()}}`)
+    body = body.replace(whole(value), `{${name}}`)
   }
   return body
 }
@@ -218,6 +222,8 @@ function toStoredTemplate(value: unknown): UserTemplate | null {
  */
 export function parseTemplates(raw: string | null | undefined): UserTemplate[] | null {
   if (raw === null || raw === undefined) return []
+  // Otra web del origen podría dejar aquí varios MB: no se analiza nada que no pueda ser nuestro.
+  if (raw.length > MAX_STORED_CHARS) return null
   try {
     const data: unknown = JSON.parse(raw)
     if (!Array.isArray(data)) return null
