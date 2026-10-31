@@ -12,24 +12,13 @@ updates:
         patterns: ['*']
         update-types: ['minor', 'patch']
     ignore:
-      # vitest 5 exige Node ≥ 22 (cerrada la PR #3).
+      # vitest 5 exige Node ≥ 22.12 (la Pi tiene Node 20; probado con Node 22 en la 3.4.0: pasa).
       - dependency-name: vitest
         update-types: ['version-update:semver-major']
-      # TypeScript 7 (nativo) aún no es compatible con vue-tsc 3.
+      # TypeScript 7 (nativo, sin API de JavaScript) aún no es compatible con vue-tsc 3.
       - dependency-name: typescript
         update-types: ['version-update:semver-major']
-      # Vite 8 (Rolldown) y su ecosistema: migración pendiente.
-      - dependency-name: vite
-        update-types: ['version-update:semver-major']
-      - dependency-name: '@vitejs/plugin-vue'
-        update-types: ['version-update:semver-major']
-      - dependency-name: vite-plugin-vue-devtools
-        update-types: ['version-update:semver-major']
-      # Pinia 4 y @vue/tsconfig 0.9: cambios de API/configuración sin migrar.
-      - dependency-name: pinia
-        update-types: ['version-update:semver-major']
-      - dependency-name: '@vue/tsconfig'
-        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # Vite 8, Pinia 4 y @vue/tsconfig 0.9 se migraron en la 3.4.0 (funcionan con Node 20.19).
       # npm-run-all2 ≥ 8 pide npm ≥ 10 (la Pi tiene npm 9).
       - dependency-name: npm-run-all2
         update-types: ['version-update:semver-major']

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ENV_API_KEY } from '@/config'
+import { APP_VERSION, ENV_API_KEY } from '@/config'
 
 const props = defineProps<{ isDark: boolean; helpOpen: boolean }>()
 const emit = defineEmits<{ openConfig: []; toggleTheme: []; toggleHelp: [] }>()
@@ -19,7 +19,7 @@ defineExpose({ focusConfig: () => configButton.value?.focus() })
       </div>
       <div class="text">
         <h1>SQUAD SUMMONER</h1>
-        <small>PROTOCOLO DE INVOCACIÓN TÁCTICA V3.0</small>
+        <small>PROTOCOLO DE INVOCACIÓN TÁCTICA V{{ APP_VERSION }}</small>
       </div>
     </div>
 

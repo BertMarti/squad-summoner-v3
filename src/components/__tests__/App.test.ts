@@ -6,7 +6,9 @@ import App from '@/App.vue'
 import { useApiKeyStore } from '@/stores/apiKey'
 import { useHistoryStore } from '@/stores/history'
 import { useMissionStore } from '@/stores/mission'
+import { useTemplatesStore } from '@/stores/templates'
 import { POLL_BLOCK } from '@/lib/poll'
+import { DEMO_BANNER } from '@/lib/demo'
 import { MAX_MESSAGE_LENGTH } from '@/lib/mission'
 
 const { generateMock } = vi.hoisted(() => ({ generateMock: vi.fn() }))
@@ -37,6 +39,11 @@ afterEach(() => {
 })
 
 describe('App (flujo completo)', () => {
+  it('la cabecera muestra la versión de package.json', async () => {
+    const { version } = (await import('../../../package.json')).default
+    expect(mountApp().get('.top-bar small').text()).toBe(`PROTOCOLO DE INVOCACIÓN TÁCTICA V${version}`)
+  })
+
   it('demo con encuesta: la transmisión lleva la encuesta y entra en el historial', async () => {
     const w = mountApp()
     await pickGame(w, 'Deep Rock Galactic')
@@ -93,5 +100,32 @@ describe('App (flujo completo)', () => {
     await flushPromises()
     expect(w.find('.error-output').exists()).toBe(false)
     expect(w.get('.text-content').text()).toBe(saved)
+  })
+
+  it('guarda una demo como plantilla y la usa con los reclutas actuales', async () => {
+    const w = mountApp()
+    await pickGame(w, 'Helldivers 2')
+    await w.get('#recruits').setValue('Alex')
+    await w.get('.btn-demo').trigger('click')
+    await w.get('button.save-template').trigger('click')
+    const templateText = (w.get('#template-text').element as HTMLTextAreaElement).value.toLowerCase()
+    expect(templateText).toContain('{reclutas}')
+    expect(templateText).toContain('{hora}')
+    await w.get('#template-name').setValue('Mi llamada')
+    await w.get('.template-editor').trigger('submit')
+    await w.get('#recruits').setValue('Marta')
+    useMissionStore().update({ time: '22:15' })
+    await w
+      .findAll('button')
+      .find((button) => button.text() === '▶️ USAR')!
+      .trigger('click')
+    // La demo de Helldivers 2 usa «{RECLUTAS}» o «{reclutas}» según la plantilla elegida al azar.
+    expect(w.get('.text-content').text().toLowerCase()).toContain('marta')
+    expect(w.get('.text-content').text().toLowerCase()).not.toContain('alex')
+    expect(w.get('.text-content').text()).not.toContain(DEMO_BANNER)
+    expect(w.get('.text-content').text()).toContain('22:15')
+    expect(generateMock).not.toHaveBeenCalled()
+    expect(useHistoryStore().entries[0]!.source).toBe('plantilla')
+    expect(useTemplatesStore().templates).toHaveLength(1)
   })
 })

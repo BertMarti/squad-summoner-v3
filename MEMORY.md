@@ -1,12 +1,12 @@
 # MEMORY.md — decisiones, trampas y estado
 
-*Actualizado: 25/10/2026 (fase 3).*
+*Actualizado: 31/10/2026 (fase 6, v3.4.0).*
 
 ## Estado actual
 
-- Versión **3.3.0**. Web Vue 3 + Vite 7 + Pinia 3, servidor opcional Express 5 + whatsapp-web.js 1.34.7.
+- Versión **3.4.0** (servidor 1.3.0). Web Vue 3 + Vite 8 + Pinia 4, servidor opcional Express 5 + whatsapp-web.js 1.34.7.
 - Publicación en GitHub Pages con Actions desde `master` (`https://bertmarti.github.io/squad-summoner-v3/`).
-- **178 pruebas** Vitest 4 (lógica pura, componentes, Gemini con el SDK real y `fetch` simulado, almacenamiento,
+- **244 pruebas** Vitest 4 (lógica pura, componentes, Gemini con el SDK real y `fetch` simulado, almacenamiento,
   stores, servidor y asistente).
 - CI: gitleaks, ESLint, Prettier, web en Node 20 y 22 (tipos, pruebas, builds, `npm audit`), servidor. Dependabot semanal
   con ignores.
@@ -36,7 +36,7 @@
   `PUPPETEER_SKIP_DOWNLOAD=true` y escribe `CHROMIUM_PATH`. Probado en la Pi: el QR sale con `/usr/bin/chromium`.
 - **`overrides` en `server/package.json`** (`basic-ftp` 6.2.3, `zod` 4.6.7): solo los usan rutas que este servidor no
   recorre (proxy PAC por FTP y WebDriver BiDi); comprobado que Puppeteer arranca y genera el QR con ellos.
-- Sin código muerto: fuera `vue-router`, el TTS sin interfaz, `services/generative.ts` y `stores/ui.ts`.
+- Sin código muerto: fuera `vue-router`, el TTS antiguo sin interfaz, `services/generative.ts` y `stores/ui.ts`.
 - **Token del servidor** (25/10, fase 3): `SERVER_TOKEN` es obligatorio cuando `HOST` no es local, con mínimo 24 caracteres;
   se genera con `npm run setup`, viaja solo como `Authorization: Bearer …` y se compara en tiempo constante (SHA-256 más
   `crypto.timingSafeEqual`). Así abrir el servidor a la red no deja el envío al grupo sin autenticación.
@@ -59,6 +59,27 @@
   altas de `extract-zip`, sin versión corregida, limitado a la descarga de Chrome al instalar. `js-beautify` de
   `@vue/test-utils` lleva `nopt` fijado a `^9` para Node 20.
 
+- **Plantillas propias** (31/10, fase 6): se guardan en `squad-summoner-v3:plantillas` en cuanto la persona pulsa
+  GUARDAR (guardarlas es justo lo que pide; no contienen claves), máximo 30. Se validan al leer y al importar porque el
+  origen es compartido: ids `[a-z0-9-]`, sin controles ni bidi, límites de tamaño (500 000 caracteres guardados, 200 kB
+  importados) y la basura ajena se borra. La exportación solo lleva nombre y texto. Variables `{juego}`, `{hora}`,
+  `{reclutas}` (en mayúsculas, valor en mayúsculas); `textToTemplate` solo cambia palabras completas y quita la marca de
+  demo y la encuesta (la encuesta se añade al usar, según la casilla). Usar una plantilla no exige elegir juego.
+- **Voz con `speechSynthesis`** (31/10, fase 6): gratis y local. Se lee por frases de ≤ 220 caracteres (Chrome corta las
+  locuciones largas), sin emojis ni la marca de demo. Si el navegador acepta `speak()` pero no lee (Chromium en Linux
+  sin voces, como la Pi o el Chromium sin cabeza), una vigilancia de 4 s (`speechSynthesis.speaking` sigue en falso; `pending` no sirve porque la frase se queda en cola) lo para y lo explica. Se eliminó
+  `buildAudioPrompt`: resumir con Gemini costaría una llamada y la voz puede leer el texto tal cual.
+- **`extract-zip` fuera** (31/10, fase 6): `overrides` de `@puppeteer/browsers` ^3.2.6 (descomprime con `unzip`/`tar`
+  del sistema o `yauzl`, que se añade como dependencia), `archiver` ^8 y `minimatch` ^11 (solo los usa `RemoteAuth`, que
+  no se usa). Probado en la Pi (Node 20.19, Chromium del sistema: arranca y carga whatsapp-web.js) y en el CI (job
+  `servidor-chrome`: descarga y arranque de Chrome en x64 con Node 20 y 22). `@puppeteer/browsers` 3 declara Node ≥ 22.12
+  (npm avisa con EBADENGINE en Node 20), pero funciona en 20.19 porque `require()` de módulos ES está activo desde 20.19;
+  por eso el servidor y `preflight` exigen 20.19+ o 22.12+.
+- **Majors de la web** (31/10, fase 6): Vite 8, Pinia 4 y `@vue/tsconfig` 0.9 funcionan con Node 20.19 y se suben.
+  Vitest 5 y `npm-run-all2` 9 se probaron con Node 22 (240 pruebas y build bien) pero exigen Node 22: siguen aplazados.
+  TypeScript 7 rompe `vue-tsc` 3 (ERR_PACKAGE_PATH_NOT_EXPORTED). `minimatch` ^11 y `glob` ^14 por `overrides` en la web
+  (avisos moderados de ESLint y `@vue/test-utils`).
+
 ## Trampas conocidas
 
 - La Raspberry Pi de Alberto tiene **Node 20 y npm 9**: `vitest@^4` (el 5 exige Node ≥ 22.12), `npm-run-all2@^7` (el 8+
@@ -68,9 +89,12 @@
 - Los errores de `@google/genai` son `ApiError` con `status` numérico y el **JSON de Google en `message`**
   (`{"error":{"code":400,"status":"INVALID_ARGUMENT","details":[{"reason":"API_KEY_INVALID"}]}}`). Los fallos de red
   llegan como `TypeError` del `fetch` («Failed to fetch», «NetworkError…», «Load failed»).
-- `whatsapp-web.js` 1.34.7 (la última) fija `puppeteer@24.38`: quedan **5 altas transitivas** de `extract-zip` (sin
-  versión corregida; solo se usa al descargar Chrome al instalar, y con Chromium del sistema ni se ejecuta). El CI del
-  servidor solo falla con críticas.
+- `whatsapp-web.js` 1.34.7 (la última) fija `puppeteer@24.38`: los `overrides` del servidor son los que dejan `npm
+  audit` a 0. Si una actualización de `whatsapp-web.js` los rompe, el job `servidor-chrome` del CI lo detecta.
+- En `happy-dom`, `setValue` en un `<input type="time">` no actualiza el `v-model`: en las pruebas, cambia la hora con
+  `useMissionStore().update({ time })`.
+- La herramienta Write de algunos agentes convierte `\uFEFF`, `\u202e`… en caracteres literales: revisa con
+  `grep -nP '[\x{FEFF}\x{202A}-\x{202E}\x{2066}-\x{2069}]'` que el código no lleva invisibles.
 - Todo `VITE_*` se incrusta en el JavaScript. `VITE_GOOGLE_API_KEY` solo para uso local (Pages falla si existe).
 - Las pruebas de `server/test/` no pueden requerir dependencias del servidor (el job de la web no las instala): la lógica
   va en `server/lib/*.js` sin dependencias.

@@ -38,6 +38,9 @@ cantina. Luego la copias o la mandas por WhatsApp con un toque.
 | 🌌 **Destiny 2** | Convocatoria para Guardianes: el destino de la escuadra está en juego. |
 | 🖊️ **Personalizado** | Escribes el nombre de tu juego y la IA se mete en su papel. |
 
+Y además: guarda tus mensajes favoritos como **⭐ plantillas** para reutilizarlos sin gastar IA, y escucha la
+transmisión con **🔊 LEER EN VOZ ALTA**.
+
 ## 📸 Así se ve
 
 <p align="center">
@@ -69,6 +72,44 @@ quieres conservarlo. **VACIAR HISTORIAL** lo elimina cuando quieras.
 
 La primera vez verás una guía de bienvenida con tres pasos. Puedes volver a abrirla cuando quieras con **❓ AYUDA** en la
 cabecera. En cada sección encontrarás también un botón **?** con ayuda contextual.
+
+## ⭐ Mis plantillas (sin gastar IA)
+
+¿Tienes un mensaje que te encanta? Guárdalo y reutilízalo cuando quieras, sin gastar llamadas a Gemini:
+
+1. Genera una transmisión (con la IA o en modo demo) y pulsa **⭐ GUARDAR COMO PLANTILLA** debajo del texto.
+2. Ponle un nombre (por ejemplo «Viernes de Helldivers»). Con la casilla **Cambiar reclutas, hora y juego por
+   variables** marcada, los nombres, la hora y el juego se convierten en huecos que se rellenan solos.
+3. Pulsa **💾 GUARDAR**. La plantilla aparece en el panel **MIS PLANTILLAS**.
+4. El próximo día cambia los reclutas o la hora y pulsa **▶️ USAR**: la transmisión sale al momento, con encuesta si la
+   tienes marcada, y entra en el historial como **PLANTILLA**.
+
+También puedes crear una desde cero con **➕ NUEVA PLANTILLA**, cambiarle el nombre o el texto con **✏️ EDITAR** y
+borrarla con **🗑️ BORRAR** (te pide confirmación). Mientras escribes ves una **vista previa** con la misión actual.
+
+| Escribe… | Y se cambia por… |
+|---|---|
+| `{reclutas}` | los nombres de los reclutas (o «escuadrón» si no hay) |
+| `{hora}` | la hora de la partida (o «YA MISMO») |
+| `{juego}` | el juego elegido (o «la partida») |
+| `{RECLUTAS}`, `{HORA}`, `{JUEGO}` | lo mismo, pero en MAYÚSCULAS |
+
+Las plantillas se guardan **en este navegador** (hasta 30). Para llevarlas a otro móvil u ordenador, o tener una copia,
+pulsa **⬇️ EXPORTAR** (descarga un archivo `.json`) y, en el otro dispositivo, **⬆️ IMPORTAR**.
+
+<p align="center">
+  <img src="docs/img/captura-plantillas.png" alt="Editor de plantillas: nombre «Viernes de Helldivers», texto con las variables {reclutas} y {hora}, casilla para cambiar los datos por variables y vista previa con Alex, Marta y las 21:30" width="70%">
+</p>
+
+## 🔊 Leer en voz alta
+
+Debajo de cada transmisión tienes **🔊 LEER EN VOZ ALTA**: tu navegador la lee con su propia voz (en español si la tiene),
+sin coste y sin enviar nada a internet. Mientras lee puedes **⏸️ PAUSAR**, **▶️ REANUDAR** o **⏹️ PARAR**. Los emojis
+y los adornos no se leen. Perfecto para ponerla por el altavoz del canal de voz antes de la partida.
+
+<p align="center">
+  <img src="docs/img/captura-movil-voz.png" alt="En el móvil: la transmisión con los botones Leer en voz alta y Guardar como plantilla, y el historial con una entrada de plantilla" width="30%">
+</p>
 
 ## 🔑 Modo demo y tu API key
 
@@ -123,8 +164,8 @@ La sesión queda en tu ordenador. El botón **🟢 COMPARTIR EN WHATSAPP** sigue
 - Consigue tu clave gratuita en [Google AI Studio](https://aistudio.google.com/apikey) si quieres usar la IA; si no, usa el modo demo.
 - Si instalas el servidor en una Raspberry Pi, instala antes Chromium con `sudo apt install chromium`.
 
-**Pendiente del mantenedor (Alberto):** todo lo de la versión 3.3.0 está probado con pruebas automáticas y en modo demo,
-pero falta una prueba real de punta a punta:
+**Pendiente del mantenedor (Alberto):** todo lo de la versión 3.4.0 está probado con pruebas automáticas, en modo demo y
+en Chromium, pero falta una prueba real de punta a punta:
 
 1. Con una **clave real de Gemini**: ⚙️ CONFIGURAR API → PROBAR CLAVE → GENERAR TRANSMISIÓN con cada tono (Épico, Cutre
    y Pasivo-agresivo) y con la encuesta marcada.
@@ -132,6 +173,8 @@ pero falta una prueba real de punta a punta:
    prueba.
 3. **Desde otro equipo de casa**, con `HOST=0.0.0.0` y el token pegado en ⚙️, siguiendo «¿Lo usas desde otro equipo de
    casa?». Comprueba también que sin token la torre se niega a arrancar abierta a la red.
+4. **🔊 LEER EN VOZ ALTA** en un móvil y en un ordenador con altavoces (en la Raspberry Pi sin voces instaladas la web
+   avisa de que no puede leer).
 
 ## ❓ Preguntas frecuentes
 
@@ -147,6 +190,23 @@ convocar a tu escuadrón. En modo demo no necesitas ni eso.
 
 No por defecto: solo vive en memoria y desaparece al recargar. Si marcas **Recordar historial en este navegador**, se guarda
 en ese navegador e incluye los nombres de los reclutas. Puedes desmarcarlo o pulsar **VACIAR HISTORIAL**.
+</details>
+
+<details>
+<summary><b>¿Dónde se guardan mis plantillas? ¿Las pierdo si cambio de móvil?</b></summary>
+
+Se guardan solo en el navegador donde las creas (no hay nube ni cuenta). Si borras los datos del navegador o cambias de
+dispositivo, no estarán: usa **⬇️ EXPORTAR** para tener una copia y **⬆️ IMPORTAR** para cargarla en otro sitio. Solo se
+importan archivos exportados por Squad Summoner; los textos se muestran siempre como texto. Si tu navegador no deja
+guardar (por ejemplo, en modo incógnito estricto), el panel te avisa.
+</details>
+
+<details>
+<summary><b>Pulso «LEER EN VOZ ALTA» y no suena nada</b></summary>
+
+La voz la pone tu navegador. Sube el volumen y prueba en Chrome, Edge, Safari o Firefox actualizados. Si tu navegador no
+tiene voz, el botón aparece desactivado con una explicación; si la tiene pero no hay voces instaladas (pasa en algunos
+Linux), la web te avisa a los pocos segundos: instala `speech-dispatcher` o `espeak-ng` y reinicia el navegador.
 </details>
 
 <details>

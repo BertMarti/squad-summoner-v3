@@ -24,6 +24,7 @@ import GameSelector from '@/components/panels/GameSelector.vue'
 import MissionControls from '@/components/panels/MissionControls.vue'
 import TerminalOutput from '@/components/panels/TerminalOutput.vue'
 import TransmissionHistory from '@/components/panels/TransmissionHistory.vue'
+import TemplatesPanel from '@/components/panels/TemplatesPanel.vue'
 import ConfigModal from './components/ConfigModal.vue'
 import WelcomeGuide from './components/WelcomeGuide.vue'
 import {
@@ -67,6 +68,7 @@ const statusError = ref('')
 const gameError = ref('')
 const headerRef = ref<InstanceType<typeof AppHeader> | null>(null)
 const outputRef = ref<InstanceType<typeof TerminalOutput> | null>(null)
+const templatesRef = ref<InstanceType<typeof TemplatesPanel> | null>(null)
 const helpOpen = ref(false)
 const welcomeVisible = ref(readStored(STORAGE_KEYS.welcomeSeen) !== '1')
 const legacyNotice = ref(false)
@@ -126,6 +128,16 @@ const saveTransmission = (text: string, source: HistoryEntry['source']) => {
   const final = missionStore.mission.poll ? withAttendancePoll(text) : fitMessage(text)
   terminalText.value = final
   historyStore.add(final, { ...missionStore.mission }, source)
+}
+
+const applyTemplate = async (text: string) => {
+  resetStatus()
+  terminalError.value = ''
+  saveTransmission(text, 'plantilla')
+  statusMessage.value = 'Transmisión creada con tu plantilla (sin gastar llamadas a la IA).'
+  terminalStore.addLog('⭐ Transmisión desde plantilla')
+  await nextTick()
+  outputRef.value?.focus()
 }
 
 const handleRun = async () => {
@@ -285,6 +297,7 @@ const closeConfig = () => {
           @open-config="showConfig = true"
           @repeat-last="repeatEntry()"
         />
+        <TemplatesPanel ref="templatesRef" @use="applyTemplate" />
       </section>
 
       <section class="right-col">
@@ -296,6 +309,7 @@ const closeConfig = () => {
           :sending="isSending"
           :static-demo="IS_STATIC_DEMO"
           @send="handleSendWhatsapp"
+          @save-template="templatesRef?.startFromTransmission(terminalText)"
         />
         <TransmissionHistory @show="showEntry" @repeat="repeatEntry" />
       </section>
@@ -316,7 +330,7 @@ const closeConfig = () => {
     <div class="bottom-row-2">
       <CommPanel
         :connected="true"
-        @toggle-tts="terminalStore.addLog('🔊 Voz táctica: no disponible todavía')"
+        @toggle-tts="terminalStore.addLog('🔊 Usa «LEER EN VOZ ALTA» bajo la transmisión')"
         @mute-toggle="terminalStore.addLog('🔇 Audio silenciado')"
         @refresh-ticker="terminalStore.addLog('🔁 Teletipo actualizado')"
       />

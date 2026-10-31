@@ -17,8 +17,11 @@ Comprueba, en este orden:
    `grep -rEo 'AIza[0-9A-Za-z_-]{35}' dist` deben salir limpios.
 3. **XSS**: nada de `v-html`, `innerHTML`, `document.write` ni `eval`. Enlaces externos con `rel="noopener noreferrer"`.
    La CSP de `vite.config.ts` debe cubrir cualquier dominio externo nuevo sin abrir `script-src`.
+   Datos de terceros (respuestas de la IA, plantillas guardadas o importadas, historial): solo con interpolación `{{ }}`;
+   todo lo que se lee de `localStorage` o de un JSON importado pasa por un validador (`parseTemplates`,
+   `importTemplates`, `parseHistory`) con límites de tamaño, porque el origen `bertmarti.github.io` es compartido.
 4. **Servidor**: CORS con lista blanca (`parseAllowedOrigins`), `HOST` por defecto `127.0.0.1`, `express.json` con límite,
    `validateMissionBody` aplicado, limitador activo, errores sin trazas. Ejecuta `npx vitest run server`.
-5. **Dependencias**: `npm audit --audit-level=high` en la raíz y `npm --prefix server audit` (las altas de puppeteer vía
-   whatsapp-web.js están documentadas en MEMORY.md; avisa si aparece alguna nueva o crítica).
+5. **Dependencias**: `npm audit --audit-level=high` en la raíz y `npm --prefix server audit` (ambos a 0 desde la 3.4.0
+   gracias a los `overrides` documentados en MEMORY.md; avisa de cualquier aviso nuevo).
 6. **Workflows**: `permissions:` mínimos en cada workflow y acciones fijadas a versión mayor.

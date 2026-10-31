@@ -78,6 +78,9 @@ describe('preflight', () => {
   });
   it('explica cada cosa que falta, con el comando para arreglarla', () => {
     expect(findProblems({ ...base, nodeVersion: '18.20.0' })[0]).toMatch(/Node\.js 20\.19/);
+    expect(findProblems({ ...base, nodeVersion: '22.11.0' })[0]).toMatch(/22\.12/);
+    expect(findProblems({ ...base, nodeVersion: '21.7.3' })[0]).toMatch(/Node\.js 20\.19/);
+    expect(findProblems({ ...base, nodeVersion: '22.12.0' })).toEqual([]);
     expect(findProblems({ ...base, exists: (p) => !p.includes('node_modules') })[0]).toMatch(/npm run setup/);
     expect(
       findProblems({ ...base, arch: 'arm64', exists: (p) => !p.startsWith('/usr/bin') && !p.startsWith('/snap') })[0],
@@ -91,7 +94,7 @@ describe('preflight', () => {
 describe('grupos: nombres de WhatsApp seguros para la terminal', () => {
   it('quita secuencias ANSI, controles y marcas bidi, y recorta', () => {
     expect(safeName('\u001b[2J\u001b[31mRojo\u001b[0m')).toBe('Rojo');
-    expect(safeName('a\u0007b‮c\r\nd')).toBe('abcd');
+    expect(safeName('a\u0007b\u202ec\r\nd')).toBe('abcd');
     expect(safeName('x'.repeat(100)).length).toBe(60);
     expect(safeName('')).toBe('(sin nombre)');
   });

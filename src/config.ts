@@ -23,3 +23,6 @@ export const ENV_SERVER_TOKEN = IS_STATIC_DEMO ? '' : (import.meta.env.VITE_SERV
 
 /** Clave incrustada en la compilación (solo para uso local; vacía en Pages). */
 export const ENV_API_KEY = IS_STATIC_DEMO ? '' : (import.meta.env.VITE_GOOGLE_API_KEY || '').trim()
+
+/** Versión de la app (de package.json, inyectada por vite.config.ts). */
+export const APP_VERSION = __APP_VERSION__

@@ -10,7 +10,7 @@ function safeTerminalText(value, max = 60) {
       // eslint-disable-next-line no-control-regex
       .replace(/[\u001b\u009b][[\]()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><~]/g, '')
       // eslint-disable-next-line no-control-regex
-      .replace(/[\u0000-\u001f\u007f-\u009f‎‏‪-‮⁦-⁩]/g, '')
+      .replace(/[\u0000-\u001f\u007f-\u009f\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '')
       .slice(0, max) || '(sin nombre)'
   );
 }

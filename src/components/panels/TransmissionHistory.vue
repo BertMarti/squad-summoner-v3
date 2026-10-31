@@ -48,7 +48,7 @@ const previewFor = (entry: HistoryEntry) =>
           <strong>{{ titleFor(entry) }}</strong>
           <span
             >{{ entry.mission.time || 'sin hora' }} · {{ toneFor(entry) }} ·
-            {{ entry.source === 'demo' ? 'DEMO' : 'IA' }}</span
+            {{ entry.source === 'demo' ? 'DEMO' : entry.source === 'plantilla' ? 'PLANTILLA' : 'IA' }}</span
           >
           <p :title="previewFor(entry)">{{ previewFor(entry) }}</p>
         </div>

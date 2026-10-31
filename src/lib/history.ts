@@ -9,7 +9,8 @@ export interface HistoryEntry {
   createdAt: string
   text: string
   mission: Mission
-  source: 'ia' | 'demo'
+  /** De dónde sale: IA (Gemini), modo demo o una plantilla propia. */
+  source: 'ia' | 'demo' | 'plantilla'
 }
 
 /** Máximo de transmisiones que se conservan (las más recientes). */
@@ -53,7 +54,7 @@ function isEntry(value: unknown): value is HistoryEntry {
     typeof v.createdAt === 'string' &&
     !Number.isNaN(Date.parse(v.createdAt)) &&
     isSendableMessage(v.text) &&
-    (v.source === 'ia' || v.source === 'demo') &&
+    (v.source === 'ia' || v.source === 'demo' || v.source === 'plantilla') &&
     typeof v.mission === 'object' &&
     v.mission !== null
   )

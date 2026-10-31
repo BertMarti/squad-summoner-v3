@@ -7,7 +7,7 @@ Para la explicación de usuario, vuelve al [README](../README.md).
 
 | Parte | Tecnología |
 |---|---|
-| Web («Centro de Mando») | Vue 3 (`<script setup lang="ts">`) · TypeScript 5.9 · Vite 7 · Pinia 3 |
+| Web («Centro de Mando») | Vue 3 (`<script setup lang="ts">`) · TypeScript 5.9 · Vite 8 · Pinia 4 |
 | IA | Google Gemini con `@google/genai` (modelo por defecto `gemini-2.5-flash`) |
 | Servidor («Torre de Comunicaciones», opcional) | Node.js · Express 5 · whatsapp-web.js (Puppeteer) · qrcode-terminal · dotenv · cors |
 | Pruebas | Vitest 4 (entorno `node`; componentes en `happy-dom`; Vitest 5 exige Node ≥ 22.12) |
@@ -15,7 +15,7 @@ Para la explicación de usuario, vuelve al [README](../README.md).
 
 ## Requisitos
 
-- Node.js `^20.19.0` o `>=22.12.0` (lo pide Vite 7).
+- Node.js 20.19 o posterior de la serie 20, o 22.12 o posterior (`^20.19.0 || >=22.12.0`; lo piden Vite 8 y el servidor).
 - Una API key de Gemini de [Google AI Studio](https://aistudio.google.com/apikey) si quieres usar la IA (sin ella hay modo demo).
 - Para el servidor: una cuenta de WhatsApp en el móvil y un sistema donde Puppeteer pueda lanzar Chromium.
 
@@ -27,6 +27,13 @@ cd squad-summoner-v3
 npm ci                 # web
 npm run setup          # comprueba requisitos, instala y crea .env
 npm run server:grupos  # opcional: vincula WhatsApp y elige el grupo
+```
+
+Si instalas el servidor a mano en Linux ARM (Raspberry Pi) en vez de con `npm run setup`, evita que Puppeteer descargue
+un Chrome x64 que no sirve (~170 MB) y usa el Chromium del sistema (`sudo apt install chromium`):
+
+```sh
+cd server && PUPPETEER_SKIP_DOWNLOAD=1 npm ci
 ```
 
 ## Variables de entorno (`.env` en la raíz)
@@ -164,9 +171,12 @@ comando guardará `WHATSAPP_GROUP_ID` en `.env`. Los nombres se sanean antes de 
 - Errores genéricos al cliente (sin trazas). `GET /health` devuelve el estado de WhatsApp.
 - `WHATSAPP_GROUP_ID` se valida al arrancar.
 - Puppeteer se lanza con `--no-sandbox` porque es necesario en algunos Linux/Docker; quítalo si tu sistema lo permite.
-- `whatsapp-web.js` 1.34.7 fija Puppeteer 24.38. Los *overrides* fijan `basic-ftp` 6.2.3 y `zod` 4.6.7: las
-  vulnerabilidades altas transitivas pasan de 11 a 5. Las restantes son de `extract-zip`, sin versión corregida; solo se
-  usa al descargar Chrome durante la instalación y no se ejecuta cuando se usa Chromium del sistema.
+- `whatsapp-web.js` 1.34.7 fija Puppeteer 24.38. Los *overrides* de `server/package.json` dejan `npm audit` a 0:
+  `@puppeteer/browsers` ^3.2.6 (ya no usa `extract-zip`; descomprime Chrome con `unzip`/`tar` del sistema o con `yauzl`,
+  dependencia directa), `archiver` ^8 y `minimatch` ^11 en `readdir-glob` (solo para `RemoteAuth`, que no se usa),
+  `basic-ftp` ^6.2.3 y `zod` ^4.6.6. `@puppeteer/browsers` 3 declara Node ≥ 22.12 pero funciona con 20.19 (`require()`
+  de módulos ES): npm muestra un aviso EBADENGINE en Node 20 que se puede ignorar. El job `servidor-chrome` del CI
+  descarga y arranca Chrome con Node 20 y 22 (`server/scripts/comprobar-chrome.js`).
 
 ### Seguridad de la clave y del navegador
 
@@ -186,13 +196,14 @@ comando guardará `WHATSAPP_GROUP_ID` en `.env`. Los nombres se sanean antes de 
 npm test
 ```
 
-- `src/lib/__tests__/` — saneado, prompts, demo, wa.me, tonos, encuesta, historial y juegos nuevos.
+- `src/lib/__tests__/` — saneado, prompts, demo, wa.me, tonos, encuesta, historial, juegos nuevos, plantillas
+  (variables, conversión, validación, exportar/importar) y voz (texto para leer, voz española, trozos, `useSpeech`).
 - `src/components/__tests__/` — WelcomeGuide, ConfigModal, GameSelector, TerminalOutput, MissionControls,
-  TransmissionHistory y App (flujo completo), con `happy-dom` (cada archivo declara `// @vitest-environment happy-dom`).
+  TransmissionHistory, TemplatesPanel, SpeechControls y App (flujo completo), con `happy-dom` (cada archivo declara `// @vitest-environment happy-dom`).
 - `src/services/__tests__/` — envío al servidor (con `fetch` simulado).
 - `src/stores/__tests__/`, `src/composables/__tests__/` — stores de Pinia y traducción de errores de Gemini.
 - `server/test/` — validación, CORS, cabeceras, limitador, token y asistente del servidor.
-- Total actual: **178** pruebas.
+- Total actual: **244** pruebas.
 
 ## Despliegue en GitHub Pages
 
@@ -218,12 +229,13 @@ python3 -m http.server 8080 --directory /tmp/pages   # abre http://localhost:808
 
 1. **gitleaks** (binario oficial verificado con su suma) sobre todo el historial y el árbol.
 2. **Web**: matriz Node 20 y 22, `npm ci`, `lint`, `format:check`, `type-check`, `test`, `build-only`, `build:pages`, búsqueda de claves en `dist/` y `npm audit --audit-level=high`.
-3. **Servidor**: `npm ci --ignore-scripts`, `node --check` y `npm audit --audit-level=critical` (ver vulnerabilidades conocidas
-   en [MEMORY.md](../MEMORY.md)).
+3. **Servidor**: `npm ci --ignore-scripts`, `node --check` y `npm audit --audit-level=high`.
+4. **Servidor · Chrome** (Node 20 y 22): `npm ci` con descarga de Chrome y `node scripts/comprobar-chrome.js` (lo arranca
+   sin cabeza y carga `whatsapp-web.js`), para vigilar los *overrides* de Puppeteer.
 
 Dependabot (`.github/dependabot.yml`) propone cada semana actualizaciones agrupadas de la web, del servidor y de las acciones.
-En la web ignora los saltos mayores de Vitest, TypeScript, Vite, el plugin de Vue, Pinia, `@vue/tsconfig`, `npm-run-all2`
-y los tipos de Node; agrupa solo menores y parches. La PR #2 del servidor se fusionó y la PR #3 de la web, con esos majors,
+En la web ignora los saltos mayores de Vitest y `npm-run-all2` (exigen Node 22), TypeScript (no compatible con `vue-tsc`)
+y los tipos de Node (Vite 8, Pinia 4 y `@vue/tsconfig` 0.9 se migraron en la 3.4.0); agrupa solo menores y parches. La PR #2 del servidor se fusionó y la PR #3 de la web, con esos majors,
 se cerró; los menores se aplicaron manualmente.
 
 El reformateo está en un commit separado listado en `.git-blame-ignore-revs`; para ignorarlo al usar blame:

@@ -16,6 +16,8 @@ export const STORAGE_KEYS = {
   welcomeSeen: 'bienvenida-vista',
   /** Historial de transmisiones: SOLO si la persona marca «Recordar historial». */
   history: 'historial',
+  /** Plantillas propias: se guardan cuando la persona pulsa GUARDAR (no contienen claves). */
+  templates: 'plantillas',
 } as const
 
 export type StorageName = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
