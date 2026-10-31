@@ -83,15 +83,3 @@ FORMATO: Mensaje de WhatsApp corto.`.trim()
   const gameName = data.customGameName || 'Videojuego Épico'
   return `Actúa como narrador de "${gameName}". Convoca a "${recruits}" a las ${time}. Sé inmersivo. Formato: mensaje de WhatsApp corto.`
 }
-
-/** Prompt para resumir un texto a guion de audio corto (TTS). */
-export function buildAudioPrompt(fullText: string, gameId: string): string {
-  let style = 'Estilo: Narrador épico de tráiler de cine.'
-  if (gameId === 'sm2') style = 'Estilo: Transmisión Vox-caster militar distorsionada. Corto, grave, sin emojis.'
-  else if (gameId === 'hd2') style = 'Estilo: Megafonía de propaganda eufórica. ¡Grita por la libertad! Sin emojis.'
-  else if (gameId === 'mh') style = 'Estilo: Animado y aventurero. Sin emojis.'
-  return `${style}
-TAREA: Convierte el siguiente texto en un guion de audio MUY CORTO (máx 300 caracteres).
-TEXTO ORIGINAL: """${fullText.slice(0, 4000)}"""
-REGLA: Solo devuelve el texto plano a leer. Nada de formatos ni emojis.`
-}
