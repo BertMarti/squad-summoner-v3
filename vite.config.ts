@@ -4,7 +4,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
-import { assertDevTokenNotExposed } from './scripts/devHost'
+import { assertDevTokenNotExposed } from './scripts/devHost.ts'
 
 /** Nombre del repo: base de la web en GitHub Pages (https://bertmarti.github.io/squad-summoner-v3/). */
 const PAGES_BASE = '/squad-summoner-v3/'
