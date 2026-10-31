@@ -4,6 +4,34 @@ Todos los cambios notables del proyecto están documentados en este archivo.
 
 ---
 
+## [3.4.0] — 2026-10-31 (Fase 6: plantillas propias y lectura en voz alta)
+
+### ✨ Añadido
+- **Mis plantillas**: guarda una transmisión como plantilla (⭐ GUARDAR COMO PLANTILLA) o crea una desde cero; edítala,
+  renómbrala, bórrala (con confirmación) y úsala con **▶️ USAR** sin gastar llamadas a Gemini.
+- Variables `{juego}`, `{hora}` y `{reclutas}` (en mayúsculas, valor en mayúsculas) con vista previa; al guardar una
+  transmisión, los datos de la misión se convierten solos en variables.
+- Exportar e importar plantillas en un archivo JSON validado (máximo 30 plantillas y 200 kB).
+- **🔊 LEER EN VOZ ALTA** con la voz del navegador (Web Speech API): voz española si existe, pausar, reanudar y parar;
+  desactivado con explicación si el navegador no puede, y aviso si no tiene voces instaladas.
+- El historial marca las transmisiones hechas con plantilla como **PLANTILLA**.
+
+### 🔒 Seguridad
+- Servidor: 0 avisos de `npm audit` (antes 5 altas de `extract-zip` y 6 moderadas): `@puppeteer/browsers` 3 (sin
+  `extract-zip`, con `yauzl`), `archiver` 8 y `minimatch` 11 mediante `overrides`. El CI del servidor falla ya con altas
+  y comprueba que Chrome se descarga y arranca con Node 20 y 22.
+- Web: 0 avisos de `npm audit` (antes 22 moderadas de herramientas de desarrollo) con `minimatch` 11 y `glob` 14.
+- Las plantillas guardadas o importadas se validan (origen compartido de `bertmarti.github.io`): sin caracteres de
+  control ni bidi, límites de tamaño, y siempre se muestran como texto.
+
+### 🔄 Dependencias
+- Vite 8, Pinia 4, `@vue/tsconfig` 0.9 y menores de `@google/genai`, ESLint y `vue-tsc`. Siguen aplazadas Vitest 5 y
+  `npm-run-all2` 9 (exigen Node 22; la Raspberry Pi usa Node 20) y TypeScript 7 (no compatible con `vue-tsc` 3).
+- Servidor 1.3.0: requiere Node 20.19+ o 22.12+.
+
+### 🧹 Eliminado
+- `buildAudioPrompt`: la voz lee la transmisión tal cual, sin una llamada extra a Gemini.
+
 ## [3.3.0] — 2026-10-25 (Fase 3: tono, historial, encuesta y token del servidor)
 
 ### ✨ Añadido

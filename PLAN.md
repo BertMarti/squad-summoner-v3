@@ -21,16 +21,23 @@ accesibilidad y móvil, GitHub Pages con CSP, CI con gitleaks, Dependabot, READM
   en la cabecera.
 - ESLint 10, Prettier 3, pruebas de componentes con `happy-dom`, CI actualizado y Dependabot PR #5 fusionada.
 
+**31/10/2026 · v3.4.0 (fase 6)**
+- Plantillas propias: guardar, editar, renombrar, borrar, usar sin IA, variables y exportar/importar JSON.
+- Leer en voz alta con la Web Speech API (voz española, pausar/reanudar/parar, aviso sin voces); fuera `buildAudioPrompt`.
+- `npm audit` a 0 en web y servidor (`extract-zip` eliminado con `@puppeteer/browsers` 3); Vite 8, Pinia 4,
+  `@vue/tsconfig` 0.9; CI con descarga real de Chrome en Node 20 y 22.
+
 ## ⏭️ Siguiente (prioridad alta → baja)
 
-0. **Alberto:** prueba real con clave de Gemini y WhatsApp (pasos en el README, «Lo que tienes que hacer tú»).
-1. Cuando la Pi tenga Node 22: Vitest 5, Vite 8, TypeScript 7 (cuando `vue-tsc` lo soporte), Pinia 4 y quitar los
-   `ignore` de `.github/dependabot.yml`.
-2. Quitar los `overrides` y las altas de `extract-zip` en cuanto `whatsapp-web.js` publique una versión con Puppeteer ≥ 25.13.
+0. **Alberto:** prueba real con clave de Gemini, WhatsApp y la voz en un móvil (pasos en el README, «Lo que tienes que
+   hacer tú»).
+1. Cuando la Pi tenga Node 22: Vitest 5 y `npm-run-all2` 9 (probados con Node 22: pasan) y quitar sus `ignore` de
+   `.github/dependabot.yml`. TypeScript 7 cuando `vue-tsc` lo soporte.
+2. Quitar los `overrides` del servidor en cuanto `whatsapp-web.js` publique una versión con Puppeteer ≥ 25.13.
 
 ## 💡 Ideas
 
-- Plantillas propias del usuario.
 - Encuesta nativa de WhatsApp enviada por el servidor (Poll de `whatsapp-web.js`).
 - Más juegos siguiendo la skill `anadir-juego`.
-- Voz: leer la transmisión con TTS (`buildAudioPrompt` sigue en `src/lib/prompts.ts`).
+- Compartir una plantilla con el grupo por enlace (sin servidor, codificada en la URL con límite de tamaño).
+- Elegir voz y velocidad de lectura.
