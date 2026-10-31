@@ -4,7 +4,7 @@ import { SPEECH_FAILED, isSpeechSupported, pickSpanishVoice, splitForSpeech, tex
 export type SpeechState = 'idle' | 'speaking' | 'paused'
 
 /** Tiempo para comprobar que la lectura ha empezado de verdad. */
-export const WATCHDOG_MS = 3000
+export const WATCHDOG_MS = 4000
 
 /**
  * Leer en voz alta con `speechSynthesis` (Web Speech API): local y gratis, sin llamadas a Gemini.
@@ -60,6 +60,9 @@ export function useSpeech(
     error.value = ''
     if (!voice.value) loadVoice()
     const id = session
+    // Antes de encolar: algunos navegadores lanzan `onerror` dentro del propio speak() (p. ej. «not-allowed») y la
+    // lectura ya habrá terminado al salir del bucle.
+    state.value = 'speaking'
     chunks.forEach((chunk, index) => {
       const utterance = new win.SpeechSynthesisUtterance(chunk)
       utterance.lang = voice.value?.lang || 'es-ES'
@@ -77,13 +80,14 @@ export function useSpeech(
           error.value = SPEECH_FAILED
         }
       }
-      synth.speak(utterance)
+      if (id === session) synth.speak(utterance)
     })
-    state.value = 'speaking'
+    if (id !== session) return false
     // Algunos navegadores (p. ej. Chromium en Linux sin voces instaladas) aceptan speak() pero no leen ni avisan:
-    // si a los pocos segundos no está leyendo ni tiene nada en cola, se para y se explica.
+    // si a los pocos segundos no está leyendo, se para y se explica. (Chromium sin voces deja la frase «en cola»
+    // para siempre, así que `pending` no sirve para saberlo.)
     watchdog = setTimeout(() => {
-      if (id === session && state.value === 'speaking' && !synth.speaking && !synth.pending) {
+      if (id === session && state.value === 'speaking' && !synth.speaking) {
         stop()
         error.value = SPEECH_FAILED
       }

@@ -142,12 +142,23 @@ describe('useSpeech', () => {
     expect(s.error.value).toBe(SPEECH_FAILED)
   })
 
+  it('un error dentro del propio speak() (p. ej. not-allowed) deja la lectura parada con el aviso', () => {
+    const { win, synth } = fakeWindow()
+    synth.speak.mockImplementation((u: FakeUtterance) => u.onerror?.({ error: 'not-allowed' }))
+    const s = useSpeech(win as never)
+    expect(s.speak('Uno. Dos.')).toBe(false)
+    expect(synth.speak).toHaveBeenCalledTimes(1)
+    expect(s.state.value).toBe('idle')
+    expect(s.error.value).toBe(SPEECH_FAILED)
+  })
+
   it('si el navegador acepta speak() pero no lee (sin voces), se para y lo explica', () => {
     vi.useFakeTimers()
     try {
-      const { win } = fakeWindow([])
+      const { win, synth } = fakeWindow([])
       const s = useSpeech(win as never)
       s.speak('Hola')
+      synth.pending = true // Chromium sin voces: la frase se queda en cola sin empezar nunca
       vi.advanceTimersByTime(WATCHDOG_MS)
       expect(s.state.value).toBe('idle')
       expect(s.error.value).toBe(SPEECH_FAILED)

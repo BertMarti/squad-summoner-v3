@@ -67,7 +67,7 @@
   demo y la encuesta (la encuesta se añade al usar, según la casilla). Usar una plantilla no exige elegir juego.
 - **Voz con `speechSynthesis`** (31/10, fase 6): gratis y local. Se lee por frases de ≤ 220 caracteres (Chrome corta las
   locuciones largas), sin emojis ni la marca de demo. Si el navegador acepta `speak()` pero no lee (Chromium en Linux
-  sin voces, como la Pi o el Chromium sin cabeza), una vigilancia de 3 s lo para y lo explica. Se eliminó
+  sin voces, como la Pi o el Chromium sin cabeza), una vigilancia de 4 s (`speechSynthesis.speaking` sigue en falso; `pending` no sirve porque la frase se queda en cola) lo para y lo explica. Se eliminó
   `buildAudioPrompt`: resumir con Gemini costaría una llamada y la voz puede leer el texto tal cual.
 - **`extract-zip` fuera** (31/10, fase 6): `overrides` de `@puppeteer/browsers` ^3.2.6 (descomprime con `unzip`/`tar`
   del sistema o `yauzl`, que se añade como dependencia), `archiver` ^8 y `minimatch` ^11 (solo los usa `RemoteAuth`, que
