@@ -89,6 +89,7 @@ El servidor y la web leen el mismo `.env` de la raíz. Plantilla completa en [`.
 │   │   ├── panels/             # AppHeader, GameSelector, MissionControls, TerminalOutput
 │   │   ├── lore/               # Paneles decorativos: registro, teletipo, escuadrón, radar…
 │   │   ├── ConfigModal.vue     # Diálogo accesible para la API key
+│   │   ├── SharedTemplateDialog.vue # Revisión y guardado de una plantilla recibida
 │   │   ├── WelcomeGuide.vue    # Guía de primera visita
 │   │   └── HelpTip.vue         # Ayuda contextual de cada sección
 │   ├── composables/useGemini.ts# Lista GAMES y coordinación de generación
@@ -102,9 +103,11 @@ El servidor y la web leen el mismo `.env` de la raíz. Plantilla completa en [`.
 │   │   ├── tones.ts            # Tonos de generación y demo
 │   │   ├── poll.ts             # Encuesta determinista de asistencia
 │   │   ├── history.ts          # Modelo y almacenamiento del historial
+│   │   ├── shareLink.ts        # Codificación, validación y enlaces de plantillas compartidas
+│   │   ├── speech.ts           # Preparación de texto, voces y velocidades para Web Speech API
 │   │   └── whatsapp.ts         # Enlace wa.me y validación del mensaje
 │   ├── services/whatsappServer.ts # POST /send-mission con timeout y errores claros
-│   ├── stores/                 # Pinia: apiKey, mission, terminal, processQueue, history, serverToken
+│   ├── stores/                 # Pinia: apiKey, mission, terminal, processQueue, history, templates, speech, serverToken
 │   └── types/index.ts
 ├── public/games/*.svg          # Ilustraciones propias de cada juego
 ├── server/
@@ -141,6 +144,40 @@ Usuario elige juego + reclutas + hora ──► store `mission` (Pinia, única f
 ```
 
 La generación con IA ocurre **en el navegador**; el servidor solo envía mensajes a WhatsApp.
+
+### Compartir plantillas por enlace
+
+`src/lib/shareLink.ts` construye el enlace a partir del origen y la ruta actuales, eliminando query y fragmento previos.
+La plantilla no se envía a ningún servidor: se coloca después de `#` en uno de estos formatos:
+
+```txt
+#plantilla=1z.<base64url de deflate de {"n","t"}>
+#plantilla=1t.<base64url sin comprimir de {"n","t"}>
+```
+
+`1z` se usa cuando `CompressionStream('deflate')` produce un resultado más corto; `1t` permite funcionar también sin
+compresión. `MAX_SHARE_FRAGMENT` limita a 6000 caracteres el fragmento sin `#`, y `MAX_SHARE_JSON_BYTES` limita a 20000
+bytes el JSON descomprimido o sin comprimir. Una plantilla normal de hasta 4000 caracteres suele caber; si no, la interfaz
+propone exportarla.
+
+El fragmento se considera entrada hostil. `decodeShareFragment` comprueba el límite, el formato exacto, el alfabeto
+base64url, la disponibilidad de descompresión, el tope de salida, UTF-8 estricto, JSON válido y un objeto con exactamente
+las claves `n` y `t`. Después valida nombre y texto con los límites y saneado de plantillas. Los errores se muestran en
+español. `SharedTemplateDialog.vue` enseña el resultado con interpolación de Vue, permite revisarlo con la misión actual
+y solo llama a `addShared` cuando la persona pulsa **GUARDAR EN MIS PLANTILLAS**; las plantillas idénticas no se duplican.
+Al terminar de procesar el enlace, `App.vue` elimina el fragmento de la barra con `history.replaceState`, sin recargar ni
+reenviar el contenido.
+
+### Voz y velocidad
+
+`SpeechControls.vue` usa `src/lib/speech.ts` para agrupar las voces en Español y Otros idiomas, elegir automáticamente la
+mejor voz española y ofrecer `SPEECH_RATES`: 0,7, 0,85, 1, 1,15, 1,3 y 1,5. `NO_VOICES_HELP` explica que, si el
+navegador no ofrece voces, se usa la del sistema y aún se puede cambiar la velocidad. Si desaparece la voz guardada del
+dispositivo, `useSpeech` avisa y cae a la automática.
+
+`src/stores/speech.ts` guarda `{ voice, rate }` en `squad-summoner-v3:voz`. `parseSpeechPrefs` valida el JSON al leerlo,
+limpia el identificador de voz y aproxima la velocidad a una de las opciones permitidas; cualquier valor inválido vuelve
+a los valores por defecto.
 
 ## Servidor de WhatsApp
 
@@ -189,6 +226,10 @@ comando guardará `WHATSAPP_GROUP_ID` en `.env`. Los nombres se sanean antes de 
   `GET models/<modelo>` y no genera contenido ni gasta cuota.
 - La CSP compilada usa `style-src 'self'` y `font-src 'self'`, sin `unsafe-inline`; Chakra Petch se sirve desde
   `@fontsource`. No hay service workers.
+- La CSP compilada exige Trusted Types con `require-trusted-types-for 'script'` y solo permite la política `vue`. El
+  runtime de Vue la usa para insertar el HTML estático que el compilador genera a partir de nuestras plantillas; los datos
+  de usuario siguen siendo texto y la app no usa `v-html` ni `innerHTML`. No se deben añadir otras políticas ni sumideros
+  HTML/script.
 
 ## Pruebas
 
@@ -202,8 +243,9 @@ npm test
   TransmissionHistory, TemplatesPanel, SpeechControls y App (flujo completo), con `happy-dom` (cada archivo declara `// @vitest-environment happy-dom`).
 - `src/services/__tests__/` — envío al servidor (con `fetch` simulado).
 - `src/stores/__tests__/`, `src/composables/__tests__/` — stores de Pinia y traducción de errores de Gemini.
+- `shareLink.ts` y sus pruebas cubren los formatos comprimido y plano, límites, UTF-8, validación y enlaces manipulados.
 - `server/test/` — validación, CORS, cabeceras, limitador, token y asistente del servidor.
-- Total actual: **244** pruebas.
+- Total actual: **318** pruebas.
 
 ## Despliegue en GitHub Pages
 
@@ -213,7 +255,8 @@ npm test
   **GitHub Actions**.
 - La versión publicada usa `IS_STATIC_DEMO`: muestra el aviso de demo y oculta «Enviar al grupo».
 - El HTML compilado lleva una `Content-Security-Policy` (`script-src 'self'`, `connect-src` solo a Gemini y al servidor
-  local en builds locales). En desarrollo no se aplica para no romper el HMR.
+  local en builds locales), con Trusted Types (`require-trusted-types-for 'script'; trusted-types vue`). En desarrollo no
+  se aplica para no romper el HMR.
 
 Comprobación local con el prefijo:
 

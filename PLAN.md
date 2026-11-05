@@ -27,10 +27,16 @@ accesibilidad y móvil, GitHub Pages con CSP, CI con gitleaks, Dependabot, READM
 - `npm audit` a 0 en web y servidor (`extract-zip` eliminado con `@puppeteer/browsers` 3); Vite 8, Pinia 4,
   `@vue/tsconfig` 0.9; CI con descarga real de Chrome en Node 20 y 22.
 
+**02/11/2026 · v3.5.0 (fase 7)**
+- Compartir una plantilla por enlace sin servidor (fragmento `#plantilla=…` comprimido, límite de 6000 caracteres,
+  validación estricta, vista previa y confirmación antes de guardar).
+- Elegir voz y velocidad de lectura (español primero, 6 velocidades, PROBAR VOZ, `squad-summoner-v3:voz`).
+- CSP con Trusted Types; `npm audit` a 0 en web y servidor; 318 pruebas.
+
 ## ⏭️ Siguiente (prioridad alta → baja)
 
-0. **Alberto:** prueba real con clave de Gemini, WhatsApp y la voz en un móvil (pasos en el README, «Lo que tienes que
-   hacer tú»).
+0. **Alberto:** prueba real con clave de Gemini, WhatsApp, la voz (y VOZ Y VELOCIDAD) en un móvil y abrir en el móvil
+   un enlace de plantilla enviado por WhatsApp (pasos en el README, «Lo que tienes que hacer tú»).
 1. Cuando la Pi tenga Node 22: Vitest 5 y `npm-run-all2` 9 (probados con Node 22: pasan) y quitar sus `ignore` de
    `.github/dependabot.yml`. TypeScript 7 cuando `vue-tsc` lo soporte.
 2. Quitar los `overrides` del servidor en cuanto `whatsapp-web.js` publique una versión con Puppeteer ≥ 25.13.
@@ -39,5 +45,5 @@ accesibilidad y móvil, GitHub Pages con CSP, CI con gitleaks, Dependabot, READM
 
 - Encuesta nativa de WhatsApp enviada por el servidor (Poll de `whatsapp-web.js`).
 - Más juegos siguiendo la skill `anadir-juego`.
-- Compartir una plantilla con el grupo por enlace (sin servidor, codificada en la URL con límite de tamaño).
-- Elegir voz y velocidad de lectura.
+- Compartir varias plantillas en un solo enlace (hoy: una por enlace; para muchas, EXPORTAR).
+- Código QR del enlace de plantilla para pasarlo de un móvil a otro en persona.

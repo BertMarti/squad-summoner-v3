@@ -15,7 +15,9 @@ const templates = useTemplatesStore()
 
 const focusTarget = async () => {
   await nextTick()
-  dialog.value?.querySelector<HTMLElement>('.save-button, .close-button')?.focus()
+  // Sin desplazar: en el móvil, el diálogo empieza por arriba (título y aviso) aunque el foco esté en GUARDAR.
+  dialog.value?.querySelector<HTMLElement>('.save-button, .close-button')?.focus({ preventScroll: true })
+  if (dialog.value) dialog.value.scrollTop = 0
 }
 const save = () => {
   if (!props.result || !('template' in props.result)) return
@@ -187,5 +189,10 @@ p {
 button:hover {
   border-color: var(--border-accent);
   color: var(--text-accent);
+}
+@media (max-width: 480px), (max-height: 700px) {
+  .shared-text {
+    max-height: 140px;
+  }
 }
 </style>

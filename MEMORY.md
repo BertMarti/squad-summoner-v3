@@ -1,12 +1,12 @@
 # MEMORY.md — decisiones, trampas y estado
 
-*Actualizado: 31/10/2026 (fase 6, v3.4.0).*
+*Actualizado: 02/11/2026 (fase 7, v3.5.0).*
 
 ## Estado actual
 
-- Versión **3.4.0** (servidor 1.3.0). Web Vue 3 + Vite 8 + Pinia 4, servidor opcional Express 5 + whatsapp-web.js 1.34.7.
+- Versión **3.5.0** (servidor 1.3.0). Web Vue 3 + Vite 8 + Pinia 4, servidor opcional Express 5 + whatsapp-web.js 1.34.7.
 - Publicación en GitHub Pages con Actions desde `master` (`https://bertmarti.github.io/squad-summoner-v3/`).
-- **244 pruebas** Vitest 4 (lógica pura, componentes, Gemini con el SDK real y `fetch` simulado, almacenamiento,
+- **318 pruebas** Vitest 4 (lógica pura, componentes, Gemini con el SDK real y `fetch` simulado, almacenamiento,
   stores, servidor y asistente).
 - CI: gitleaks, ESLint, Prettier, web en Node 20 y 22 (tipos, pruebas, builds, `npm audit`), servidor. Dependabot semanal
   con ignores.
@@ -80,6 +80,21 @@
   TypeScript 7 rompe `vue-tsc` 3 (ERR_PACKAGE_PATH_NOT_EXPORTED). `minimatch` ^11 y `glob` ^14 por `overrides` en la web
   (avisos moderados de ESLint y `@vue/test-utils`).
 
+- **Plantilla por enlace en el fragmento** (02/11, fase 7): `#plantilla=1z.<base64url>` con el JSON `{"n","t"}`
+  comprimido con `CompressionStream('deflate')` (`1t.` sin comprimir si el navegador no puede). El fragmento no viaja
+  en ninguna petición HTTP (comprobado con el registro del servidor), así que no llega a GitHub Pages; por WhatsApp sí
+  viaja dentro del mensaje (se dice en la interfaz). Límite de 6000 caracteres: una plantilla normal de 4000 cabe
+  comprimida; WhatsApp y los navegadores lo admiten de sobra. Al abrir se valida todo (entrada hostil), se muestra con
+  interpolación, NO se guarda sin confirmar y el fragmento se quita con `history.replaceState` (no queda en la barra ni
+  en el historial). Un contador descarta lecturas viejas si llegan dos enlaces seguidos; un enlace cierra Configuración
+  para que nunca haya dos modales. Se eligió deflate (`'deflate'`, no `'deflate-raw'`, por compatibilidad con Node 20).
+- **Voz y velocidad** (02/11, fase 7): se guarda el `voiceURI` (o el nombre) y una de 6 velocidades (0,7–1,5×) en
+  `squad-summoner-v3:voz` al cambiarlas (es una preferencia, no un dato sensible). Las voces son de cada dispositivo:
+  si la guardada no existe, se usa la automática y se avisa. Se lee la voz elegida al empezar cada lectura.
+- **Trusted Types** (02/11, fase 7): `require-trusted-types-for 'script'; trusted-types vue`. Vue 3.5 crea la política
+  «vue» para insertar el HTML estático que su compilador genera de nuestras plantillas (`insertStaticContent`); sin
+  ella, la página se rompería. Ni Vite ni `@google/genai` usan sumideros de HTML. Comprobado en Chromium: 0 violaciones.
+
 ## Trampas conocidas
 
 - La Raspberry Pi de Alberto tiene **Node 20 y npm 9**: `vitest@^4` (el 5 exige Node ≥ 22.12), `npm-run-all2@^7` (el 8+
@@ -102,3 +117,13 @@
   probar con Puppeteer.
 - Los paneles `lore/` (radar, cola de procesos, latencia) son decorativos y simulados.
 - Prettier sin punto y coma rompe manejadores de plantilla con dos sentencias (`@close="a = 1; b = 2"`): usa una función.
+- **Streams entre implementaciones** (02/11, fase 7): en `happy-dom`, `ReadableStream.pipeThrough(new CompressionStream())`
+  se queda colgado (mezcla los streams de happy-dom con los de Node). `src/lib/shareLink.ts` escribe directamente en el
+  `writable` del CompressionStream. En pruebas de componentes, espera el enlace con `vi.waitFor` (una vuelta de
+  `flushPromises` no basta).
+- `vi.restoreAllMocks()` NO deshace `vi.spyOn(localStorage, 'setItem')` en `happy-dom`: restaura el espía a mano con
+  `spy.mockRestore()` o contaminará las pruebas siguientes.
+- `npm update` con npm 9 falla con «Cannot read properties of null (reading 'edgesOut')» por los `overrides`: instala
+  las versiones concretas con `npm install paquete@^x.y.z`.
+- Al escribir pruebas o regex con `\u202e` y similares, comprueba que no se han convertido en caracteres literales
+  (`grep -nP '[\x{202A}-\x{202E}\x{2066}-\x{2069}]' src`): pasó de nuevo en la fase 7 y se corrigió.
