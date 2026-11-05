@@ -248,3 +248,17 @@ describe('exportar e importar', () => {
     expect(exportFileName(new Date(2026, 9, 31, 12))).toBe('squad-summoner-plantillas-2026-10-31.json')
   })
 })
+
+describe('caracteres invisibles', () => {
+  it('quita espacios de anchura cero, marcas de dirección, separadores Unicode y BOM', () => {
+    const dirty = '\ufeffHo\u200bla\u200e \u200fmun\u061cdo\u2028fin\u2029'
+    expect(cleanTemplateText(dirty)).toBe('Hola mundofin')
+    expect(cleanTemplateName(dirty)).toBe('Hola mundofin')
+  })
+
+  it('conserva los emojis compuestos con ZWJ (U+200D)', () => {
+    const astronaut = '\u{1F469}\u200d\u{1F680}'
+    const flag = '\u{1F3F3}\ufe0f\u200d\u{1F308}'
+    expect(cleanTemplateText(`Vamos ${astronaut} ${flag}`)).toBe(`Vamos ${astronaut} ${flag}`)
+  })
+})

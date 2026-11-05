@@ -39,6 +39,15 @@ describe('SharedTemplateDialog', () => {
     expect(w.get('[role="status"]').text()).toBe('Leyendo el enlace…')
   })
 
+  it('mientras lee, el foco queda dentro del diálogo (no hay botones todavía)', async () => {
+    const w = mountDialog(null)
+    await w.vm.$nextTick()
+    await w.vm.$nextTick()
+    const dialog = w.get('.shared-dialog')
+    expect(dialog.attributes('tabindex')).toBe('-1')
+    expect(document.activeElement).toBe(dialog.element)
+  })
+
   it('muestra la plantilla como TEXTO (nunca HTML), con vista previa y foco en GUARDAR', async () => {
     const text = '<img src=x onerror="alert(1)"> {reclutas} a las {hora}'
     const w = mountDialog({ template: { name: '<b>Del grupo</b>', text } })

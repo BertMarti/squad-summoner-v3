@@ -115,7 +115,14 @@ export function useSpeech(
           error.value = SPEECH_FAILED
         }
       }
-      if (id === session) synth.speak(utterance)
+      if (id !== session) return
+      try {
+        synth.speak(utterance)
+      } catch {
+        // Algunos navegadores lanzan en vez de avisar con onerror.
+        stop()
+        error.value = SPEECH_FAILED
+      }
     })
     if (id !== session) return false
     // Algunos navegadores (p. ej. Chromium en Linux sin voces instaladas) aceptan speak() pero no leen ni avisan:
@@ -137,14 +144,24 @@ export function useSpeech(
 
   function pause() {
     if (!synth || state.value !== 'speaking') return
-    synth.pause()
-    state.value = 'paused'
+    try {
+      synth.pause()
+      state.value = 'paused'
+    } catch {
+      stop()
+      error.value = SPEECH_FAILED
+    }
   }
 
   function resume() {
     if (!synth || state.value !== 'paused') return
-    synth.resume()
-    state.value = 'speaking'
+    try {
+      synth.resume()
+      state.value = 'speaking'
+    } catch {
+      stop()
+      error.value = SPEECH_FAILED
+    }
   }
 
   function dispose() {

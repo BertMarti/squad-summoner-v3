@@ -245,7 +245,7 @@ npm test
 - `src/stores/__tests__/`, `src/composables/__tests__/` — stores de Pinia y traducción de errores de Gemini.
 - `shareLink.ts` y sus pruebas cubren los formatos comprimido y plano, límites, UTF-8, validación y enlaces manipulados.
 - `server/test/` — validación, CORS, cabeceras, limitador, token y asistente del servidor.
-- Total actual: **318** pruebas.
+- Total actual: **323** pruebas.
 
 ## Despliegue en GitHub Pages
 

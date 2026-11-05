@@ -138,7 +138,7 @@ describe('validación estricta al abrir un enlace', () => {
     const bomb = await deflate(new TextEncoder().encode(' '.repeat(MAX_SHARE_JSON_BYTES * 10)))
     const hash = `#plantilla=1z.${toBase64Url(bomb)}`
     expect(hash.length).toBeLessThan(MAX_SHARE_FRAGMENT)
-    await expectError(decodeShareFragment(hash), SHARE_ERRORS.tooLong)
+    await expectError(decodeShareFragment(hash), SHARE_ERRORS.tooMuchData)
   })
 
   it('exige un objeto con exactamente «n» y «t» de tipo texto', async () => {
@@ -171,6 +171,14 @@ describe('validación estricta al abrir un enlace', () => {
       decodeShareFragment(fragmentOf({ n: 'Hola', t: 'x'.repeat(MAX_MESSAGE_LENGTH + 1) })),
       SHARE_ERRORS.textTooLong,
     )
+  })
+
+  it('mide nombre y texto ya limpios: espacios finales e invisibles no hacen rechazar una plantilla de 4000', async () => {
+    const text = `${'x'.repeat(MAX_MESSAGE_LENGTH - 1)}y   \n\u200b\u200b  `
+    const name = `${'n'.repeat(MAX_TEMPLATE_NAME)}\u200b\u200b   `
+    const result = await decodeShareFragment(fragmentOf({ n: name, t: text }))
+    expect(result.text).toHaveLength(MAX_MESSAGE_LENGTH)
+    expect(result.name).toHaveLength(MAX_TEMPLATE_NAME)
   })
 
   it('el HTML del enlace se devuelve como texto tal cual (la interfaz lo interpola, nunca lo inyecta)', async () => {

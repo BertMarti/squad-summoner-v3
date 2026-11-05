@@ -16,7 +16,9 @@ const templates = useTemplatesStore()
 const focusTarget = async () => {
   await nextTick()
   // Sin desplazar: en el móvil, el diálogo empieza por arriba (título y aviso) aunque el foco esté en GUARDAR.
-  dialog.value?.querySelector<HTMLElement>('.save-button, .close-button')?.focus({ preventScroll: true })
+  // Mientras se lee el enlace no hay botones: el foco va al propio diálogo (tabindex="-1").
+  const target = dialog.value?.querySelector<HTMLElement>('.save-button, .close-button') ?? dialog.value
+  target?.focus({ preventScroll: true })
   if (dialog.value) dialog.value.scrollTop = 0
 }
 const save = () => {
@@ -59,7 +61,14 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
 <template>
   <div class="shared-overlay" @click.self="emit('close')">
-    <div ref="dialog" class="shared-dialog" role="dialog" aria-modal="true" aria-labelledby="shared-template-title">
+    <div
+      ref="dialog"
+      class="shared-dialog"
+      tabindex="-1"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="shared-template-title"
+    >
       <template v-if="!result">
         <h2 id="shared-template-title">📨 ENLACE DE PLANTILLA</h2>
         <p role="status">Leyendo el enlace…</p>

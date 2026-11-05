@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import {
   DEFAULT_SPEECH_PREFS,
   MAX_VOICE_ID,
+  SPEECH_FAILED,
   SPEECH_RATES,
   SPEECH_SAMPLE,
   cleanVoiceId,
@@ -183,5 +184,29 @@ describe('useSpeech con voz y velocidad elegidas', () => {
     const s = useSpeech(win)
     expect(s.hasVoices.value).toBe(false)
     expect(s.speak('Hola.')).toBe(true)
+  })
+
+  it('si speak(), pause() o resume() lanzan, la lectura se para con el aviso', () => {
+    for (const method of ['speak', 'pause', 'resume'] as const) {
+      const { win } = fakeWindow()
+      const synth = (win as { speechSynthesis: Record<string, unknown> }).speechSynthesis
+      const s = useSpeech(win)
+      if (method === 'speak') {
+        synth.speak = () => {
+          throw new Error('boom')
+        }
+        expect(s.speak('Uno. Dos.')).toBe(false)
+      } else {
+        s.speak('Hola.')
+        if (method === 'resume') s.pause()
+        synth[method] = () => {
+          throw new Error('boom')
+        }
+        if (method === 'pause') s.pause()
+        else s.resume()
+      }
+      expect(s.state.value, method).toBe('idle')
+      expect(s.error.value, method).toBe(SPEECH_FAILED)
+    }
   })
 })

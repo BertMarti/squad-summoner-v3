@@ -31,7 +31,7 @@ accesibilidad y móvil, GitHub Pages con CSP, CI con gitleaks, Dependabot, READM
 - Compartir una plantilla por enlace sin servidor (fragmento `#plantilla=…` comprimido, límite de 6000 caracteres,
   validación estricta, vista previa y confirmación antes de guardar).
 - Elegir voz y velocidad de lectura (español primero, 6 velocidades, PROBAR VOZ, `squad-summoner-v3:voz`).
-- CSP con Trusted Types; `npm audit` a 0 en web y servidor; 318 pruebas.
+- CSP con Trusted Types; `npm audit` a 0 en web y servidor; 323 pruebas.
 
 ## ⏭️ Siguiente (prioridad alta → baja)
 
@@ -39,7 +39,9 @@ accesibilidad y móvil, GitHub Pages con CSP, CI con gitleaks, Dependabot, READM
    un enlace de plantilla enviado por WhatsApp (pasos en el README, «Lo que tienes que hacer tú»).
 1. Cuando la Pi tenga Node 22: Vitest 5 y `npm-run-all2` 9 (probados con Node 22: pasan) y quitar sus `ignore` de
    `.github/dependabot.yml`. TypeScript 7 cuando `vue-tsc` lo soporte.
-2. Quitar los `overrides` del servidor en cuanto `whatsapp-web.js` publique una versión con Puppeteer ≥ 25.13.
+2. Rehacer las capturas del README y del informe desde un navegador con fuente de emojis (en la Raspberry Pi los
+   emojis salen como cuadrados).
+3. Quitar los `overrides` del servidor en cuanto `whatsapp-web.js` publique una versión con Puppeteer ≥ 25.13.
 
 ## 💡 Ideas
 

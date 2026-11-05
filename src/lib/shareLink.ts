@@ -1,5 +1,11 @@
 import { MAX_MESSAGE_LENGTH } from './mission'
-import { MAX_TEMPLATE_NAME, cleanTemplateName, cleanTemplateText } from './templates'
+import {
+  MAX_TEMPLATE_NAME,
+  cleanTemplateName,
+  cleanTemplateNameUnbounded,
+  cleanTemplateText,
+  cleanTemplateTextUnbounded,
+} from './templates'
 
 /**
  * Compartir una plantilla por enlace, sin servidor.
@@ -28,6 +34,7 @@ const FRAGMENT_PATTERN = /^plantilla=1([zt])\.([A-Za-z0-9_-]+)$/
 
 export const SHARE_ERRORS = {
   tooLongToShare: `Esta plantilla es demasiado larga para compartirla por enlace (el enlace pasaría de ${MAX_SHARE_FRAGMENT} caracteres). Acórtala o usa ⬇️ EXPORTAR.`,
+  tooMuchData: 'El enlace contiene más datos de los que puede llevar una plantilla: no es un enlace válido.',
   tooLong: `El enlace es demasiado largo (máximo ${MAX_SHARE_FRAGMENT} caracteres): no es un enlace de plantilla válido.`,
   malformed: 'El enlace de plantilla está incompleto o mal copiado. Pide que te lo envíen de nuevo.',
   damaged: 'El enlace de plantilla está dañado: no se ha podido leer. Pide que te lo envíen de nuevo.',
@@ -82,7 +89,7 @@ async function readAll(stream: ReadableStream<Uint8Array>, max: number): Promise
     total += value.byteLength
     if (total > max) {
       void reader.cancel().catch(() => {})
-      throw new ShareLinkError(SHARE_ERRORS.tooLong)
+      throw new ShareLinkError(SHARE_ERRORS.tooMuchData)
     }
     chunks.push(value)
   }
@@ -133,10 +140,11 @@ export function validateSharedPayload(data: unknown): SharedTemplate {
   if (typeof n !== 'string' || typeof t !== 'string') throw new ShareLinkError(SHARE_ERRORS.invalid)
   const name = cleanTemplateName(n)
   if (!name) throw new ShareLinkError(SHARE_ERRORS.noName)
-  if (n.replace(/\s+/g, ' ').trim().length > MAX_TEMPLATE_NAME) throw new ShareLinkError(SHARE_ERRORS.nameTooLong)
+  // Se mide lo que quedará tras limpiar (sin recortar): espacios finales o invisibles no hacen rechazar una plantilla.
+  if (cleanTemplateNameUnbounded(n).length > MAX_TEMPLATE_NAME) throw new ShareLinkError(SHARE_ERRORS.nameTooLong)
   const text = cleanTemplateText(t)
   if (!text) throw new ShareLinkError(SHARE_ERRORS.empty)
-  if (t.replace(/\r\n?/g, '\n').trim().length > MAX_MESSAGE_LENGTH) throw new ShareLinkError(SHARE_ERRORS.textTooLong)
+  if (cleanTemplateTextUnbounded(t).length > MAX_MESSAGE_LENGTH) throw new ShareLinkError(SHARE_ERRORS.textTooLong)
   return { name, text }
 }
 
@@ -199,7 +207,7 @@ export async function decodeShareFragment(hash: string, apis: StreamApis = globa
     if (!apis.DecompressionStream) throw new ShareLinkError(SHARE_ERRORS.unsupported)
     bytes = await inflate(bytes, apis.DecompressionStream)
   } else if (bytes.byteLength > MAX_SHARE_JSON_BYTES) {
-    throw new ShareLinkError(SHARE_ERRORS.tooLong)
+    throw new ShareLinkError(SHARE_ERRORS.tooMuchData)
   }
   let json: string
   try {

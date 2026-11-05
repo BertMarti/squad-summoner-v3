@@ -6,7 +6,7 @@
 
 - Versión **3.5.0** (servidor 1.3.0). Web Vue 3 + Vite 8 + Pinia 4, servidor opcional Express 5 + whatsapp-web.js 1.34.7.
 - Publicación en GitHub Pages con Actions desde `master` (`https://bertmarti.github.io/squad-summoner-v3/`).
-- **318 pruebas** Vitest 4 (lógica pura, componentes, Gemini con el SDK real y `fetch` simulado, almacenamiento,
+- **323 pruebas** Vitest 4 (lógica pura, componentes, Gemini con el SDK real y `fetch` simulado, almacenamiento,
   stores, servidor y asistente).
 - CI: gitleaks, ESLint, Prettier, web en Node 20 y 22 (tipos, pruebas, builds, `npm audit`), servidor. Dependabot semanal
   con ignores.
@@ -94,6 +94,14 @@
 - **Trusted Types** (02/11, fase 7): `require-trusted-types-for 'script'; trusted-types vue`. Vue 3.5 crea la política
   «vue» para insertar el HTML estático que su compilador genera de nuestras plantillas (`insertStaticContent`); sin
   ella, la página se rompería. Ni Vite ni `@google/genai` usan sumideros de HTML. Comprobado en Chromium: 0 violaciones.
+
+- **`trusted-types vue` sin `'allow-duplicates'`** (02/11, revisión de Fable): decisión consciente. Vue crea su política
+  una sola vez por carga; si algún día otro código intentara crear otra política «vue» (o Vue se cargara dos veces),
+  `createPolicy` fallaría y Vue lo captura (sin política, su HTML estático lo bloquearía la CSP). No se permiten
+  duplicados para que nadie pueda registrar una política «vue» propia antes que Vue.
+- **Invisibles en plantillas** (02/11, revisión de Fable): `CONTROL_CHARS` quita también U+200B, U+200E, U+200F,
+  U+061C, U+2028, U+2029 y U+FEFF; NO U+200D (rompería emojis compuestos). Los límites (4000/60) se miden con
+  `cleanTemplateTextUnbounded`/`cleanTemplateNameUnbounded`: lo que sobra tras limpiar no hace rechazar.
 
 ## Trampas conocidas
 
