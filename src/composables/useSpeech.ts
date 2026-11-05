@@ -1,5 +1,16 @@
 import { computed, getCurrentInstance, onBeforeUnmount, ref, shallowRef } from 'vue'
-import { SPEECH_FAILED, isSpeechSupported, pickSpanishVoice, splitForSpeech, textForSpeech } from '@/lib/speech'
+import {
+  DEFAULT_RATE,
+  SPEECH_FAILED,
+  SPEECH_SAMPLE,
+  findVoice,
+  groupVoices,
+  isSpeechSupported,
+  normalizeRate,
+  pickSpanishVoice,
+  splitForSpeech,
+  textForSpeech,
+} from '@/lib/speech'
 
 export type SpeechState = 'idle' | 'speaking' | 'paused'
 
@@ -11,17 +22,38 @@ export const WATCHDOG_MS = 4000
  * - Elige una voz en español si el navegador la tiene (es-ES primero) y si no usa la predeterminada con `lang` es-ES.
  * - Lee por frases (Chrome corta las locuciones largas) y permite pausar, reanudar y parar.
  * - Se para al desmontar el componente o al leer otra transmisión.
+ * - Con `prefs`, usa la voz y la velocidad elegidas (si la voz no está en este dispositivo, la automática).
  */
 type SpeechWindow = Window & { SpeechSynthesisUtterance: typeof SpeechSynthesisUtterance }
 
+export interface SpeechPrefsSource {
+  /** Identificador de la voz elegida ('' = automática). */
+  voice: () => string
+  /** Velocidad elegida. */
+  rate: () => number
+}
+
 export function useSpeech(
   win: SpeechWindow | undefined = typeof window === 'undefined' ? undefined : (window as SpeechWindow),
+  prefs?: SpeechPrefsSource,
 ) {
   const supported = isSpeechSupported(win)
   const synth = supported ? win!.speechSynthesis : null
   const state = ref<SpeechState>('idle')
-  const voice = shallowRef<SpeechSynthesisVoice | null>(null)
+  /** Voces que ofrece el navegador (Chrome las carga de forma asíncrona). */
+  const voices = shallowRef<SpeechSynthesisVoice[]>([])
+  const voiceGroups = computed(() => groupVoices(voices.value))
+  const hasVoices = computed(() => voices.value.length > 0)
+  /** La voz elegida no existe en este dispositivo (p. ej. se eligió en otro navegador): se usa la automática. */
+  const chosenMissing = computed(() => {
+    const id = prefs?.voice() ?? ''
+    return !!id && hasVoices.value && !findVoice(voices.value, id)
+  })
+  const voice = computed<SpeechSynthesisVoice | null>(
+    () => findVoice(voices.value, prefs?.voice() ?? '') ?? pickSpanishVoice(voices.value),
+  )
   const voiceName = computed(() => voice.value?.name ?? '')
+  const rate = computed(() => (prefs ? normalizeRate(prefs.rate()) : DEFAULT_RATE))
   /** Motivo en español si la última lectura no pudo empezar o falló ('' si todo bien). */
   const error = ref('')
   let watchdog: ReturnType<typeof setTimeout> | undefined
@@ -31,9 +63,10 @@ export function useSpeech(
   function loadVoice() {
     if (!synth) return
     try {
-      voice.value = pickSpanishVoice(synth.getVoices())
+      const list = synth.getVoices()
+      voices.value = Array.isArray(list) ? [...list] : []
     } catch {
-      voice.value = null
+      voices.value = []
     }
   }
   loadVoice()
@@ -58,16 +91,18 @@ export function useSpeech(
     if (!chunks.length) return false
     stop()
     error.value = ''
-    if (!voice.value) loadVoice()
+    if (!voices.value.length) loadVoice()
     const id = session
+    const chosen = voice.value
+    const speed = rate.value
     // Antes de encolar: algunos navegadores lanzan `onerror` dentro del propio speak() (p. ej. «not-allowed») y la
     // lectura ya habrá terminado al salir del bucle.
     state.value = 'speaking'
     chunks.forEach((chunk, index) => {
       const utterance = new win.SpeechSynthesisUtterance(chunk)
-      utterance.lang = voice.value?.lang || 'es-ES'
-      if (voice.value) utterance.voice = voice.value
-      utterance.rate = 1
+      utterance.lang = chosen?.lang || 'es-ES'
+      if (chosen) utterance.voice = chosen
+      utterance.rate = speed
       if (index === chunks.length - 1) {
         utterance.onend = () => {
           if (id === session) state.value = 'idle'
@@ -95,6 +130,11 @@ export function useSpeech(
     return true
   }
 
+  /** Lee una frase de ejemplo con la voz y la velocidad elegidas (botón PROBAR VOZ). */
+  function preview(): boolean {
+    return speak(SPEECH_SAMPLE)
+  }
+
   function pause() {
     if (!synth || state.value !== 'speaking') return
     synth.pause()
@@ -113,5 +153,21 @@ export function useSpeech(
   }
   if (getCurrentInstance()) onBeforeUnmount(dispose)
 
-  return { supported, state, voiceName, error, speak, pause, resume, stop, dispose }
+  return {
+    supported,
+    state,
+    voices,
+    voiceGroups,
+    hasVoices,
+    chosenMissing,
+    voiceName,
+    rate,
+    error,
+    speak,
+    preview,
+    pause,
+    resume,
+    stop,
+    dispose,
+  }
 }

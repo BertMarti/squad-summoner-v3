@@ -70,6 +70,19 @@ export const useTemplatesStore = defineStore('templates', () => {
     return ''
   }
 
+  /**
+   * Guarda una plantilla recibida por enlace (ya validada con `decodeShareFragment`). Si ya hay una igual (mismo
+   * nombre y texto) no la repite; si el nombre está cogido, añade « (2)».
+   */
+  function addShared(name: string, text: string): { error: string } | { template: UserTemplate; duplicate: boolean } {
+    const cleanName = cleanTemplateName(name)
+    const cleanText = cleanTemplateText(text)
+    const existing = templates.value.find((t) => t.name === cleanName && t.text === cleanText)
+    if (existing) return { template: existing, duplicate: true }
+    const result = add(cleanName, cleanText)
+    return 'error' in result ? result : { template: result.template, duplicate: false }
+  }
+
   function remove(id: string) {
     templates.value = templates.value.filter((t) => t.id !== id)
     persist()
@@ -85,5 +98,5 @@ export const useTemplatesStore = defineStore('templates', () => {
     return summary
   }
 
-  return { templates, persisted, isEmpty, isFull, byId, add, update, remove, importFrom }
+  return { templates, persisted, isEmpty, isFull, byId, add, addShared, update, remove, importFrom }
 })

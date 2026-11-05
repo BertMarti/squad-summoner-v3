@@ -68,13 +68,15 @@ describe('useTemplatesStore', () => {
   })
 
   it('si el navegador no deja guardar, siguen en memoria y lo indica', () => {
-    vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+    // restoreAllMocks no deshace este espía sobre el localStorage de happy-dom: se restaura a mano.
+    const spy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
       throw new Error('QuotaExceededError')
     })
     const store = useTemplatesStore()
     created(store.add('Uno', 'a'))
     expect(store.templates).toHaveLength(1)
     expect(store.persisted).toBe(false)
+    spy.mockRestore()
   })
 
   it('importa un archivo válido y rechaza uno que no lo es', () => {
@@ -85,5 +87,19 @@ describe('useTemplatesStore', () => {
     expect(store.importFrom(raw)).toMatchObject({ added: 0, duplicated: 1 })
     expect(() => store.importFrom(JSON.stringify({ app: EXPORT_APP }))).toThrow(TemplateImportError)
     expect(store.templates).toHaveLength(1)
+  })
+
+  it('addShared guarda la plantilla del enlace sin repetirla y respeta el máximo', () => {
+    const store = useTemplatesStore()
+    const first = store.addShared('Del grupo', 'A las {hora}')
+    expect(first).toMatchObject({ duplicate: false, template: { name: 'Del grupo' } })
+    expect(store.addShared(' Del grupo ', 'A las {hora}\n')).toMatchObject({ duplicate: true })
+    expect(store.templates).toHaveLength(1)
+    expect(store.addShared('Del grupo', 'Otro texto')).toMatchObject({ template: { name: 'Del grupo (2)' } })
+    expect(JSON.parse(localStorage.getItem(KEY)!)).toHaveLength(2)
+    for (let i = store.templates.length; i < MAX_TEMPLATES; i++) store.add(`P${i}`, 'x')
+    expect(store.addShared('Una más', 'y')).toEqual({
+      error: `Has llegado al máximo de ${MAX_TEMPLATES} plantillas: borra alguna antes.`,
+    })
   })
 })
