@@ -89,7 +89,8 @@ watch(
         </option>
       </select>
       <button type="button" class="speech-button" :disabled="state !== 'idle'" @click="preview">▶️ PROBAR VOZ</button>
-      <small>Se guarda en este navegador.</small>
+      <small v-if="prefs.persisted">Se guarda en este navegador.</small>
+      <small v-else role="status">Este navegador no deja guardarlo: se usará solo durante esta visita.</small>
     </div>
     <span class="sr-only" role="status" aria-live="polite">
       {{ state === 'speaking' ? 'Leyendo en voz alta…' : state === 'paused' ? 'Lectura en pausa' : '' }}
@@ -154,6 +155,10 @@ watch(
   border: 1px solid var(--border-color);
   background: var(--bg-input);
   color: var(--text-primary);
+}
+.speech-settings select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 .speech-settings button {
   width: 100%;

@@ -48,17 +48,24 @@ import {
 
 // --- ESTADO TEMA ---
 const isDarkMode = ref(true)
+// Cada lectura de enlace lleva su número: si llega otro enlace mientras se descomprime, el resultado viejo se descarta.
+let shareRead = 0
 const readShareFragment = async () => {
   if (!hasShareFragment(window.location.hash)) return
   const hash = window.location.hash
+  const id = ++shareRead
   history.replaceState(history.state, '', urlWithoutFragment(window.location.href))
+  // Un solo modal a la vez: si Configuración estaba abierta, se cierra (no se guarda nada de lo que no se guardó).
+  showConfig.value = false
   sharedResult.value = null
   sharedOpen.value = true
+  let result: { template: SharedTemplate } | { error: string }
   try {
-    sharedResult.value = { template: await decodeShareFragment(hash) }
+    result = { template: await decodeShareFragment(hash) }
   } catch (error: unknown) {
-    sharedResult.value = { error: error instanceof ShareLinkError ? error.message : SHARE_ERRORS.damaged }
+    result = { error: error instanceof ShareLinkError ? error.message : SHARE_ERRORS.damaged }
   }
+  if (id === shareRead) sharedResult.value = result
 }
 
 onMounted(() => {
@@ -276,6 +283,7 @@ const closeConfig = () => {
   headerRef.value?.focusConfig()
 }
 const closeShared = () => {
+  shareRead++
   sharedOpen.value = false
   templatesRef.value?.focusNew()
 }

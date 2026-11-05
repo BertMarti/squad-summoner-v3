@@ -170,14 +170,17 @@ export async function encodeShareFragment(
   return fragment
 }
 
-/** Enlace completo: la dirección de la app (sin fragmento previo) + `#plantilla=…`. */
+/**
+ * Enlace completo: origen y ruta de la app + `#plantilla=…`. Se quitan la query y el fragmento actuales para no
+ * reenviar parámetros de la dirección de quien comparte.
+ */
 export async function buildShareLink(
   template: SharedTemplate,
   pageUrl: string,
   apis: StreamApis = globalStreams(),
 ): Promise<string> {
-  const base = pageUrl.split('#')[0]
-  return `${base}#${await encodeShareFragment(template, apis)}`
+  const url = new URL(pageUrl)
+  return `${url.origin}${url.pathname}#${await encodeShareFragment(template, apis)}`
 }
 
 /** `true` si el fragmento (`location.hash`, con o sin «#») es de una plantilla compartida. */

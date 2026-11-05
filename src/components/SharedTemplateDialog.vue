@@ -71,15 +71,18 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
       <template v-else>
         <h2 id="shared-template-title">📨 PLANTILLA COMPARTIDA</h2>
         <p>Te han enviado una plantilla. Revísala antes de guardarla: no se guarda nada hasta que pulses GUARDAR.</p>
-        <strong>NOMBRE: {{ result.template.name }}</strong>
-        <strong>TEXTO</strong>
+        <p class="shared-name">
+          <span class="shared-label">NOMBRE</span>
+          <strong>{{ result.template.name }}</strong>
+        </p>
+        <span class="shared-label">TEXTO</span>
         <pre class="shared-text">{{ result.template.text }}</pre>
         <div class="variable-list">
           <span v-for="variable in usedVariables(result.template.text)" :key="variable" class="variable-chip">{{
             '{' + variable + '}'
           }}</span>
         </div>
-        <strong>VISTA PREVIA con tu misión actual</strong>
+        <span class="shared-label">VISTA PREVIA con tu misión actual</span>
         <pre class="shared-text">{{ renderTemplate(result.template.text, mission.mission) }}</pre>
         <p v-if="saveError" role="alert">{{ saveError }}</p>
         <div class="dialog-actions">
@@ -92,6 +95,21 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 </template>
 
 <style scoped>
+.shared-label {
+  display: block;
+  margin: 14px 0 6px;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.shared-name {
+  margin: 0;
+}
+.shared-name strong {
+  color: var(--text-accent);
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
 .shared-overlay {
   position: fixed;
   inset: 0;

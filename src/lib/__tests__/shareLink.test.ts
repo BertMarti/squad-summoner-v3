@@ -199,9 +199,10 @@ describe('utilidades', () => {
     expect(hasShareFragment(undefined)).toBe(false)
   })
 
-  it('buildShareLink sustituye cualquier fragmento previo y conserva la ruta', async () => {
-    const link = await buildShareLink(sample, `${PAGE}?x=1#viejo`)
-    expect(link.startsWith(`${PAGE}?x=1#plantilla=1`)).toBe(true)
+  it('buildShareLink usa origen y ruta de la app, sin la query ni el fragmento actuales', async () => {
+    const link = await buildShareLink(sample, `${PAGE}?clave=secreta#viejo`)
+    expect(link.startsWith(`${PAGE}#plantilla=1`)).toBe(true)
+    expect(link).not.toContain('secreta')
     expect(await decodeShareFragment(new URL(link).hash)).toEqual(sample)
   })
 

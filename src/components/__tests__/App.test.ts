@@ -177,4 +177,30 @@ describe('App · plantilla recibida por enlace', () => {
     await dialogReady(w)
     expect(w.get('.shared-dialog').text()).toContain('Tarde')
   })
+
+  it('si llegan dos enlaces seguidos, se muestra el último', async () => {
+    const w = mountApp()
+    history.replaceState(null, '', `/#${await encodeShareFragment({ name: 'Primero', text: 'Uno '.repeat(40) })}`)
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
+    history.replaceState(null, '', `/#${await encodeShareFragment({ name: 'Segundo', text: 'Dos' }, {})}`)
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
+    await dialogReady(w)
+    await new Promise((r) => setTimeout(r, 50))
+    await flushPromises()
+    expect(w.get('.shared-dialog').text()).toContain('Segundo')
+    expect(w.get('.shared-dialog').text()).not.toContain('Primero')
+  })
+
+  it('un enlace que llega con Configuración abierta la cierra: nunca hay dos modales', async () => {
+    const w = mountApp()
+    await w
+      .findAll('button')
+      .find((b) => b.text().includes('CONFIGURAR API'))!
+      .trigger('click')
+    expect(w.find('[role="dialog"]').exists()).toBe(true)
+    history.replaceState(null, '', `/#${await encodeShareFragment({ name: 'Tarde', text: 'Hola' })}`)
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
+    await dialogReady(w)
+    expect(w.findAll('[role="dialog"]')).toHaveLength(1)
+  })
 })

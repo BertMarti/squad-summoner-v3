@@ -196,7 +196,7 @@ describe('TemplatesPanel · compartir por enlace', () => {
     expect(link.startsWith(`${window.location.href.split('#')[0]}#plantilla=1`)).toBe(true)
     expect(await decodeShareFragment(new URL(link).hash)).toEqual({ name: 'Viernes', text: 'A las {hora}, {RECLUTAS}' })
     expect(w.get('.share-box').text()).toContain(`de ${MAX_SHARE_FRAGMENT} caracteres`)
-    expect(w.get('.share-note').text()).toContain('no se envía a ningún servidor')
+    expect(w.get('.share-note').text()).toContain('no llega al servidor de esta web')
   })
 
   it('COPIAR ENLACE usa el portapapeles y lo anuncia; si falla, explica cómo copiarlo a mano', async () => {
@@ -270,5 +270,22 @@ describe('TemplatesPanel · compartir por enlace', () => {
     expect(w.get('.share-box [role="alert"]').text()).toBe(SHARE_ERRORS.tooLongToShare)
     await btn(w, 'CERRAR').trigger('click')
     expect(w.find('.share-box').exists()).toBe(false)
+  })
+
+  it('si se pulsa COMPARTIR en otra plantilla antes de que acabe el primer enlace, gana la última', async () => {
+    const w = mountPanel()
+    await createTemplate(w, 'Uno', 'Texto uno')
+    await createTemplate(w, 'Dos', 'Texto dos')
+    const share = (name: string) => w.get(`button[aria-label="Compartir ${name}"]`).trigger('click')
+    await share('Uno')
+    await share('Dos')
+    await vi.waitFor(() => {
+      if (!w.find('.share-box input').exists()) throw new Error('aún sin enlace')
+    })
+    await new Promise((r) => setTimeout(r, 50))
+    await flushPromises()
+    expect(w.findAll('.share-box')).toHaveLength(1)
+    const link = w.get<HTMLInputElement>('.share-box input').element.value
+    expect((await decodeShareFragment(new URL(link).hash)).name).toBe('Dos')
   })
 })

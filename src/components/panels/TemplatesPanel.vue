@@ -141,10 +141,14 @@ const openShare = async (template: { id: string; name: string; text: string }, b
   shareError.value = ''
   shareStatus.value = ''
   try {
-    shareLink.value = await buildShareLink({ name: template.name, text: template.text }, window.location.href)
+    const link = await buildShareLink({ name: template.name, text: template.text }, window.location.href)
+    // Si mientras tanto se abrió otra plantilla (o se cerró la caja), este enlace ya no toca.
+    if (shareId.value !== template.id) return
+    shareLink.value = link
     await nextTick()
     shareInput.value?.focus()
   } catch (caught: unknown) {
+    if (shareId.value !== template.id) return
     shareError.value = caught instanceof ShareLinkError ? caught.message : 'No se ha podido crear el enlace.'
   }
 }
@@ -319,8 +323,9 @@ defineExpose({ startFromTransmission, focusNew })
           <p v-if="shareError" role="alert">{{ shareError }}</p>
           <button v-if="!shareLink" type="button" class="share-close" @click="closeShare">CERRAR</button>
           <p class="share-note">
-            Quien tenga el enlace verá el texto de la plantilla. Va detrás de «#» en la dirección: no se envía a ningún
-            servidor ni queda en sus registros.
+            Quien tenga el enlace verá el texto de la plantilla. Va detrás de «#» en la dirección, así que no llega al
+            servidor de esta web ni a sus registros; si lo mandas por WhatsApp, viaja en tu mensaje como cualquier otro
+            texto.
           </p>
         </div>
       </li>

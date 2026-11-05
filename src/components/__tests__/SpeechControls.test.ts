@@ -167,4 +167,16 @@ describe('SpeechControls · voz y velocidad', () => {
     expect(w.text()).toContain('La voz elegida no está en este dispositivo')
     expect(w.text()).toContain('Voz: Mónica')
   })
+
+  it('si el navegador no deja guardar la preferencia, lo dice', async () => {
+    const spy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceededError')
+    })
+    const w = mountControls()
+    await openSettings(w)
+    expect(w.text()).toContain('Se guarda en este navegador.')
+    await w.get('#speech-rate').setValue('0.85')
+    expect(w.text()).toContain('se usará solo durante esta visita')
+    spy.mockRestore()
+  })
 })
