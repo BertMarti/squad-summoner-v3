@@ -66,7 +66,7 @@ describe('encodeShareFragment / decodeShareFragment', () => {
   })
 
   it('sanea nombre y texto al compartir (controles y bidi fuera)', async () => {
-    const fragment = await encodeShareFragment({ name: '  Mi‮   plantilla ', text: 'Hola\u0000 {reclutas}\r\n' })
+    const fragment = await encodeShareFragment({ name: '  Mi\u202e   plantilla ', text: 'Hola\u0000 {reclutas}\r\n' })
     expect(await decodeShareFragment(fragment)).toEqual({ name: 'Mi plantilla', text: 'Hola {reclutas}' })
   })
 
@@ -179,7 +179,10 @@ describe('validación estricta al abrir un enlace', () => {
   })
 
   it('quita controles y caracteres bidi del contenido recibido', async () => {
-    expect(await decodeShareFragment(fragmentOf({ n: 'A‮B', t: 'x⁦y\u0007' }))).toEqual({ name: 'AB', text: 'xy' })
+    expect(await decodeShareFragment(fragmentOf({ n: 'A\u202eB', t: 'x\u2066y\u0007' }))).toEqual({
+      name: 'AB',
+      text: 'xy',
+    })
   })
 
   it('validateSharedPayload rechaza objetos con prototipo raro', () => {

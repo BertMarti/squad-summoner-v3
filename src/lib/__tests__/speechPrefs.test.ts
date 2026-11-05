@@ -56,7 +56,7 @@ describe('preferencias guardadas', () => {
     for (const raw of [null, undefined, '', 'no-json', '[]', '"texto"', 'null', 'x'.repeat(2000)])
       expect(parseSpeechPrefs(raw as string)).toEqual(DEFAULT_SPEECH_PREFS)
     expect(parseSpeechPrefs('{"voice":5,"rate":"rapidísimo"}')).toEqual(DEFAULT_SPEECH_PREFS)
-    expect(parseSpeechPrefs(JSON.stringify({ voice: 'a‮b', rate: 1.5 }))).toEqual({ voice: '', rate: 1.5 })
+    expect(parseSpeechPrefs(JSON.stringify({ voice: 'a\u202eb', rate: 1.5 }))).toEqual({ voice: '', rate: 1.5 })
     expect(parseSpeechPrefs(JSON.stringify({ voice: 'x'.repeat(MAX_VOICE_ID + 1) })).voice).toBe('')
   })
 

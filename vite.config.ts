@@ -26,6 +26,11 @@ function contentSecurityPolicy(connectSrc: string[]): Plugin {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'none'",
+    // Trusted Types: ningún sumidero de HTML o script (innerHTML, eval…) acepta cadenas sueltas. La única política
+    // permitida es «vue», la que crea el propio runtime de Vue para insertar el HTML estático que su compilador genera
+    // a partir de NUESTRAS plantillas (nunca datos). La app no usa v-html ni innerHTML.
+    "require-trusted-types-for 'script'",
+    'trusted-types vue',
   ].join('; ')
   return {
     name: 'squad-summoner-csp',

@@ -95,22 +95,26 @@ async function readAll(stream: ReadableStream<Uint8Array>, max: number): Promise
   return out
 }
 
-function streamOf(bytes: Uint8Array): ReadableStream<Uint8Array> {
-  return new ReadableStream<Uint8Array>({
-    start(controller) {
-      controller.enqueue(bytes)
-      controller.close()
-    },
-  })
+/**
+ * Pasa los bytes por un CompressionStream/DecompressionStream escribiendo directamente en su lado `writable` (sin
+ * `pipeThrough` desde otro ReadableStream: así no se mezclan implementaciones de streams distintas).
+ */
+async function transform(bytes: Uint8Array, Ctor: StreamCtor, max: number): Promise<Uint8Array> {
+  const stream = new Ctor('deflate')
+  const writer = stream.writable.getWriter()
+  // Sin await: con datos grandes, write() espera a que alguien lea (contrapresión). Los errores salen al leer.
+  writer.write(bytes).catch(() => {})
+  writer.close().catch(() => {})
+  return readAll(stream.readable, max)
 }
 
 async function deflate(bytes: Uint8Array, Ctor: StreamCtor): Promise<Uint8Array> {
-  return readAll(streamOf(bytes).pipeThrough(new Ctor('deflate')), MAX_SHARE_JSON_BYTES * 2)
+  return transform(bytes, Ctor, MAX_SHARE_JSON_BYTES * 2)
 }
 
 async function inflate(bytes: Uint8Array, Ctor: StreamCtor): Promise<Uint8Array> {
   try {
-    return await readAll(streamOf(bytes).pipeThrough(new Ctor('deflate')), MAX_SHARE_JSON_BYTES)
+    return await transform(bytes, Ctor, MAX_SHARE_JSON_BYTES)
   } catch (error) {
     if (error instanceof ShareLinkError) throw error
     throw new ShareLinkError(SHARE_ERRORS.damaged)

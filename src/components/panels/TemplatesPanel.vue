@@ -17,6 +17,13 @@ import {
   TemplateImportError,
 } from '@/lib/templates'
 import { MAX_MESSAGE_LENGTH } from '@/lib/mission'
+import {
+  buildShareLink,
+  buildWhatsappLinkShare,
+  MAX_SHARE_FRAGMENT,
+  shareMessage,
+  ShareLinkError,
+} from '@/lib/shareLink'
 
 const emit = defineEmits<{ use: [text: string] }>()
 const store = useTemplatesStore()
@@ -37,6 +44,18 @@ const importMessage = ref('')
 const importError = ref('')
 const deleteId = ref<string | null>(null)
 const opener = ref<HTMLElement | null>(null)
+const shareId = ref<string | null>(null)
+const shareLink = ref('')
+const shareError = ref('')
+const shareStatus = ref('')
+const shareInput = ref<HTMLInputElement | null>(null)
+// La caja va dentro del v-for: con una función de ref se guarda el elemento (y no una lista).
+const setShareInput = (el: unknown) => {
+  shareInput.value = el instanceof HTMLInputElement ? el : null
+}
+const shareSize = computed(() => shareLink.value.length - shareLink.value.indexOf('#') - 1)
+const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+const shareButton = ref<HTMLButtonElement | null>(null)
 
 const preview = computed(() => renderTemplate(text.value, missionStore.mission))
 const characterCount = computed(() => text.value.length)
@@ -73,6 +92,8 @@ const openNew = (source?: HTMLElement) => {
 const openEdit = (id: string, button: HTMLElement) => {
   const template = store.byId(id)
   if (!template) return
+  // Un enlace abierto dejaría de corresponder al texto editado.
+  shareId.value = null
   opener.value = button
   editingId.value = id
   name.value = template.name
@@ -104,6 +125,51 @@ const toggleVariables = (checked: boolean) => {
   if (!editedByUser.value) text.value = textToTemplate(originalText.value, missionStore.mission, checked)
 }
 const useTemplate = (value: string) => emit('use', renderTemplate(value, missionStore.mission))
+const closeShare = async () => {
+  shareId.value = null
+  shareLink.value = ''
+  shareError.value = ''
+  shareStatus.value = ''
+  await nextTick()
+  shareButton.value?.focus()
+}
+const openShare = async (template: { id: string; name: string; text: string }, button: HTMLButtonElement) => {
+  if (shareId.value === template.id) return closeShare()
+  shareButton.value = button
+  shareId.value = template.id
+  shareLink.value = ''
+  shareError.value = ''
+  shareStatus.value = ''
+  try {
+    shareLink.value = await buildShareLink({ name: template.name, text: template.text }, window.location.href)
+    await nextTick()
+    shareInput.value?.focus()
+  } catch (caught: unknown) {
+    shareError.value = caught instanceof ShareLinkError ? caught.message : 'No se ha podido crear el enlace.'
+  }
+}
+const copyShare = async () => {
+  if (!shareInput.value) return
+  try {
+    if (!navigator.clipboard) throw new Error('clipboard')
+    await navigator.clipboard.writeText(shareLink.value)
+    shareStatus.value = 'Enlace copiado.'
+  } catch {
+    shareInput.value.select()
+    shareError.value = 'No se ha podido copiar: selecciona el enlace y cópialo a mano.'
+  }
+}
+const nativeShare = async () => {
+  if (!navigator.share || !shareLink.value || !shareId.value) return
+  const template = store.byId(shareId.value)
+  if (!template) return
+  try {
+    await navigator.share({ title: 'Plantilla de Squad Summoner', text: shareMessage(template.name, shareLink.value) })
+  } catch (caught: unknown) {
+    if (!(caught instanceof DOMException && caught.name === 'AbortError'))
+      shareError.value = 'No se ha podido compartir el enlace.'
+  }
+}
 // Al pedir confirmación, el foco pasa a CANCELAR (opción segura); al cancelar, vuelve a BORRAR.
 const askDelete = async (id: string) => {
   deleteId.value = id
@@ -144,8 +210,6 @@ const startFromTransmission = (transmission: string) => {
   editorOpen.value = true
   void focusEditor()
 }
-defineExpose({ startFromTransmission })
-
 const exportAll = () => {
   const blob = new Blob([exportTemplates(store.templates)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -172,11 +236,16 @@ const importFile = async (event: Event) => {
   }
 }
 const onKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && editorOpen.value) {
+  if (event.key === 'Escape' && shareId.value) {
+    event.preventDefault()
+    void closeShare()
+  } else if (event.key === 'Escape' && editorOpen.value) {
     event.preventDefault()
     void finishEditor()
   }
 }
+const focusNew = () => newButton.value?.focus()
+defineExpose({ startFromTransmission, focusNew })
 </script>
 
 <template>
@@ -217,11 +286,42 @@ const onKeydown = (event: KeyboardEvent) => {
           <button type="button" :aria-label="`Borrar ${template.name}`" @click="askDelete(template.id)">
             🗑️ BORRAR
           </button>
+          <button
+            type="button"
+            :aria-label="`Compartir ${template.name}`"
+            @click="openShare(template, $event.currentTarget as HTMLButtonElement)"
+          >
+            🔗 COMPARTIR
+          </button>
         </div>
         <div v-else class="delete-confirmation">
           <span>¿Borrar «{{ template.name }}»?</span>
           <button type="button" @click="remove(template.id)">SÍ, BORRAR</button>
           <button type="button" class="cancel-delete" @click="cancelDelete">CANCELAR</button>
+        </div>
+        <div v-if="shareId === template.id" class="share-box">
+          <template v-if="shareLink">
+            <label :for="`share-link-${template.id}`">ENLACE PARA COMPARTIR</label>
+            <input :id="`share-link-${template.id}`" :ref="setShareInput" :value="shareLink" readonly />
+            <small
+              >La plantilla ocupa {{ shareSize }} de {{ MAX_SHARE_FRAGMENT }} caracteres posibles en el enlace.</small
+            >
+            <div class="share-actions">
+              <button type="button" @click="copyShare">📋 COPIAR ENLACE</button>
+              <a :href="buildWhatsappLinkShare(template.name, shareLink)" target="_blank" rel="noopener noreferrer"
+                >💬 WHATSAPP</a
+              >
+              <button v-if="canShare" type="button" @click="nativeShare">📤 COMPARTIR…</button>
+              <button type="button" @click="closeShare">CERRAR</button>
+            </div>
+            <p v-if="shareStatus" role="status">{{ shareStatus }}</p>
+          </template>
+          <p v-if="shareError" role="alert">{{ shareError }}</p>
+          <button v-if="!shareLink" type="button" class="share-close" @click="closeShare">CERRAR</button>
+          <p class="share-note">
+            Quien tenga el enlace verá el texto de la plantilla. Va detrás de «#» en la dirección: no se envía a ningún
+            servidor ni queda en sus registros.
+          </p>
         </div>
       </li>
     </ul>
@@ -397,6 +497,57 @@ button:disabled {
 .template-editor textarea:focus {
   outline: none;
   border-color: var(--border-accent);
+}
+.share-box {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-accent);
+  background: var(--bg-input);
+}
+.share-box label {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.share-box input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+}
+.share-box small,
+.share-note {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.share-actions button,
+.share-actions a,
+.share-close {
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 700;
+  text-decoration: none;
+}
+.share-actions button:hover,
+.share-actions a:hover {
+  border-color: var(--border-accent);
+  color: var(--text-accent);
 }
 .variables-option {
   display: flex;

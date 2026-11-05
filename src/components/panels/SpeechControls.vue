@@ -1,11 +1,29 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useSpeech } from '@/composables/useSpeech'
-import { SPEECH_UNSUPPORTED } from '@/lib/speech'
+import { NO_VOICES_HELP, SPEECH_RATES, SPEECH_UNSUPPORTED, voiceId, voiceLabel } from '@/lib/speech'
+import { useSpeechPrefsStore } from '@/stores/speech'
 
 const props = defineProps<{ text: string }>()
-const { supported, state, voiceName, error, speak, pause, resume, stop } = useSpeech()
+const prefs = useSpeechPrefsStore()
+const {
+  supported,
+  state,
+  voiceName,
+  error,
+  speak,
+  pause,
+  resume,
+  stop,
+  voiceGroups,
+  hasVoices,
+  chosenMissing,
+  preview,
+} = useSpeech(undefined, { voice: () => prefs.voice, rate: () => prefs.rate })
 const unsupportedId = 'speech-unsupported'
+const settingsOpen = ref(false)
+const setVoice = (event: Event) => prefs.setVoice((event.target as HTMLSelectElement).value)
+const setRate = (event: Event) => prefs.setRate((event.target as HTMLSelectElement).value)
 
 watch(
   () => props.text,
@@ -31,6 +49,48 @@ watch(
       </button>
       <button type="button" class="speech-button" @click="stop">⏹️ PARAR</button>
     </template>
+    <button
+      v-if="supported"
+      type="button"
+      class="speech-button"
+      :aria-expanded="settingsOpen"
+      aria-controls="speech-settings"
+      @click="settingsOpen = !settingsOpen"
+    >
+      🎚️ VOZ Y VELOCIDAD
+    </button>
+    <div v-if="supported && settingsOpen" id="speech-settings" class="speech-settings">
+      <label for="speech-voice">VOZ</label>
+      <select
+        id="speech-voice"
+        :value="prefs.voice"
+        :disabled="!hasVoices"
+        :aria-describedby="!hasVoices ? 'speech-no-voices' : undefined"
+        @change="setVoice"
+      >
+        <option value="">Automática (la mejor en español)</option>
+        <optgroup v-if="voiceGroups.spanish.length" label="Español">
+          <option v-for="voice in voiceGroups.spanish" :key="voiceId(voice)" :value="voiceId(voice)">
+            {{ voiceLabel(voice) }}
+          </option>
+        </optgroup>
+        <optgroup v-if="voiceGroups.others.length" label="Otros idiomas">
+          <option v-for="voice in voiceGroups.others" :key="voiceId(voice)" :value="voiceId(voice)">
+            {{ voiceLabel(voice) }}
+          </option>
+        </optgroup>
+      </select>
+      <small v-if="!hasVoices" id="speech-no-voices">{{ NO_VOICES_HELP }}</small>
+      <small v-if="chosenMissing">La voz elegida no está en este dispositivo: se usa la automática.</small>
+      <label for="speech-rate">VELOCIDAD</label>
+      <select id="speech-rate" :value="String(prefs.rate)" @change="setRate">
+        <option v-for="rateOption in SPEECH_RATES" :key="rateOption.value" :value="String(rateOption.value)">
+          {{ rateOption.label }}
+        </option>
+      </select>
+      <button type="button" class="speech-button" :disabled="state !== 'idle'" @click="preview">▶️ PROBAR VOZ</button>
+      <small>Se guarda en este navegador.</small>
+    </div>
     <span class="sr-only" role="status" aria-live="polite">
       {{ state === 'speaking' ? 'Leyendo en voz alta…' : state === 'paused' ? 'Lectura en pausa' : '' }}
     </span>
@@ -72,5 +132,30 @@ watch(
 .speech-help {
   flex-basis: 100%;
   line-height: 1.4;
+}
+.speech-settings {
+  flex-basis: 100%;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+}
+.speech-settings label {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.speech-settings select {
+  min-height: 44px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+.speech-settings button {
+  width: 100%;
 }
 </style>

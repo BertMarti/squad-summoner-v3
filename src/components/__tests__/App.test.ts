@@ -10,6 +10,7 @@ import { useTemplatesStore } from '@/stores/templates'
 import { POLL_BLOCK } from '@/lib/poll'
 import { DEMO_BANNER } from '@/lib/demo'
 import { MAX_MESSAGE_LENGTH } from '@/lib/mission'
+import { SHARE_ERRORS, encodeShareFragment } from '@/lib/shareLink'
 
 const { generateMock } = vi.hoisted(() => ({ generateMock: vi.fn() }))
 vi.mock('@/lib/gemini', () => ({ generateWithGemini: generateMock, validateApiKey: vi.fn() }))
@@ -127,5 +128,53 @@ describe('App (flujo completo)', () => {
     expect(generateMock).not.toHaveBeenCalled()
     expect(useHistoryStore().entries[0]!.source).toBe('plantilla')
     expect(useTemplatesStore().templates).toHaveLength(1)
+  })
+})
+
+describe('App · plantilla recibida por enlace', () => {
+  afterEach(() => history.replaceState(null, '', '/'))
+  const dialogReady = async (w: VueWrapper) => {
+    await vi.waitFor(() => {
+      if (!w.find('.shared-dialog pre, .shared-dialog [role="alert"]').exists()) throw new Error('aún leyendo')
+    })
+  }
+
+  it('abre la vista previa, quita el fragmento de la barra y guarda solo al confirmar', async () => {
+    history.replaceState(null, '', `/?x=1#${await encodeShareFragment({ name: 'Del grupo', text: 'Hola {reclutas}' })}`)
+    const w = mountApp()
+    await dialogReady(w)
+    expect(window.location.hash).toBe('')
+    expect(window.location.search).toBe('?x=1')
+    expect(w.get('.shared-dialog').text()).toContain('Del grupo')
+    expect(useTemplatesStore().templates).toHaveLength(0)
+    await w
+      .findAll('.shared-dialog button')
+      .find((b) => b.text() === '💾 GUARDAR EN MIS PLANTILLAS')!
+      .trigger('click')
+    await flushPromises()
+    expect(w.find('.shared-dialog').exists()).toBe(false)
+    expect(useTemplatesStore().templates.map((t) => t.name)).toEqual(['Del grupo'])
+    expect(w.get('.status-message').text()).toBe('Plantilla «Del grupo» guardada en MIS PLANTILLAS.')
+  })
+
+  it('un enlace mal copiado muestra el motivo y no guarda nada', async () => {
+    history.replaceState(null, '', '/#plantilla=1t.@@')
+    const w = mountApp()
+    await dialogReady(w)
+    expect(w.get('.shared-dialog [role="alert"]').text()).toBe(SHARE_ERRORS.malformed)
+    expect(window.location.hash).toBe('')
+    expect(useTemplatesStore().templates).toHaveLength(0)
+  })
+
+  it('también reacciona si se abre un enlace con la app ya cargada (hashchange); otros fragmentos no', async () => {
+    const w = mountApp()
+    history.replaceState(null, '', '/#otra-cosa')
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
+    await flushPromises()
+    expect(w.find('.shared-dialog').exists()).toBe(false)
+    history.replaceState(null, '', `/#${await encodeShareFragment({ name: 'Tarde', text: 'A las {hora}' })}`)
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
+    await dialogReady(w)
+    expect(w.get('.shared-dialog').text()).toContain('Tarde')
   })
 })
