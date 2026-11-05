@@ -38,8 +38,8 @@ cantina. Luego la copias o la mandas por WhatsApp con un toque.
 | 🌌 **Destiny 2** | Convocatoria para Guardianes: el destino de la escuadra está en juego. |
 | 🖊️ **Personalizado** | Escribes el nombre de tu juego y la IA se mete en su papel. |
 
-Y además: guarda tus mensajes favoritos como **⭐ plantillas** para reutilizarlos sin gastar IA, y escucha la
-transmisión con **🔊 LEER EN VOZ ALTA**.
+Y además: guarda tus mensajes favoritos como **⭐ plantillas** para reutilizarlos sin gastar IA, compártelas con tu grupo
+por enlace y escucha la transmisión con **🔊 LEER EN VOZ ALTA**.
 
 ## 📸 Así se ve
 
@@ -97,18 +97,41 @@ borrarla con **🗑️ BORRAR** (te pide confirmación). Mientras escribes ves u
 Las plantillas se guardan **en este navegador** (hasta 30). Para llevarlas a otro móvil u ordenador, o tener una copia,
 pulsa **⬇️ EXPORTAR** (descarga un archivo `.json`) y, en el otro dispositivo, **⬆️ IMPORTAR**.
 
+### 🔗 Compartir una plantilla con tu grupo
+
+Puedes mandar una plantilla directamente a tu escuadrón, sin exportar archivos:
+
+1. En **MIS PLANTILLAS**, pulsa **🔗 COMPARTIR** junto a la plantilla.
+2. Pulsa **📋 COPIAR ENLACE** y pégalo en el grupo, **💬 WHATSAPP** para abrir WhatsApp con el mensaje preparado o, si tu
+   móvil lo ofrece, **📤 COMPARTIR…** para elegir otra aplicación.
+3. Quien reciba el enlace verá el nombre, el texto, sus variables y una vista previa con su misión actual.
+4. Para conservarla, debe pulsar **💾 GUARDAR EN MIS PLANTILLAS**. También puede pulsar **DESCARTAR**; abrir el enlace no
+   guarda nada automáticamente y una plantilla idéntica no se duplica.
+
+El contenido viaja dentro del propio enlace y no se sube a ningún sitio ni llega a los registros de la web. Si lo mandas
+por WhatsApp, forma parte de tu mensaje, como cualquier otro texto. Si una plantilla es demasiado larga para un enlace,
+la aplicación te lo dirá y puedes usar **⬇️ EXPORTAR**.
+
 <p align="center">
   <img src="docs/img/captura-plantillas.png" alt="Editor de plantillas: nombre «Viernes de Helldivers», texto con las variables {reclutas} y {hora}, casilla para cambiar los datos por variables y vista previa con Alex, Marta y las 21:30" width="70%">
+</p>
+
+<p align="center">
+  <img src="docs/img/captura-plantilla-compartida.png" alt="Modal «Plantilla compartida» con nombre «Viernes de Helldivers», texto con {reclutas} y {hora}, vista previa y botones Guardar en mis plantillas y Descartar" width="70%">
 </p>
 
 ## 🔊 Leer en voz alta
 
 Debajo de cada transmisión tienes **🔊 LEER EN VOZ ALTA**: tu navegador la lee con su propia voz (en español si la tiene),
 sin coste y sin enviar nada a internet. Mientras lee puedes **⏸️ PAUSAR**, **▶️ REANUDAR** o **⏹️ PARAR**. Los emojis
-y los adornos no se leen. Perfecto para ponerla por el altavoz del canal de voz antes de la partida.
+y los adornos no se leen. Pulsa **🎚️ VOZ Y VELOCIDAD** para elegir **Automática (la mejor en español)**, una voz en
+Español u Otros idiomas y una velocidad entre Muy lenta (0,7×), Lenta (0,85×), Normal (1×), Algo rápida (1,15×),
+Rápida (1,3×) y Muy rápida (1,5×). Usa **▶️ PROBAR VOZ** para escuchar una muestra. Si el navegador no ofrece voces,
+el selector se desactiva, se usa la del sistema y aún puedes cambiar la velocidad. La elección se guarda en este navegador.
+Perfecto para ponerla por el altavoz del canal de voz antes de la partida.
 
 <p align="center">
-  <img src="docs/img/captura-movil-voz.png" alt="En el móvil: la transmisión con los botones Leer en voz alta y Guardar como plantilla, y el historial con una entrada de plantilla" width="30%">
+  <img src="docs/img/captura-movil-voz-velocidad.png" alt="En el móvil, panel Voz y velocidad con voz automática, velocidad Rápida 1,3× y botón Probar voz" width="30%">
 </p>
 
 ## 🔑 Modo demo y tu API key
@@ -164,7 +187,7 @@ La sesión queda en tu ordenador. El botón **🟢 COMPARTIR EN WHATSAPP** sigue
 - Consigue tu clave gratuita en [Google AI Studio](https://aistudio.google.com/apikey) si quieres usar la IA; si no, usa el modo demo.
 - Si instalas el servidor en una Raspberry Pi, instala antes Chromium con `sudo apt install chromium`.
 
-**Pendiente del mantenedor (Alberto):** todo lo de la versión 3.4.0 está probado con pruebas automáticas, en modo demo y
+**Pendiente del mantenedor (Alberto):** todo lo de la versión 3.5.0 está probado con pruebas automáticas, en modo demo y
 en Chromium, pero falta una prueba real de punta a punta:
 
 1. Con una **clave real de Gemini**: ⚙️ CONFIGURAR API → PROBAR CLAVE → GENERAR TRANSMISIÓN con cada tono (Épico, Cutre
@@ -175,6 +198,8 @@ en Chromium, pero falta una prueba real de punta a punta:
    casa?». Comprueba también que sin token la torre se niega a arrancar abierta a la red.
 4. **🔊 LEER EN VOZ ALTA** en un móvil y en un ordenador con altavoces (en la Raspberry Pi sin voces instaladas la web
    avisa de que no puede leer).
+5. Abre en el móvil un enlace de plantilla enviado por WhatsApp, guárdalo y prueba **🎚️ VOZ Y VELOCIDAD** con voces
+   reales (en la Raspberry Pi no hay voces).
 
 ## ❓ Preguntas frecuentes
 
@@ -204,9 +229,25 @@ guardar (por ejemplo, en modo incógnito estricto), el panel te avisa.
 <details>
 <summary><b>Pulso «LEER EN VOZ ALTA» y no suena nada</b></summary>
 
-La voz la pone tu navegador. Sube el volumen y prueba en Chrome, Edge, Safari o Firefox actualizados. Si tu navegador no
-tiene voz, el botón aparece desactivado con una explicación; si la tiene pero no hay voces instaladas (pasa en algunos
-Linux), la web te avisa a los pocos segundos: instala `speech-dispatcher` o `espeak-ng` y reinicia el navegador.
+La voz la pone tu navegador. Sube el volumen, abre **🎚️ VOZ Y VELOCIDAD** y pulsa **▶️ PROBAR VOZ**. Prueba en Chrome,
+Edge, Safari o Firefox actualizados. Si tu navegador no tiene voz, el botón aparece desactivado con una explicación; si
+la tiene pero no hay voces instaladas (pasa en algunos Linux), la web te avisa a los pocos segundos: instala
+`speech-dispatcher` o `espeak-ng` y reinicia el navegador.
+</details>
+
+<details>
+<summary><b>¿Qué ve mi grupo al abrir el enlace? ¿Se sube a algún sitio?</b></summary>
+
+Ve un aviso con el nombre, el texto, las variables y una vista previa rellenada con su misión actual. No se guarda nada
+hasta que pulse **💾 GUARDAR EN MIS PLANTILLAS**. La plantilla va dentro del enlace y no se sube a ningún sitio ni llega
+a los registros de la web; si el enlace se comparte por WhatsApp, viaja en el mensaje.
+</details>
+
+<details>
+<summary><b>Al pulsar COMPARTIR me dice que es demasiado larga</b></summary>
+
+El enlace tiene un límite para que sea manejable. Acorta el nombre o el texto, o pulsa **⬇️ EXPORTAR** para enviar la
+plantilla como archivo `.json` e importarla en el otro dispositivo.
 </details>
 
 <details>

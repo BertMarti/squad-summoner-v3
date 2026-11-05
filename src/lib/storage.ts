@@ -18,6 +18,8 @@ export const STORAGE_KEYS = {
   history: 'historial',
   /** Plantillas propias: se guardan cuando la persona pulsa GUARDAR (no contienen claves). */
   templates: 'plantillas',
+  /** Voz y velocidad de «Leer en voz alta» (preferencia, sin datos personales). */
+  speech: 'voz',
 } as const
 
 export type StorageName = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]

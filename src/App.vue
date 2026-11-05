@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
 import { useGemini } from './composables/useGemini'
 import { useMissionStore } from '@/stores/mission'
 import { useTerminalStore } from '@/stores/terminal'
@@ -17,6 +17,14 @@ import type { HistoryEntry } from '@/lib/history'
 import { useHistoryStore } from '@/stores/history'
 import { useServerTokenStore } from '@/stores/serverToken'
 import type { ProcessItem } from '@/types'
+import {
+  decodeShareFragment,
+  hasShareFragment,
+  SHARE_ERRORS,
+  ShareLinkError,
+  urlWithoutFragment,
+  type SharedTemplate,
+} from '@/lib/shareLink'
 
 // Importar Componentes
 import AppHeader from '@/components/panels/AppHeader.vue'
@@ -26,6 +34,7 @@ import TerminalOutput from '@/components/panels/TerminalOutput.vue'
 import TransmissionHistory from '@/components/panels/TransmissionHistory.vue'
 import TemplatesPanel from '@/components/panels/TemplatesPanel.vue'
 import ConfigModal from './components/ConfigModal.vue'
+import SharedTemplateDialog from './components/SharedTemplateDialog.vue'
 import WelcomeGuide from './components/WelcomeGuide.vue'
 import {
   MissionLog,
@@ -39,13 +48,35 @@ import {
 
 // --- ESTADO TEMA ---
 const isDarkMode = ref(true)
+// Cada lectura de enlace lleva su número: si llega otro enlace mientras se descomprime, el resultado viejo se descarta.
+let shareRead = 0
+const readShareFragment = async () => {
+  if (!hasShareFragment(window.location.hash)) return
+  const hash = window.location.hash
+  const id = ++shareRead
+  history.replaceState(history.state, '', urlWithoutFragment(window.location.href))
+  // Un solo modal a la vez: si Configuración estaba abierta, se cierra (no se guarda nada de lo que no se guardó).
+  showConfig.value = false
+  sharedResult.value = null
+  sharedOpen.value = true
+  let result: { template: SharedTemplate } | { error: string }
+  try {
+    result = { template: await decodeShareFragment(hash) }
+  } catch (error: unknown) {
+    result = { error: error instanceof ShareLinkError ? error.message : SHARE_ERRORS.damaged }
+  }
+  if (id === shareRead) sharedResult.value = result
+}
 
 onMounted(() => {
   const saved = readStored(STORAGE_KEYS.theme)
   isDarkMode.value = saved ? saved === 'dark' : true
   applyTheme()
   legacyNotice.value = apiKeyStore.migratedLegacy
+  void readShareFragment()
+  window.addEventListener('hashchange', readShareFragment)
 })
+onBeforeUnmount(() => window.removeEventListener('hashchange', readShareFragment))
 
 const toggleTheme = () => {
   isDarkMode.value = !isDarkMode.value
@@ -73,6 +104,8 @@ const helpOpen = ref(false)
 const welcomeVisible = ref(readStored(STORAGE_KEYS.welcomeSeen) !== '1')
 const legacyNotice = ref(false)
 const apiKeyStore = useApiKeyStore()
+const sharedResult = ref<{ template: SharedTemplate } | { error: string } | null>(null)
+const sharedOpen = ref(false)
 
 const { generateText, isGenerating } = useGemini()
 
@@ -249,6 +282,18 @@ const closeConfig = () => {
   showConfig.value = false
   headerRef.value?.focusConfig()
 }
+const closeShared = () => {
+  shareRead++
+  sharedOpen.value = false
+  templatesRef.value?.focusNew()
+}
+const savedShared = ({ name, duplicate }: { name: string; duplicate: boolean }) => {
+  sharedOpen.value = false
+  statusMessage.value = duplicate
+    ? `Ya tenías la plantilla «${name}»: no se ha duplicado.`
+    : `Plantilla «${name}» guardada en MIS PLANTILLAS.`
+  void nextTick(() => templatesRef.value?.focusNew())
+}
 </script>
 
 <template>
@@ -351,6 +396,7 @@ const closeConfig = () => {
     </div>
 
     <ConfigModal v-if="showConfig" @close="closeConfig" @save="saveUserConfig" />
+    <SharedTemplateDialog v-if="sharedOpen" :result="sharedResult" @close="closeShared" @saved="savedShared" />
   </div>
 </template>
 

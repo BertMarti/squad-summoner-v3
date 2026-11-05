@@ -50,30 +50,41 @@ export const VARIABLE_FALLBACKS: Record<TemplateVariable, string> = {
   reclutas: 'escuadrón',
 }
 
-// Caracteres de control (menos \n y \t) y de control de dirección bidi (texto «troyano»).
-// eslint-disable-next-line no-control-regex
-const CONTROL_CHARS = /[\u0000-\u0008\u000b-\u001f\u007f\u202a-\u202e\u2066-\u2069]/g
+// Caracteres de control (menos \n y \t), de control de dirección bidi (texto «troyano») e invisibles: espacio de
+// anchura cero, marcas LRM/RLM/ALM, separadores de línea y párrafo Unicode y BOM. NO se quita U+200D (unión de anchura
+// cero): forma parte de los emojis compuestos (👩‍🚀, 🏳️‍🌈).
+const CONTROL_CHARS =
+  // eslint-disable-next-line no-control-regex
+  /[\u0000-\u0008\u000b-\u001f\u007f\u061c\u200b\u200e\u200f\u2028\u2029\u202a-\u202e\u2066-\u2069\ufeff]/g
 
-/** Limpia el nombre: sin controles, espacios colapsados y como mucho MAX_TEMPLATE_NAME caracteres. */
-export function cleanTemplateName(value: unknown): string {
+/** Nombre limpio SIN recortar (para medirlo antes de aceptar o rechazar). */
+export function cleanTemplateNameUnbounded(value: unknown): string {
   if (typeof value !== 'string') return ''
   return value
     .replace(/[\r\n\t]/g, ' ')
     .replace(CONTROL_CHARS, '')
     .replace(/\s+/g, ' ')
     .trim()
-    .slice(0, MAX_TEMPLATE_NAME)
 }
 
-/** Limpia el texto: saltos de línea normalizados, sin controles, y como mucho MAX_MESSAGE_LENGTH caracteres. */
-export function cleanTemplateText(value: unknown): string {
+/** Limpia el nombre: sin controles, espacios colapsados y como mucho MAX_TEMPLATE_NAME caracteres. */
+export function cleanTemplateName(value: unknown): string {
+  return cleanTemplateNameUnbounded(value).slice(0, MAX_TEMPLATE_NAME)
+}
+
+/** Texto limpio SIN recortar (para medirlo antes de aceptar o rechazar). */
+export function cleanTemplateTextUnbounded(value: unknown): string {
   if (typeof value !== 'string') return ''
   return value
     .replace(/\r\n?/g, '\n')
     .replace(CONTROL_CHARS, '')
     .replace(/[ \t]+$/gm, '')
     .trim()
-    .slice(0, MAX_MESSAGE_LENGTH)
+}
+
+/** Limpia el texto: saltos de línea normalizados, sin controles, y como mucho MAX_MESSAGE_LENGTH caracteres. */
+export function cleanTemplateText(value: unknown): string {
+  return cleanTemplateTextUnbounded(value).slice(0, MAX_MESSAGE_LENGTH)
 }
 
 /** Valores de las variables para una misión (ya saneada). */
@@ -164,7 +175,7 @@ export function newTemplateId(now: number = Date.now()): string {
 export function validateTemplateInput(name: unknown, text: unknown): string {
   if (!cleanTemplateName(name)) return 'Ponle un nombre a la plantilla.'
   if (!cleanTemplateText(text)) return 'La plantilla no puede estar vacía.'
-  if (typeof text === 'string' && text.replace(/\r\n?/g, '\n').trim().length > MAX_MESSAGE_LENGTH)
+  if (cleanTemplateTextUnbounded(text).length > MAX_MESSAGE_LENGTH)
     return `El texto pasa de ${MAX_MESSAGE_LENGTH} caracteres: acórtalo.`
   return ''
 }

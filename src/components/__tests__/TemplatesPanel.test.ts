@@ -7,6 +7,7 @@ import TemplatesPanel from '@/components/panels/TemplatesPanel.vue'
 import { useMissionStore } from '@/stores/mission'
 import { useTemplatesStore } from '@/stores/templates'
 import { EXPORT_APP, MAX_TEMPLATES, exportTemplates } from '@/lib/templates'
+import { MAX_SHARE_FRAGMENT, SHARE_ERRORS, decodeShareFragment } from '@/lib/shareLink'
 
 let pinia: ReturnType<typeof createPinia>
 
@@ -172,5 +173,119 @@ describe('TemplatesPanel', () => {
     await pickFile(w, new File(['no es json'], 'roto.json', { type: 'application/json' }))
     expect(w.get('[role="alert"]').text()).toContain('JSON válido')
     expect(w.find('.import-status[role="status"]').exists()).toBe(false)
+  })
+})
+
+describe('TemplatesPanel · compartir por enlace', () => {
+  const openShare = async (w: VueWrapper) => {
+    await btn(w, '🔗 COMPARTIR').trigger('click')
+    // La compresión usa streams: puede tardar más de una vuelta de microtareas.
+    await vi.waitFor(() => {
+      if (!w.find('.share-box input, .share-box [role="alert"]').exists()) throw new Error('aún sin enlace')
+    })
+    await flushPromises()
+  }
+
+  it('COMPARTIR crea un enlace que se abre con la misma plantilla, con foco en el enlace', async () => {
+    const w = mountPanel()
+    await createTemplate(w, 'Viernes', 'A las {hora}, {RECLUTAS}')
+    await openShare(w)
+    const input = w.get<HTMLInputElement>('.share-box input')
+    expect(document.activeElement).toBe(input.element)
+    const link = input.element.value
+    expect(link.startsWith(`${window.location.href.split('#')[0]}#plantilla=1`)).toBe(true)
+    expect(await decodeShareFragment(new URL(link).hash)).toEqual({ name: 'Viernes', text: 'A las {hora}, {RECLUTAS}' })
+    expect(w.get('.share-box').text()).toContain(`de ${MAX_SHARE_FRAGMENT} caracteres`)
+    expect(w.get('.share-note').text()).toContain('no llega al servidor de esta web')
+  })
+
+  it('COPIAR ENLACE usa el portapapeles y lo anuncia; si falla, explica cómo copiarlo a mano', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } })
+    const w = mountPanel()
+    await createTemplate(w, 'Viernes', 'Hola')
+    await openShare(w)
+    await btn(w, '📋 COPIAR ENLACE').trigger('click')
+    await flushPromises()
+    expect(writeText).toHaveBeenCalledWith(w.get<HTMLInputElement>('.share-box input').element.value)
+    expect(w.get('.share-box [role="status"]').text()).toBe('Enlace copiado.')
+    writeText.mockRejectedValueOnce(new Error('denegado'))
+    await btn(w, '📋 COPIAR ENLACE').trigger('click')
+    await flushPromises()
+    expect(w.get('.share-box [role="alert"]').text()).toContain('cópialo a mano')
+  })
+
+  it('WhatsApp abre wa.me con el enlace completo y rel seguro; sin Web Share no hay botón COMPARTIR…', async () => {
+    const w = mountPanel()
+    await createTemplate(w, 'Viernes', 'Hola')
+    await openShare(w)
+    const link = w.get<HTMLInputElement>('.share-box input').element.value
+    const wa = w.get('.share-actions a')
+    expect(wa.attributes('href')!.startsWith('https://wa.me/?text=')).toBe(true)
+    expect(new URL(wa.attributes('href')!).searchParams.get('text')).toContain(link)
+    expect(wa.attributes('rel')).toBe('noopener noreferrer')
+    expect(wa.attributes('target')).toBe('_blank')
+    expect(w.findAll('button').some((b) => b.text() === '📤 COMPARTIR…')).toBe(false)
+  })
+
+  it('con Web Share, COMPARTIR… envía el mensaje; cancelar no es un error', async () => {
+    const share = vi.fn().mockRejectedValue(new DOMException('cancelado', 'AbortError'))
+    vi.stubGlobal('navigator', { ...navigator, share })
+    const w = mountPanel()
+    await createTemplate(w, 'Viernes', 'Hola')
+    await openShare(w)
+    await btn(w, '📤 COMPARTIR…').trigger('click')
+    await flushPromises()
+    expect(share).toHaveBeenCalledWith({
+      title: 'Plantilla de Squad Summoner',
+      text: expect.stringContaining('#plantilla=1'),
+    })
+    expect(w.find('.share-box [role="alert"]').exists()).toBe(false)
+  })
+
+  it('CERRAR y Escape devuelven el foco al botón COMPARTIR; BORRAR sigue pidiendo confirmación', async () => {
+    const w = mountPanel()
+    await createTemplate(w, 'Viernes', 'Hola')
+    await openShare(w)
+    await btn(w, 'CERRAR').trigger('click')
+    await flushPromises()
+    expect(w.find('.share-box').exists()).toBe(false)
+    expect(document.activeElement).toBe(btn(w, '🔗 COMPARTIR').element)
+    await openShare(w)
+    await w.get('.share-box input').trigger('keydown', { key: 'Escape' })
+    await flushPromises()
+    expect(w.find('.share-box').exists()).toBe(false)
+    expect(document.activeElement).toBe(btn(w, '🔗 COMPARTIR').element)
+    expect(w.find('.delete-confirmation').exists()).toBe(false)
+    await btn(w, '🗑️ BORRAR').trigger('click')
+    expect(w.find('.delete-confirmation').exists()).toBe(true)
+  })
+
+  it('si la plantilla no cabe en un enlace, lo explica y se puede cerrar', async () => {
+    const w = mountPanel()
+    const text = Array.from({ length: 3000 }, (_, i) => String.fromCharCode(0x4e00 + ((i * 7919) % 20000))).join('')
+    useTemplatesStore().add('Enorme', text)
+    await nextTick()
+    await openShare(w)
+    expect(w.get('.share-box [role="alert"]').text()).toBe(SHARE_ERRORS.tooLongToShare)
+    await btn(w, 'CERRAR').trigger('click')
+    expect(w.find('.share-box').exists()).toBe(false)
+  })
+
+  it('si se pulsa COMPARTIR en otra plantilla antes de que acabe el primer enlace, gana la última', async () => {
+    const w = mountPanel()
+    await createTemplate(w, 'Uno', 'Texto uno')
+    await createTemplate(w, 'Dos', 'Texto dos')
+    const share = (name: string) => w.get(`button[aria-label="Compartir ${name}"]`).trigger('click')
+    await share('Uno')
+    await share('Dos')
+    await vi.waitFor(() => {
+      if (!w.find('.share-box input').exists()) throw new Error('aún sin enlace')
+    })
+    await new Promise((r) => setTimeout(r, 50))
+    await flushPromises()
+    expect(w.findAll('.share-box')).toHaveLength(1)
+    const link = w.get<HTMLInputElement>('.share-box input').element.value
+    expect((await decodeShareFragment(new URL(link).hash)).name).toBe('Dos')
   })
 })

@@ -4,6 +4,40 @@ Todos los cambios notables del proyecto están documentados en este archivo.
 
 ---
 
+## [3.5.0] - 2026-11-02 (Fase 7: compartir plantillas por enlace y elegir voz y velocidad)
+
+### ✨ Añadido
+- **🔗 COMPARTIR una plantilla por enlace**, sin servidor: la plantilla (nombre y texto) va en la parte de la dirección
+  tras «#» (`#plantilla=…`, comprimida), que el navegador no envía a la web ni queda en sus registros. Botones
+  **📋 COPIAR ENLACE**, **💬 WHATSAPP** y, si el móvil lo permite, **📤 COMPARTIR…**. Límite claro de 6000 caracteres
+  en el enlace (una plantilla normal de hasta 4000 caracteres cabe; si no, se propone EXPORTAR).
+- Al abrir un enlace, el modal **📨 PLANTILLA COMPARTIDA** enseña nombre, texto, variables y vista previa con tu misión;
+  no se guarda nada hasta pulsar **💾 GUARDAR EN MIS PLANTILLAS** (sin duplicar si ya la tenías). La dirección se limpia
+  sola y los enlaces mal copiados o manipulados se rechazan con un mensaje en español.
+- **🎚️ VOZ Y VELOCIDAD** junto a LEER EN VOZ ALTA: voz automática (la mejor en español) o cualquiera del navegador
+  (español primero), seis velocidades de 0,7× a 1,5× y **▶️ PROBAR VOZ**. Se recuerda en este navegador; si no hay voces,
+  el selector se desactiva con una explicación, y si la voz guardada no existe en ese dispositivo se usa la automática.
+
+### 🔒 Seguridad
+- El enlace se valida entero al abrirlo (tamaño, alfabeto, tope de descompresión de 20 kB, UTF-8 estricto, JSON con solo
+  nombre y texto, límites de plantilla, sin caracteres de control ni bidi) y se muestra siempre como texto.
+- CSP con **Trusted Types** (`require-trusted-types-for 'script'; trusted-types vue`): ningún `innerHTML` ni `eval` con
+  cadenas; comprobado en Chromium sin violaciones.
+- Preferencia de voz en `squad-summoner-v3:voz`, validada al leer (origen compartido de `bertmarti.github.io`).
+- El enlace compartido no arrastra la query de la dirección de quien comparte.
+- Las plantillas (guardadas, importadas o recibidas por enlace) pierden también los caracteres invisibles: espacio de
+  anchura cero, marcas de dirección LRM/RLM/ALM, separadores de línea y párrafo Unicode y BOM (los emojis compuestos
+  con U+200D se conservan). Los límites se miden sobre el texto ya limpio.
+- La lectura en voz alta se para con el aviso si el navegador lanza un error al leer, pausar o reanudar.
+
+### 🔄 Dependencias
+- `vue` 3.5.45, `vite` 8.3.6 y `globals` 17.14. `npm audit` a 0 en la web y en el servidor (sin cambios: 1.3.0).
+  Siguen aplazadas Vitest 5 y `npm-run-all2` 9 (Node 22) y TypeScript 7 (`vue-tsc` 3 aún no lo admite).
+
+### 🧪 Pruebas
+- 246 → 323 pruebas: enlace (ida y vuelta, límites, enlaces hostiles, bomba de descompresión), diálogo, carreras de
+  enlaces, voz y velocidad, y una prueba de espionaje de `localStorage` que se filtraba entre pruebas.
+
 ## [3.4.0] — 2026-10-31 (Fase 6: plantillas propias y lectura en voz alta)
 
 ### ✨ Añadido
